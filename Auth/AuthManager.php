@@ -29,7 +29,7 @@ class AuthManager
     /** @var array<string, AuthProviderInterface> */
     private array $providers = [];
 
-    private ?PasswordProvider  $passwordProvider  = null;
+    private ?PasswordProvider  $passwordProvider = null;
     private ?MagicLinkProvider $magicLinkProvider = null;
     private TotpProvider       $totpProvider;
 
@@ -147,12 +147,12 @@ class AuthManager
     public static function fromConfig(
         array  $config,
         array  $mailConfig = [],
-        string $appUrl     = '',
+        string $appUrl = '',
     ): self {
         $manager = new self();
 
         /* TOTP — always available; configure the issuer name */
-        $issuer = !empty($config['totp']['issuer']) ? (string) $config['totp']['issuer'] : 'App';
+        $issuer = ! empty($config['totp']['issuer']) ? (string) $config['totp']['issuer'] : 'App';
         $manager->setTotpProvider(new TotpProvider($issuer));
 
         if (self::validOAuth($config, 'google')) {
@@ -173,7 +173,7 @@ class AuthManager
 
         /* Magic link — only enabled when mail.dsn is configured */
         $mailDsn = $mailConfig['dsn'] ?? null;
-        if (!empty($config['magic_link']['enabled']) && $mailDsn !== null) {
+        if (! empty($config['magic_link']['enabled']) && $mailDsn !== null) {
             $manager->setMagicLinkProvider(new MagicLinkProvider(
                 mailDsn:  (string) $mailDsn,
                 mailFrom: (string) ($mailConfig['from'] ?? 'no-reply@' . parse_url($appUrl, PHP_URL_HOST)),
@@ -187,8 +187,8 @@ class AuthManager
     /** Returns true when an OAuth provider block has all three required keys. */
     private static function validOAuth(array $config, string $provider): bool
     {
-        return !empty($config[$provider]['client_id'])
-            && !empty($config[$provider]['client_secret'])
-            && !empty($config[$provider]['redirect_uri']);
+        return ! empty($config[$provider]['client_id'])
+            && ! empty($config[$provider]['client_secret'])
+            && ! empty($config[$provider]['redirect_uri']);
     }
 }

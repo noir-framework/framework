@@ -20,8 +20,8 @@ use Noirapi\Helpers\Session;
  */
 class SudoMode
 {
-    private const KEY     = 'sudo_granted_until';
-    public  const TTL     = 900;  // 15 minutes
+    private const KEY = 'sudo_granted_until';
+    public const TTL = 900;  // 15 minutes
 
     /**
      * Open (or extend) a sudo window.
@@ -39,6 +39,7 @@ class SudoMode
     public static function isActive(): bool
     {
         $until = Session::get(self::KEY);
+
         return is_int($until) && $until > time();
     }
 

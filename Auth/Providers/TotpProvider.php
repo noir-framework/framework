@@ -30,16 +30,30 @@ class TotpProvider implements AuthProviderInterface
 {
     private TwoFactorAuth $tfa;
 
-    public function __construct(private readonly string $issuer)
+    public function __construct(string $issuer)
     {
-        $this->tfa = new TwoFactorAuth($this->issuer);
+        $this->tfa = new TwoFactorAuth($issuer);
     }
 
     /* ── AuthProviderInterface ───────────────────────────────── */
 
-    public function getName(): string  { return 'totp'; }
-    public function getLabel(): string { return 'Authenticator App'; }
-    public function getIcon(): string  { return 'bi-shield-lock'; }
+    #[\Override]
+    public function getName(): string
+    {
+        return 'totp';
+    }
+
+    #[\Override]
+    public function getLabel(): string
+    {
+        return 'Authenticator App';
+    }
+
+    #[\Override]
+    public function getIcon(): string
+    {
+        return 'bi-shield-lock';
+    }
 
     /* ── TOTP operations ─────────────────────────────────────── */
 
