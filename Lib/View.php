@@ -164,7 +164,19 @@ class View
 
         $this->mergeParams($this->layout, 'layout');
 
-        return $this->response->setBody($this->latte->renderToString($layout, $this->params));
+        $html = $this->latte->renderToString($layout, $this->params);
+
+        // For PJAX responses the layout (<head>) is skipped, so prepend any
+        // page-specific <link> tags so pjax.js can inject them into <head>.
+        if ($this->request->ajax && !empty($this->layout->params['top-css'])) {
+            $links = implode('', array_map(
+                static fn(string $css) => '<link rel="stylesheet" href="' . htmlspecialchars($css, ENT_QUOTES) . '">',
+                $this->layout->params['top-css']
+            ));
+            $html = $links . $html;
+        }
+
+        return $this->response->setBody($html);
     }
 
     /**
