@@ -22,8 +22,8 @@ use Latte\Engine;
 use Latte\Essential\TranslatorExtension;
 use Latte\Tools\Linter;
 use Latte\Tools\LinterExtension;
-use Noirapi\Helpers\Macros;
 use Noirapi\Lib\View\FilterExtension;
+use Noirapi\Lib\View\Macros;
 
 $engine = new Engine();
 $engine->enablePhpLinter(PHP_BINARY);

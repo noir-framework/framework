@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Noirapi\Helpers;
+namespace Noirapi\Lib\View;
 
 use Latte\CompileException;
 use Latte\Compiler\Node;

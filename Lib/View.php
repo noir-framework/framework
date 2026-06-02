@@ -12,13 +12,13 @@ use Noirapi\Config;
 use Noirapi\Exceptions\FileNotFoundException;
 use Noirapi\Helpers\DummyTranslator;
 use Noirapi\Helpers\EasyTranslator;
-use Noirapi\Helpers\Macros;
 use Noirapi\Helpers\Session;
 use Noirapi\Helpers\Template;
 use Noirapi\Interfaces\Translator;
 use Noirapi\Lib\View\FilterExtension;
 use Noirapi\Lib\View\LatteLoader;
 use Noirapi\Lib\View\Layout;
+use Noirapi\Lib\View\Macros;
 use RuntimeException;
 use stdClass;
 
@@ -170,7 +170,7 @@ class View
         // page-specific <link> tags so pjax.js can inject them into <head>.
         if ($this->request->ajax && !empty($this->layout->params['top-css'])) {
             $links = implode('', array_map(
-                static fn(string $css) => '<link rel="stylesheet" href="' . htmlspecialchars($css, ENT_QUOTES) . '">',
+                static fn (string $css) => '<link rel="stylesheet" href="' . htmlspecialchars($css, ENT_QUOTES) . '">',
                 $this->layout->params['top-css']
             ));
             $html = $links . $html;
