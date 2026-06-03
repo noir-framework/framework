@@ -48,6 +48,13 @@ if (empty($config)) {
 /** @noinspection PhpUnhandledExceptionInspection */
 Config::init($config);
 
+$_sessionCfg = Config::get('session');
+if (is_array($_sessionCfg) && isset($_sessionCfg['driver'])) {
+    $handler = \Noirapi\Lib\Session\SessionHandlerFactory::create($_sessionCfg);
+    session_set_save_handler($handler, true);
+}
+unset($_sessionCfg, $handler);
+
 define('SESSION_ROOT', Config::get('SESSION_ROOT') ?? (ROOT . '/sessions'));
 
 Config::set('is_https', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');

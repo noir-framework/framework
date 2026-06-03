@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Noirapi\Helpers;
+namespace Noirapi\Lib;
 
 use function is_array;
 use function is_object;

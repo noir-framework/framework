@@ -18,12 +18,10 @@ use Noirapi\Exceptions\MessageException;
 use Noirapi\Exceptions\UnableToForwardException;
 use Noirapi\Helpers\Message;
 use Noirapi\Helpers\RestMessage;
-use Noirapi\Helpers\Session;
 use Noirapi\Helpers\Utils;
 use Noirapi\Lib\Tracy\PDOBarPanel;
 use Throwable;
 use Tracy\Debugger;
-
 use function get_class;
 use function in_array;
 use function strlen;
