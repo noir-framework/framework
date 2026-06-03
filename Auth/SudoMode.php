@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Auth;
 
-use Noirapi\Helpers\Session;
+use Noirapi\Lib\Session;
 
 /**
  * Session-scoped sudo elevation flag.

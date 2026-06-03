@@ -7,7 +7,7 @@ namespace Noirapi\Auth\Providers;
 use Curl\Curl;
 use Noirapi\Auth\Contracts\AuthProviderInterface;
 use Noirapi\Auth\OAuthResult;
-use Noirapi\Helpers\Session;
+use Noirapi\Lib\Session;
 use Random\RandomException;
 use RuntimeException;
 
@@ -116,6 +116,51 @@ abstract class OAuthProvider implements AuthProviderInterface
         }
 
         return ['result' => $result, 'action' => $action];
+    }
+
+    /**
+     * Exchange a refresh token for a new access token and updated OAuthResult.
+     *
+     * @throws RuntimeException  if the provider returns an error or no access token
+     */
+    public function refreshAccessToken(string $refreshToken): OAuthResult
+    {
+        $curl = new Curl();
+        $curl->setHeader('Accept', 'application/json');
+        $curl->post($this->getTokenUrl(), [
+            'client_id'     => $this->clientId,
+            'client_secret' => $this->clientSecret,
+            'refresh_token' => $refreshToken,
+            'grant_type'    => 'refresh_token',
+        ]);
+
+        if ($curl->error) {
+            throw new RuntimeException('Token refresh failed: ' . $curl->errorMessage);
+        }
+
+        /** @noinspection JsonEncodingApiUsageInspection */
+        $data = is_string($curl->response)
+            ? json_decode($curl->response, true)
+            : (array) $curl->response;
+
+        if (isset($data['error'])) {
+            throw new RuntimeException('Token refresh error: ' . ($data['error_description'] ?? $data['error']));
+        }
+
+        $accessToken = $data['access_token'] ?? '';
+        if ($accessToken === '') {
+            throw new RuntimeException('No access token in refresh response.');
+        }
+
+        $result               = $this->fetchUser($accessToken);
+        $result->accessToken  = $accessToken;
+        $result->refreshToken = $data['refresh_token'] ?? $refreshToken;
+
+        if (isset($data['expires_in'])) {
+            $result->tokenExpiresAt = time() + (int) $data['expires_in'];
+        }
+
+        return $result;
     }
 
     /* ── Protected helpers ───────────────────────────────────── */
