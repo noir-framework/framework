@@ -12,7 +12,6 @@ use Noirapi\Config;
 use Noirapi\Exceptions\FileNotFoundException;
 use Noirapi\Helpers\DummyTranslator;
 use Noirapi\Helpers\EasyTranslator;
-use Noirapi\Helpers\Session;
 use Noirapi\Helpers\Template;
 use Noirapi\Interfaces\Translator;
 use Noirapi\Lib\View\FilterExtension;
@@ -21,7 +20,6 @@ use Noirapi\Lib\View\Layout;
 use Noirapi\Lib\View\Macros;
 use RuntimeException;
 use stdClass;
-
 use function count;
 
 class View
