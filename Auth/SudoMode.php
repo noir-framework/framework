@@ -10,42 +10,28 @@ use Noirapi\Lib\Session;
  * Session-scoped sudo elevation flag.
  *
  * After the user re-confirms their identity (TOTP / password / OAuth re-auth),
- * call grant() to open a short-lived elevated window. Controllers check
- * isActive() before executing destructive actions.
+ * call grant() to mark the session as elevated. The flag persists until the
+ * session expires or revoke() is called explicitly (e.g. on logout).
  *
  * Usage:
- *   SudoMode::grant();          // 15-minute window (default)
- *   SudoMode::isActive();       // true while window has not expired
- *   SudoMode::revoke();         // explicit teardown (e.g. on logout)
+ *   SudoMode::grant();     // mark session as elevated
+ *   SudoMode::isActive();  // true for the lifetime of the session
+ *   SudoMode::revoke();    // explicit teardown (e.g. on logout)
  */
 class SudoMode
 {
-    private const KEY = 'sudo_granted_until';
-    public const TTL = 900;  // 15 minutes
+    private const KEY = 'sudo_granted';
 
-    /**
-     * Open (or extend) a sudo window.
-     *
-     * @param int $ttlSeconds  How long the elevation lasts (default 900 s = 15 min).
-     */
-    public static function grant(int $ttlSeconds = self::TTL): void
+    public static function grant(): void
     {
-        Session::set(self::KEY, null, time() + $ttlSeconds);
+        Session::set(self::KEY, null, true);
     }
 
-    /**
-     * Returns true while a valid sudo window is open.
-     */
     public static function isActive(): bool
     {
-        $until = Session::get(self::KEY);
-
-        return is_int($until) && $until > time();
+        return Session::get(self::KEY) === true;
     }
 
-    /**
-     * Explicitly close the sudo window (e.g. on logout).
-     */
     public static function revoke(): void
     {
         Session::remove(self::KEY);
