@@ -7,6 +7,7 @@ namespace Noirapi\Lib;
 use Latte\Bridges\Tracy\TracyExtension;
 use Latte\Engine;
 use Latte\Essential\TranslatorExtension;
+use Latte\Feature;
 use Nette\Neon\Exception;
 use Noirapi\Config;
 use Noirapi\Exceptions\FileNotFoundException;
@@ -55,8 +56,7 @@ class View
         $this->dev = $dev;
 
         $this->latte = new Engine();
-        /** @psalm-suppress UndefinedConstant */
-        $this->latte->setTempDirectory(ROOT . '/temp');
+        $this->latte->setCacheDirectory(Config::getTemp());
 
         //enable regeneration of the template files
         $this->latte->setAutoRefresh();
@@ -116,8 +116,8 @@ class View
             $this->latte->addExtension(new TracyExtension());
         }
 
-        $this->latte->setStrictParsing();
-        $this->latte->setStrictTypes();
+        $this->latte->setFeature(Feature::StrictParsing);
+        $this->latte->setFeature(Feature::StrictTypes);
 
         self::$uri = $request->uri;
     }
