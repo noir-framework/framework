@@ -10,6 +10,7 @@ use function is_string;
 
 class Layout
 {
+    /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
     public string $name = '';
     public string $title = '';
     public array $breadcrumbs = [];

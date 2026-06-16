@@ -14,9 +14,11 @@ use const STDERR;
 
 class CheckResult
 {
+    /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
     /** @var array{file: string, line: int, message: string}[] */
     private array $errors = [];
 
+    /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
     /** @var array{file: string, line: int, message: string}[] */
     private array $warnings = [];
 

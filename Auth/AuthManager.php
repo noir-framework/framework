@@ -31,6 +31,7 @@ class AuthManager
 
     private ?PasswordProvider  $passwordProvider = null;
     private ?MagicLinkProvider $magicLinkProvider = null;
+    /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
     private TotpProvider       $totpProvider;
 
     public function __construct()

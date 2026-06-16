@@ -155,8 +155,8 @@ class ControllerAnalyzer
         if (
             $var instanceof MethodCall
             && $var->name instanceof Node\Identifier
-            && $var->name->toString() === 'setTemplate'
             && isset($var->args[0])
+            && $var->name->toString() === 'setTemplate'
             && $var->args[0] instanceof Node\Arg
             && $var->args[0]->value instanceof String_
         ) {

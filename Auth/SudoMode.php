@@ -20,7 +20,7 @@ use Noirapi\Lib\Session;
  */
 class SudoMode
 {
-    private const KEY = 'sudo_granted';
+    private const string KEY = 'sudo_granted';
 
     public static function grant(): void
     {

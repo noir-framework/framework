@@ -110,7 +110,7 @@ class VarUsageCollector extends Extension
         if ($node instanceof VariableNode && is_string($node->name)) {
             $name = $node->name;
             // Skip Latte-internal variables (prefixed with Unicode ʟ)
-            if (str_starts_with($name, 'ʟ') || $name === 'this') {
+            if ($name === 'this' || str_starts_with($name, 'ʟ')) {
                 return;
             }
             if (! isset($this->localVarSet[$name]) && ! isset($this->usedVars[$name])) {

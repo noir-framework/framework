@@ -55,12 +55,12 @@ class TracyFileSession implements SessionStorage
         if (
             !is_string($id)
             || !preg_match('#^\w{10}\z#i', $id)
-            || !($file = @fopen($path = $this->dir . '/' . self::FILE_PREFIX . $id, 'r+')) // intentionally @
+            || !($file = @fopen($path = $this->dir . '/' . self::FILE_PREFIX . $id, 'r+b')) // intentionally @
         ) {
             $id = bin2hex(random_bytes(5));
             setcookie($this->cookieName, $id, time() + self::COOKIE_LIFETIME, '/', '', secure: false, httponly: true);
 
-            $file = @fopen($path = $this->dir . '/' . self::FILE_PREFIX . $id, 'c+'); // intentionally @
+            $file = @fopen($path = $this->dir . '/' . self::FILE_PREFIX . $id, 'c+b'); // intentionally @
             if ($file === false) {
                 throw new RuntimeException("Unable to create file '$path'. " . error_get_last()['message']);
             }
@@ -71,7 +71,7 @@ class TracyFileSession implements SessionStorage
         }
 
         $this->file = $file;
-        $data = @unserialize(stream_get_contents($this->file)); // @ - file may be empty
+        $data = @unserialize(stream_get_contents($this->file), ['allowed_classes' => false]); // @ - file may be empty
         $this->data = empty($data) ? [] : $data;
 
         if (mt_rand() / mt_getrandmax() < $this->gcProbability) {

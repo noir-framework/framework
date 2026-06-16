@@ -27,7 +27,7 @@ use Noirapi\Auth\Contracts\AuthProviderInterface;
 class PasswordProvider implements AuthProviderInterface
 {
     /**
-     * @param \Closure(string $email): ?array{password:string, name:?string, avatar_url:?string} $userLookup
+     * @param \Closure(string $email): ?array{'password':string, 'name':?string, 'avatar_url':?string} $userLookup
      */
     public function __construct(
         private readonly \Closure $userLookup,
