@@ -24,9 +24,8 @@ $server->set([
 ]);
 
 if(! empty($static_files)) {
-    /** @psalm-suppress UndefinedConstant */
     $server->set([
-        'document_root'         => ROOT . '/htdocs',
+        'document_root'         => Config::getWwwRoot(),
         'enable_static_handler' => true,
     ]);
 }

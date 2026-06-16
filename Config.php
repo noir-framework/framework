@@ -22,21 +22,20 @@ class Config
      */
     public static function defaultConfigAvailable(): bool
     {
-        /** @psalm-suppress UndefinedConstant */
-        return is_file(ROOT . '/app/config/default.neon');
+        return is_file(self::getRoot() . '/app/config/default.neon');
     }
 
     /**
      * @param string $config
      * @return void
      * @throws ConfigException
+     * @noinspection PhpUnused
      */
     public static function init(string $config): void
     {
-        /** @psalm-suppress UndefinedConstant */
-        $file = ROOT . '/app/config/' . $config . '.neon';
+        $file = self::getRoot() . '/app/config/' . $config . '.neon';
 
-        //TODO cache config in json with expiration
+        //TODO cache config in JSON with expiration
         if (is_readable($file)) {
             try {
                 $parsed = Neon::decodeFile($file);
@@ -48,6 +47,10 @@ class Config
                 throw new ConfigException('Unable to parse config:' . $file);
             }
 
+            /**
+             * @noinspection ClassConstantCanBeUsedInspection
+             * @phpstan-ignore-next-line
+             */
             if (class_exists('\App\Lib\Config') && method_exists('\App\Lib\Config', 'validate')) {
                 /** @psalm-suppress UndefinedClass */
                 \App\Lib\Config::validate($parsed);
@@ -130,8 +133,8 @@ class Config
      */
     public static function getRoot(): string
     {
-        /** @psalm-suppress UndefinedConstant */
-        return ROOT;
+        static $root = null;
+        return $root ??= dirname(__FILE__, 2);
     }
 
     /**
@@ -140,8 +143,7 @@ class Config
      */
     public static function getTemp(): string
     {
-        /** @psalm-suppress UndefinedConstant */
-        return ROOT . '/temp';
+        return self::getRoot() . '/temp';
     }
 
     /**
@@ -150,8 +152,7 @@ class Config
      */
     public static function getLogs(): string
     {
-        /** @psalm-suppress UndefinedConstant */
-        return ROOT . '/logs';
+        return self::getRoot() . '/logs';
     }
 
     /**
@@ -160,8 +161,7 @@ class Config
      */
     public static function getWwwRoot(): string
     {
-        /** @psalm-suppress UndefinedConstant */
-        return WWWROOT;
+        return self::getRoot() . '/htdocs';
     }
 
     /**
@@ -170,7 +170,33 @@ class Config
      */
     public static function getAppRoot(): string
     {
-        /** @psalm-suppress UndefinedConstant */
-        return APPROOT;
+        return self::getRoot() . '/app';
+    }
+
+    /**
+     * @return string
+     * @noinspection PhpUnused
+     */
+    public static function getViews(): string
+    {
+        return self::getRoot() . '/app/views';
+    }
+
+    /**
+     * @return string
+     * @noinspection PhpUnused
+     */
+    public static function getTemplates(): string
+    {
+        return self::getRoot() . '/app/templates';
+    }
+
+    /**
+     * @return string
+     * @noinspection PhpUnused
+     */
+    public static function getLayouts(): string
+    {
+        return self::getRoot() . '/app/layouts';
     }
 }

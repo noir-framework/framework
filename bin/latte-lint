@@ -11,13 +11,6 @@ if (!is_file($autoload = $root . '/vendor/autoload.php')) {
 }
 require $autoload;
 
-defined('ROOT')       || define('ROOT',       $root);
-defined('APPROOT')    || define('APPROOT',    ROOT . '/app/');
-defined('WWWROOT')    || define('WWWROOT',    ROOT . '/htdocs/');
-defined('PATH_VIEWS') || define('PATH_VIEWS', APPROOT . 'views');
-defined('PATH_TEMP')  || define('PATH_TEMP',  ROOT . '/temp');
-defined('PATH_LOGS')  || define('PATH_LOGS',  ROOT . '/logs');
-
 use Latte\Engine;
 use Latte\Essential\TranslatorExtension;
 use Latte\Tools\Linter;

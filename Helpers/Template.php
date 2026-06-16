@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Helpers;
 
 use Latte;
+use Noirapi\Config;
 use Noirapi\Exceptions\FileNotFoundException;
 
 /**
@@ -22,8 +23,7 @@ class Template
 
         $this->latte = new Latte\Engine();
         $this->latte->setAutoRefresh();
-        /** @psalm-suppress UndefinedConstant */
-        $this->latte->setTempDirectory(ROOT . '/temp');
+        $this->latte->setCacheDirectory(Config::getTemp());
         /** @psalm-suppress UndefinedClass */
         $this->latte->addFilterLoader('\\noirapi\\helpers\\Filters::init');
     }
@@ -45,8 +45,7 @@ class Template
      */
     public function setTemplate(string $template): Template
     {
-        /** @psalm-suppress UndefinedConstant */
-        $file = PATH_TEMPLATES . DIRECTORY_SEPARATOR . $template . self::LATTE_EXT;
+        $file = Config::getTemplates() . DIRECTORY_SEPARATOR . $template . self::LATTE_EXT;
 
         if (is_readable($file)) {
             $this->template = $file;

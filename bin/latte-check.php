@@ -12,15 +12,7 @@ if (! is_file($autoload = $root . '/vendor/autoload.php')) {
 }
 require $autoload;
 
-// Define constants that app code (Macros, FilterExtension, etc.) may need at compile time
-defined('ROOT') || define('ROOT', $root);
-defined('APPROOT') || define('APPROOT', ROOT . '/app/');
-defined('WWWROOT') || define('WWWROOT', ROOT . '/htdocs/');
-defined('PATH_VIEWS') || define('PATH_VIEWS', APPROOT . 'views');
-defined('PATH_LAYOUTS') || define('PATH_LAYOUTS', APPROOT . 'layouts');
-defined('PATH_TEMP') || define('PATH_TEMP', ROOT . '/temp');
-defined('PATH_LOGS') || define('PATH_LOGS', ROOT . '/logs');
-
+use Noirapi\Config;
 use Noirapi\Lib\LatteLint\Checker;
 
 // ── argument parsing ────────────────────────────────────────────────────────
@@ -57,9 +49,9 @@ HELP;
     exit(0);
 }
 
-$viewsDir = isset($opts['views-dir']) ? $root . '/' . $opts['views-dir'] : PATH_VIEWS;
-$layoutsDir = isset($opts['layouts-dir']) ? $root . '/' . $opts['layouts-dir'] : PATH_LAYOUTS;
-$controllersDir = isset($opts['controllers-dir']) ? $root . '/' . $opts['controllers-dir'] : APPROOT . 'controllers';
+$viewsDir = isset($opts['views-dir']) ? $root . '/' . $opts['views-dir'] : Config::getViews();
+$layoutsDir = isset($opts['layouts-dir']) ? $root . '/' . $opts['layouts-dir'] : Config::getLayouts();
+$controllersDir = isset($opts['controllers-dir']) ? $root . '/' . $opts['controllers-dir'] : Config::getAppRoot() . '/controllers';
 $noController = isset($opts['no-controller-check']);
 $strict = isset($opts['strict']);
 
