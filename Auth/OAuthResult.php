@@ -20,6 +20,6 @@ class OAuthResult extends AuthResult
 
     public function __construct()
     {
-        $this->method = 'oauth';
+        $this->method = AuthMethod::OAuth;
     }
 }

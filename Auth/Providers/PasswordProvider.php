@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Auth\Providers;
 
+use Noirapi\Auth\AuthMethod;
 use Noirapi\Auth\AuthResult;
 use Noirapi\Auth\Contracts\AuthProviderInterface;
 
@@ -55,7 +56,7 @@ class PasswordProvider implements AuthProviderInterface
         }
 
         $result            = new AuthResult();
-        $result->method    = 'password';
+        $result->method    = AuthMethod::Password;
         $result->email     = $email;
         $result->name      = $data['name'] ?? null;
         $result->avatarUrl = $data['avatar_url'] ?? null;
