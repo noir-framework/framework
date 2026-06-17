@@ -22,7 +22,6 @@ use function bin2hex;
 use function chr;
 use function count;
 use function defined;
-use function get_class;
 use function is_array;
 use function is_object;
 use function ord;
@@ -97,15 +96,7 @@ class Utils
      */
     public static function randomString(int $len = 8): string
     {
-        /** @noinspection SpellCheckingInspection */
-        $chars = '23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
-        $res = '';
-
-        for ($i = 1; $i <= $len; $i++) {
-            $res .= $chars[random_int(1, strlen($chars) - 1)];
-        }
-
-        return $res;
+        return self::random($len);
     }
 
     /**
@@ -161,7 +152,7 @@ class Utils
         $depth = (int) $depth;
 
         if (is_object($class)) {
-            $class = get_class($class);
+            $class = $class::class;
         }
 
         $path = explode('\\', $class);
@@ -265,25 +256,6 @@ class Utils
         }
 
         return $result;
-    }
-
-    /**
-     * @param mixed $var
-     * @param mixed $scope
-     * @return int|string|void
-     */
-    public static function var_name(mixed &$var, mixed $scope = false) // phpcs:ignore
-    {
-        $old = $var;
-        if (
-            ($key = array_search(
-                $var = 'unique' . mt_rand() . 'value',
-                $scope === false ? $GLOBALS : $scope,
-                true
-            )) && $var = $old
-        ) {
-            return $key;
-        }
     }
 
     /**
