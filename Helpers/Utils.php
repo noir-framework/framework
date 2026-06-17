@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace Noirapi\Helpers;
 
 use Exception;
-use Nette\StaticClass;
 use Noirapi\Config;
 use Random\Randomizer;
 use ReflectionClass;
@@ -32,9 +31,9 @@ use function strlen;
 use function vsprintf;
 
 /** @psalm-api  */
-class Utils
+final class Utils
 {
-    use StaticClass;
+    private function __construct() {}
 
     /**
      * @param int $len
@@ -87,16 +86,6 @@ class Utils
     public static function randomInt(int $min = 0, int $max = PHP_INT_MAX): int
     {
         return random_int($min, $max);
-    }
-
-    /**
-     * @param int $len
-     * @return string
-     * @throws Exception
-     */
-    public static function randomString(int $len = 8): string
-    {
-        return self::random($len);
     }
 
     /**
@@ -292,11 +281,7 @@ class Utils
      */
     public static function base64UrlEncode(string $data): string
     {
-        return str_replace(
-            ['+', '/', '=', '_', '-'],
-            ['', '', '', '', ''],
-            base64_encode($data)
-        );
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
     /**
