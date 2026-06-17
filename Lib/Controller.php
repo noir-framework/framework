@@ -4,7 +4,6 @@
  * @noinspection PhpUndefinedNamespaceInspection
  * @noinspection PhpUndefinedClassInspection
  * @noinspection PhpParamsInspection
- * @noinspection PhpMissingFieldTypeInspection
  */
 
 declare(strict_types=1);
@@ -17,13 +16,12 @@ use Noirapi\Exceptions\LoginException;
 use Noirapi\Exceptions\MessageException;
 use Noirapi\Exceptions\UnableToForwardException;
 use Noirapi\Helpers\Message;
+use Noirapi\Helpers\MessageType;
 use Noirapi\Helpers\RestMessage;
 use Noirapi\Helpers\Utils;
 use Noirapi\Lib\Tracy\PDOBarPanel;
 use Throwable;
 use Tracy\Debugger;
-use function get_class;
-use function in_array;
 use function strlen;
 
 class Controller
@@ -31,8 +29,7 @@ class Controller
     public Request $request;
     public Response $response;
     public array $server;
-    /** @var Model|null */
-    public $model;
+    public ?Model $model = null;
     public ?View $view = null;
     public ?bool $dev = null;
     /** @var mixed|non-empty-array<array-key, true>|null */
@@ -65,7 +62,7 @@ class Controller
             $params = $db[$driver];
 
             if ($this->model === null) {
-                $model = self::$model_path . Utils::getClassName(get_class($this));
+                $model = self::$model_path . Utils::getClassName($this::class);
                 if (class_exists($model) && is_subclass_of($model, Model::class)) {
                     $this->model = new $model($driver, $params);
                 } else {
@@ -76,8 +73,7 @@ class Controller
 
         // We need this when we are moving across domains
         if (isset($this->request->get['message'], $this->request->get['type'])) {
-            $allowedTypes = ['success', 'danger', 'warning', 'info', 'primary', 'secondary', 'light', 'dark'];
-            $type    = in_array($this->request->get['type'], $allowedTypes, true) ? $this->request->get['type'] : 'info';
+            $type    = MessageType::tryFrom((string) $this->request->get['type']) ?? MessageType::Info;
             $message = strip_tags((string) $this->request->get['message']);
             if ($message !== '') {
                 $this->message($message, $type);
@@ -162,12 +158,12 @@ class Controller
 
     /**
      * @param string|Message $text
-     * @param string|null $type
+     * @param string|MessageType|null $type
      * @param string|null $translation_key
      * @param mixed ...$translation_args
      * @return $this
      */
-    public function message(string|Message $text, ?string $type = null, ?string $translation_key = null, ...$translation_args): self //phpcs:ignore
+    public function message(string|Message $text, string|MessageType|null $type = null, ?string $translation_key = null, ...$translation_args): self //phpcs:ignore
     {
         Session::remove('message');
 
@@ -178,7 +174,7 @@ class Controller
                         ->translate($text->message, $translation_key, $translation_args);
                 } else {
                     $text = Message::new($this->view?->translator
-                        ->translate($text, $translation_key, $translation_args), $type ?? 'danger');
+                        ->translate($text, $translation_key, $translation_args), $type ?? MessageType::Danger);
                 }
             } catch (Throwable) {
                 // Do nothing
@@ -188,7 +184,7 @@ class Controller
         if ($text instanceof Message) {
             Session::set('message', null, $text);
         } else {
-            Session::set('message', null, Message::new($text, $type ?? 'danger'));
+            Session::set('message', null, Message::new($text, $type ?? MessageType::Danger));
         }
 
         if ($this->dev) {
@@ -211,59 +207,58 @@ class Controller
     public function referer(bool $same_domain = true): string
     {
         if (isset($this->server['HTTP_REFERER'])) {
-            $url = str_replace('@', '', $this->server['HTTP_REFERER']);
+            $url = str_replace('@', '', (string)($this->server['HTTP_REFERER'] ?? ''));
             if (empty($url)) {
                 return '/';
             }
 
-            $orig_url = filter_var($url, FILTER_SANITIZE_URL);
-            if ($orig_url === false) {
+            $clean = preg_replace('/[\x00-\x1F\x7F\s]/', '', $url) ?? '';
+            if ($clean === '') {
                 return '/';
             }
 
-            /** @psalm-suppress PossiblyInvalidCast */
-            $url = parse_url((string)preg_replace('/\s+/', '', $orig_url));
-            if ($url === false) {
+            $parsed = parse_url($clean);
+            if ($parsed === false) {
                 return '/';
             }
 
-            if (! isset($url['host'])) {
-                return $orig_url;
+            if (! isset($parsed['host'])) {
+                return $clean;
             }
 
-            if ($url['host'] === $this->server['HTTP_HOST']) {
-                $url['path'] = $url['path'] ?? '/';
+            if ($parsed['host'] === $this->server['HTTP_HOST']) {
+                $parsed['path'] = $parsed['path'] ?? '/';
 
                 foreach (Config::get('languages') ?? [] as $code => $_) {
                     // Condition like /en
-                    if ($url['path'] === '/' . $code) {
+                    if ($parsed['path'] === '/' . $code) {
                         return '/' . $code;
                     }
-                    // Condition like /en
-                    if (str_starts_with($url['path'], '/' . $code . '/')) {
-                        $path = substr($url['path'], strlen($code) + 1);
+                    // Condition like /en/
+                    if (str_starts_with($parsed['path'], '/' . $code . '/')) {
+                        $path = substr($parsed['path'], strlen($code) + 1);
 
-                        return $path . (! isset($url['query']) ? '' : '?' . ($url['query']));
+                        return $path . (! isset($parsed['query']) ? '' : '?' . ($parsed['query']));
                     }
                 }
 
-                return ($this->request->language === null ? '' : '/' . $this->request->language) . $url['path'] . (! isset($url['query']) ? '' : '?' . ($url['query'])); //phpcs:ignore
+                return ($this->request->language === null ? '' : '/' . $this->request->language) . $parsed['path'] . (! isset($parsed['query']) ? '' : '?' . ($parsed['query'])); //phpcs:ignore
             }
 
             if ($same_domain) {
                 return '/';
             }
 
-            if (isset($url['scheme']) && ($url['scheme'] === 'http' || $url['scheme'] === 'https')) {
-                $url['path'] = $url['path'] ?? '/';
+            if (isset($parsed['scheme']) && ($parsed['scheme'] === 'http' || $parsed['scheme'] === 'https')) {
+                $parsed['path'] = $parsed['path'] ?? '/';
 
                 /** @noinspection BypassedUrlValidationInspection */
-                if (filter_var($url['scheme'] . '://' . $url['host'] . $url['path'] . '?' . ($url['query'] ?? ''), FILTER_VALIDATE_URL)) { //phpcs:ignore
-                    if (isset($url['query'])) {
-                        return $url['scheme'] . '://' . $url['host'] . $url['path'] . '?' . $url['query'];
+                if (filter_var($parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'] . '?' . ($parsed['query'] ?? ''), FILTER_VALIDATE_URL)) { //phpcs:ignore
+                    if (isset($parsed['query'])) {
+                        return $parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'] . '?' . $parsed['query'];
                     }
 
-                    return $url['scheme'] . '://' . $url['host'] . $url['path'];
+                    return $parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'];
                 }
             }
 
@@ -298,6 +293,7 @@ class Controller
      * @return void
      * @throws LoginException
      * @throws MessageException
+     * @noinspection PhpUnused
      */
     public function hasResource(Acl $acl): void
     {
@@ -317,6 +313,7 @@ class Controller
      * @return void
      * @throws LoginException
      * @throws MessageException
+     * @noinspection PhpUnused
      */
     public function isAllowed(Acl $acl): void
     {
