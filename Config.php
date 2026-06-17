@@ -47,10 +47,7 @@ class Config
                 throw new ConfigException('Unable to parse config:' . $file);
             }
 
-            /**
-             * @noinspection ClassConstantCanBeUsedInspection
-             * @phpstan-ignore-next-line
-             */
+            /** @noinspection ClassConstantCanBeUsedInspection */
             if (class_exists('\App\Lib\Config') && method_exists('\App\Lib\Config', 'validate')) {
                 /** @psalm-suppress UndefinedClass */
                 \App\Lib\Config::validate($parsed);
