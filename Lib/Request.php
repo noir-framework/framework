@@ -108,7 +108,7 @@ class Request
      */
     private static function isHttps(array $server): bool
     {
-        if (isset($_SERVER['HTTPS'])) {
+        if (isset($server['HTTPS'])) {
             if (strtolower($server['HTTPS']) === 'on') {
                 return true;
             }
@@ -176,7 +176,7 @@ class Request
 
         $self->hostname = $server['HTTP_HOST'] ?? $server['SERVER_NAME'] ?? '';
         $self->method = $server['REQUEST_METHOD'];
-        $self->uri = filter_var(urldecode($server['REQUEST_URI']), FILTER_SANITIZE_URL);
+        $self->uri = preg_replace('/[\x00-\x1F\x7F]/', '', urldecode($server['REQUEST_URI'])) ?? '';
         $self->get = $get;
         $self->post = $post;
         $self->files = $files;
