@@ -29,7 +29,10 @@ class Controller
     public Request $request;
     public Response $response;
     public array $server;
-    public ?Model $model = null;
+    public ?Model $model = null {
+        get => $this->model ??= $this->resolveModel();
+        set { $this->model = $value; }
+    }
     public ?View $view = null;
     public ?bool $dev = null;
     /** @var mixed|non-empty-array<array-key, true>|null */
@@ -54,23 +57,6 @@ class Controller
                     && in_array($this->server[ 'REMOTE_ADDR' ], Config::get('dev_ips'), true));
         }
 
-        $db = Config::get('db');
-
-        //automatic model loading only for the first driver
-        if ($db !== null) {
-            $driver = array_key_first($db);
-            $params = $db[$driver];
-
-            if ($this->model === null) {
-                $model = self::$model_path . Utils::getClassName($this::class);
-                if (class_exists($model) && is_subclass_of($model, Model::class)) {
-                    $this->model = new $model($driver, $params);
-                } else {
-                    $this->model = new Model($driver, $params);
-                }
-            }
-        }
-
         // We need this when we are moving across domains
         if (isset($this->request->get['message'], $this->request->get['type'])) {
             $type    = MessageType::tryFrom((string) $this->request->get['type']) ?? MessageType::Info;
@@ -79,6 +65,21 @@ class Controller
                 $this->message($message, $type);
             }
         }
+    }
+
+    protected function resolveModel(): ?Model
+    {
+        $db = Config::get('db');
+        if ($db === null) {
+            return null;
+        }
+        $driver = array_key_first($db);
+        $params = $db[$driver];
+        $class  = self::$model_path . Utils::getClassName($this::class);
+        if (class_exists($class) && is_subclass_of($class, Model::class)) {
+            return new $class($driver, $params);
+        }
+        return new Model($driver, $params);
     }
 
     public function __destruct()
