@@ -55,12 +55,11 @@ class PasswordProvider implements AuthProviderInterface
             return null;
         }
 
-        $result            = new AuthResult();
-        $result->method    = AuthMethod::Password;
-        $result->email     = $email;
-        $result->name      = $data['name'] ?? null;
-        $result->avatarUrl = $data['avatar_url'] ?? null;
-
-        return $result;
+        return new AuthResult(
+            method:    AuthMethod::Password,
+            email:     $email,
+            name:      $data['name'] ?? null,
+            avatarUrl: $data['avatar_url'] ?? null,
+        );
     }
 }

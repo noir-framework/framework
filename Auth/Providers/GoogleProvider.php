@@ -78,13 +78,12 @@ class GoogleProvider extends OAuthProvider
             throw new RuntimeException('Google did not return an email address. Ensure the email scope is granted.');
         }
 
-        $result                 = new OAuthResult();
-        $result->provider       = $this->getName();
-        $result->providerUserId = (string) $data['id'];
-        $result->email          = strtolower(trim($data['email']));
-        $result->name           = $data['name'] ?? null;
-        $result->avatarUrl      = $data['picture'] ?? null;
-
-        return $result;
+        return new OAuthResult(
+            provider:       $this->getName(),
+            providerUserId: (string) $data['id'],
+            email:          strtolower(trim($data['email'])),
+            name:           $data['name'] ?? null,
+            avatarUrl:      $data['picture'] ?? null,
+        );
     }
 }

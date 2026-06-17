@@ -31,14 +31,9 @@ class AuthManager
 
     private ?PasswordProvider  $passwordProvider = null;
     private ?MagicLinkProvider $magicLinkProvider = null;
-    /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
-    private TotpProvider       $totpProvider;
+    private ?TotpProvider $totpProvider = null;
 
-    public function __construct()
-    {
-        /* TOTP is always available — default issuer overridden by fromConfig() */
-        $this->totpProvider = new TotpProvider('App');
-    }
+    public function __construct() {}
 
     /* ── OAuth provider registry ─────────────────────────────── */
 
@@ -113,12 +108,12 @@ class AuthManager
     }
 
     /**
-     * Always returns a TotpProvider — TOTP needs no external credentials.
-     * The issuer name is set from config (auth.totp.issuer) or defaults to 'App'.
+     * @throws RuntimeException if auth.totp.issuer is not set in config
      */
     public function getTotpProvider(): TotpProvider
     {
-        return $this->totpProvider;
+        return $this->totpProvider
+            ?? throw new RuntimeException('TOTP issuer is not configured. Set auth.totp.issuer in config.');
     }
 
     /* ── Factory ─────────────────────────────────────────────── */
@@ -152,9 +147,9 @@ class AuthManager
     ): self {
         $manager = new self();
 
-        /* TOTP — always available; configure the issuer name */
-        $issuer = ! empty($config['totp']['issuer']) ? (string) $config['totp']['issuer'] : 'App';
-        $manager->setTotpProvider(new TotpProvider($issuer));
+        if (! empty($config['totp']['issuer'])) {
+            $manager->setTotpProvider(new TotpProvider((string) $config['totp']['issuer']));
+        }
 
         if (self::validOAuth($config, 'google')) {
             $manager->register(new GoogleProvider(

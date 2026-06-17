@@ -12,8 +12,10 @@ namespace Noirapi\Auth;
  */
 class AuthResult
 {
-    public ?AuthMethod $method    = null;
-    public ?string     $email     = null;
-    public ?string     $name      = null;
-    public ?string     $avatarUrl = null;
+    public function __construct(
+        public ?AuthMethod $method    = null,
+        public ?string     $email     = null,
+        public ?string     $name      = null,
+        public ?string     $avatarUrl = null,
+    ) {}
 }

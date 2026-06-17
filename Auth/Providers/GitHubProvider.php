@@ -80,13 +80,12 @@ class GitHubProvider extends OAuthProvider
             );
         }
 
-        $result                 = new OAuthResult();
-        $result->provider       = $this->getName();
-        $result->providerUserId = (string) $data['id'];
-        $result->email          = $email;
-        $result->name           = $data['name'] ?? $data['login'] ?? null;
-        $result->avatarUrl      = $data['avatar_url'] ?? null;
-
-        return $result;
+        return new OAuthResult(
+            provider:       $this->getName(),
+            providerUserId: (string) $data['id'],
+            email:          $email,
+            name:           $data['name'] ?? $data['login'] ?? null,
+            avatarUrl:      $data['avatar_url'] ?? null,
+        );
     }
 }
