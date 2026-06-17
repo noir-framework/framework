@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib;
 
-use Nette\SmartObject;
-
 /**
  * @psalm-suppress MissingConstructor
  * @psalm-api
  */
 class Request
 {
-    use SmartObject;
-
     public array $headers;
     public string $method;
     public string $uri;

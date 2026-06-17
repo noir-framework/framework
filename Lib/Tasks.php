@@ -22,16 +22,19 @@ class Tasks
      */
     private Server $server;
     private int $timeout;
+    private string $taskNamespace;
 
     /**
      * @param Server $server
      * @param int $timeout
+     * @param string $taskNamespace
      * @psalm-suppress UndefinedClass
      */
-    public function __construct(Server $server, int $timeout = 300)
+    public function __construct(Server $server, int $timeout = 300, string $taskNamespace = 'App\\Tasks\\')
     {
         $this->server = $server;
         $this->timeout = $timeout;
+        $this->taskNamespace = $taskNamespace;
     }
 
     /**
@@ -41,7 +44,7 @@ class Tasks
      */
     public function add(string $class, array $params): self
     {
-        $task = 'app\\tasks\\' . $class;
+        $task = $this->taskNamespace . $class;
         if (! class_exists($task)) {
             throw new RuntimeException("Task class $class not found");
         }

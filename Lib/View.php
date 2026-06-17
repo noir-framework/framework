@@ -386,7 +386,7 @@ class View
                 $this->params->$key = $value;
             }
         } elseif (isset($this->params->$namespace)) {
-            throw new RuntimeException("Duplicate key ain view params: $namespace");
+            throw new RuntimeException("Duplicate key in view params: $namespace");
         } else {
             $this->params->$namespace = $params;
         }

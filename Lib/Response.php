@@ -436,6 +436,10 @@ class Response
         $written = 0;
 
         $fh = fopen('php://temp', 'rwb');
+        if ($fh === false) {
+            throw new RuntimeException('Unable to open php://temp for CSV generation');
+        }
+
         if ($this->csv_header) {
             fputcsv($fh, array_keys(current((array)$data)), $this->csv_separator, $this->csv_enclosure, $this->csv_escape); //phpcs:ignore
         }

@@ -9,7 +9,7 @@ use Nette\Schema\ValidationException;
 /** @psalm-api  */
 class SchemaHelper
 {
-    public static array $messages;
+    public static array $messages = [];
 
     /**
      * @param array $messages

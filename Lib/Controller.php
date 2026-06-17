@@ -38,7 +38,7 @@ class Controller
     /** @var mixed|non-empty-array<array-key, true>|null */
     public static $panels;
 
-    public static string $model_path = 'App\\Models\\';
+    protected const string MODEL_PATH = 'App\\Models\\';
 
     /**
      * Controller constructor.
@@ -75,7 +75,7 @@ class Controller
         }
         $driver = array_key_first($db);
         $params = $db[$driver];
-        $class  = self::$model_path . Utils::getClassName($this::class);
+        $class  = static::MODEL_PATH . Utils::getClassName($this::class);
         if (class_exists($class) && is_subclass_of($class, Model::class)) {
             return new $class($driver, $params);
         }

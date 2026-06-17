@@ -6,16 +6,15 @@ namespace Noirapi\Helpers;
 
 use Nette\Schema\ValidationException;
 
-/**
- * @psalm-api
- * @psalm-suppress MissingConstructor
- */
+/** @psalm-api */
 class Message
 {
-    public string $message;
-    public MessageType $type = MessageType::Info;
-    public int $timeout_ms = 5000;
-    public bool $html = false;
+    public function __construct(
+        public string      $message    = '',
+        public MessageType $type       = MessageType::Info,
+        public int         $timeout_ms = 5000,
+        public bool        $html       = false,
+    ) {}
 
     /**
      * @param string $message
@@ -24,17 +23,11 @@ class Message
      */
     public static function new(string $message, string|MessageType|null $type = null): Message
     {
+        $resolvedType = $type instanceof MessageType
+            ? $type
+            : (MessageType::tryFrom((string) ($type ?? '')) ?? MessageType::Info);
 
-        $static = new self();
-
-        $static->message = $message;
-        if ($type instanceof MessageType) {
-            $static->type = $type;
-        } elseif ($type !== null) {
-            $static->type = MessageType::tryFrom($type) ?? MessageType::Info;
-        }
-
-        return $static;
+        return new self($message, $resolvedType);
     }
 
     public static function fromSchema(ValidationException $e, ?string $type = null): Message
