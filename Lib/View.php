@@ -228,7 +228,8 @@ class View
 
         $path = $controller === null ? lcfirst($this->request->controller) : lcfirst($controller);
 
-        $file = Config::getViews() . self::$template_dir_prefix . $path . DIRECTORY_SEPARATOR . $template . self::LATTE_EXT;
+        $prefix = self::$template_dir_prefix !== '/' ? '/' . trim(self::$template_dir_prefix, '/') . '/' : '/';
+        $file = Config::getViews() . $prefix . $path . DIRECTORY_SEPARATOR . $template . self::LATTE_EXT;
 
         if (is_readable($file)) {
             $this->template = $file;
