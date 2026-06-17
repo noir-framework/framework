@@ -29,15 +29,15 @@ class Controller
     public Request $request;
     public Response $response;
     public array $server;
+    //phpcs:disable
     public ?Model $model = null {
         get => $this->model ??= $this->resolveModel();
         set { $this->model = $value; }
     }
+    //phpcs:enable
     public ?View $view = null;
     public ?bool $dev = null;
-    /** @var mixed|non-empty-array<array-key, true>|null */
-    public static $panels;
-
+    public static array $panels = [];
     protected const string MODEL_PATH = 'App\\Models\\';
 
     /**
@@ -291,32 +291,34 @@ class Controller
 
     /**
      * @param Acl $acl
+     * @param string $return_path
+     * @param int $status_code
      * @return void
      * @throws LoginException
      * @throws MessageException
-     * @noinspection PhpUnused
      */
-    public function hasResource(Acl $acl): void
+    public function hasResource(Acl $acl, string $return_path = '/', int $status_code = 301): void
     {
         if (! $acl->hasResource(static::class)) {
             if ($this->request->ajax) {
                 throw new MessageException('Page not Found', 404);
             }
 
-            $this->message('Page not found', 'danger');
+            $this->message('Page not found', MessageType::Danger);
 
-            throw new LoginException('/', 301);
+            throw new LoginException($return_path, $status_code);
         }
     }
 
     /**
      * @param Acl $acl
+     * @param string $return_path
+     * @param int $status_code
      * @return void
      * @throws LoginException
      * @throws MessageException
-     * @noinspection PhpUnused
      */
-    public function isAllowed(Acl $acl): void
+    public function isAllowed(Acl $acl, string $return_path = '/', int $status_code = 301): void
     {
         if (! $acl->isAllowed($this->request->role, static::class)) {
             if ($this->request->ajax) {
@@ -333,7 +335,7 @@ class Controller
 
             $this->message('Please login', 'success');
 
-            throw new LoginException('/', 301);
+            throw new LoginException($return_path, $status_code);
         }
     }
 }
