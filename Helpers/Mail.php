@@ -31,13 +31,10 @@ class Mail
     private string $error = '';
     private bool $debug;
     private string $debug_data = '';
-    private Transport\TransportInterface $transport;
     private string $dsn;
 
     public function __construct(string $dsn, bool $debug = false)
     {
-
-        $this->transport = Transport::fromDsn($dsn);
         $this->debug = $debug;
         $this->message = new Email();
         $this->dsn = $dsn;
@@ -242,7 +239,7 @@ class Mail
 
         // This is used for testing!!!
         if (str_starts_with($this->dsn, 'null://')) {
-            $res = $this->transport->send($this->message);
+            $res = Transport::fromDsn($this->dsn)->send($this->message);
             /** @noinspection NullPointerExceptionInspection */
             $message_id = $res->getMessageId();
 
@@ -253,7 +250,7 @@ class Mail
         }
 
         try {
-            $res = $this->transport->send($this->message);
+            $res = Transport::fromDsn($this->dsn)->send($this->message);
         } catch (TransportExceptionInterface $e) {
             $this->error = $e->getMessage();
             $this->debug_data = $this->getDebug();
