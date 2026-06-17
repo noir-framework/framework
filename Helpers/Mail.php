@@ -23,18 +23,14 @@ use Symfony\Component\Mime\Email;
 
 use function is_string;
 
-/**
- * @psalm-api
- * @psalm-suppress PropertyNotSetInConstructor
- */
+/** @psalm-api */
 class Mail
 {
     private Email $message;
     private string $body = '';
-    /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
-    private string $error;
+    private string $error = '';
     private bool $debug;
-    private string $debug_data;
+    private string $debug_data = '';
     private Transport\TransportInterface $transport;
     private string $dsn;
 
@@ -109,15 +105,12 @@ class Mail
     public function setTemplate(string $template, array $params): self
     {
 
-        /** @psalm-suppress UndefinedConstant */
         $file = Config::getAppRoot() . "/templates/$template.latte";
         if (! is_readable($file)) {
             throw new RuntimeException('Unable to load template: ' . $file);
         }
 
         $latte = new Engine();
-
-        /** @psalm-suppress UndefinedConstant */
         $latte->setCacheDirectory(Config::getTemp());
         $this->body = $latte->renderToString($file, $params);
 
@@ -245,7 +238,7 @@ class Mail
             '',
         ];
 
-        $this->message->text(preg_replace($search, $replace, $text->getText()));
+        $this->message->text(preg_replace($search, $replace, $text->getText()) ?? '');
 
         // This is used for testing!!!
         if (str_starts_with($this->dsn, 'null://')) {
@@ -291,12 +284,6 @@ class Mail
         return $this;
     }
 
-    public function replyTo(string $email): self
-    {
-        $this->message->replyTo($email);
-
-        return $this;
-    }
     /**
      * @return string
      */
