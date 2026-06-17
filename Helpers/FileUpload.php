@@ -141,49 +141,31 @@ class FileUpload
         }
 
         if (in_array($this->file['type'], $this->image_types, true)) {
-            if ($this->minWidth !== null) {
-                if ($this->isImage()) {
-                    $image = getimagesize($this->file['tmp_name']);
-                    if ($image[0] < $this->minWidth) {
-                        throw new FileUploadValidation('Image width too small');
-                    }
-                } else {
+            $needsDimensions = $this->minWidth !== null || $this->minHeight !== null
+                || $this->maxWidth !== null || $this->maxHeight !== null;
+
+            if ($needsDimensions) {
+                if (! $this->isImage()) {
                     throw new FileUploadValidation('File is not an image');
                 }
-            }
 
-            if ($this->minHeight !== null) {
-                if ($this->isImage()) {
-                    $image = getimagesize($this->file['tmp_name']);
-                    if ($image[1] < $this->minHeight) {
-                        throw new FileUploadValidation('Image width too small');
-                    }
-                } else {
-                    throw new FileUploadValidation('File is not an image');
+                /** @noinspection InsufficientTypesControlInspection */
+                $image = getimagesize($this->file['tmp_name']);
+
+                if ($this->minWidth !== null && $image[0] < $this->minWidth) {
+                    throw new FileUploadValidation('Image width too small');
                 }
-            }
 
-            if ($this->maxWidth !== null) {
-                if ($this->isImage()) {
-                    $image = getimagesize($this->file['tmp_name']);
-                    /** @noinspection InsufficientTypesControlInspection */
-                    if ($image[0] > $this->maxWidth) {
-                        throw new FileUploadValidation('Image width too big');
-                    }
-                } else {
-                    throw new FileUploadValidation('File is not an image');
+                if ($this->minHeight !== null && $image[1] < $this->minHeight) {
+                    throw new FileUploadValidation('Image height too small');
                 }
-            }
 
-            if ($this->maxHeight !== null) {
-                if ($this->isImage()) {
-                    $image = getimagesize($this->file['tmp_name']);
-                    /** @noinspection InsufficientTypesControlInspection */
-                    if ($image[1] > $this->maxHeight) {
-                        throw new FileUploadValidation('Image width too big');
-                    }
-                } else {
-                    throw new FileUploadValidation('File is not an image');
+                if ($this->maxWidth !== null && $image[0] > $this->maxWidth) {
+                    throw new FileUploadValidation('Image width too big');
+                }
+
+                if ($this->maxHeight !== null && $image[1] > $this->maxHeight) {
+                    throw new FileUploadValidation('Image height too big');
                 }
             }
         }
