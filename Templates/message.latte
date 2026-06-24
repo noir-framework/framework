@@ -3,7 +3,7 @@
 
     <div class="container fixed-top text-center mt-4 alert-container">
 
-        <div id="alert" class="alert alert-{$message->type|noescape} alert-dismissible fade show mt-4" role="alert">
+        <div id="alert" class="alert alert-{$message->type->value|noescape} alert-dismissible fade show mt-4" role="alert">
 
         {if $message->html}
             {$message->message|nocheck|noescape}

@@ -29,7 +29,7 @@ use Throwable;
 use Tracy\Debugger;
 use Tracy\ILogger;
 
-use function call_user_func_array;
+use ReflectionNamedType;
 use function in_array;
 use function strlen;
 
@@ -206,16 +206,9 @@ class Route
                             $param = array_shift($parameters);
 
                             // If the parameter is not a built-in type, we will try to resolve it
-                            /**
-                             * @psalm-suppress UndefinedMethod
-                             * @phpstan-ignore-next-line
-                             */
-                            if (! $param->getType()->isBuiltin()) {
-                                /**
-                                 * @psalm-suppress UndefinedMethod
-                                 * @phpstan-ignore-next-line
-                                 */
-                                $type = $param->getType()->getName();
+                            $paramType = $param->getType();
+                            if ($paramType instanceof ReflectionNamedType && ! $paramType->isBuiltin()) {
+                                $type = $paramType->getName();
                                 $typeReflection = new ReflectionClass($type);
                                 foreach ($args as $key => $value) {
                                     // If the key is like "user_id", we want to match it with the "user" parameter
@@ -257,7 +250,7 @@ class Route
                         }
                     }
 
-                    call_user_func_array([ $controller, $method ], array_merge($args, $realArgs));
+                    $controller->$method(...array_merge($args, $realArgs));
                 } catch (LoginException $exception) {
                     if ($exception->getCode() === 403) {
                         $this->response->withStatus(403)

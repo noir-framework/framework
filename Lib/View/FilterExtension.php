@@ -18,6 +18,22 @@ use ReflectionException;
 /** @psalm-api  */
 class FilterExtension extends Extension
 {
+    /** @var list<class-string> */
+    private array $extraSources = [];
+
+    /**
+     * Register an additional class whose static public methods become Latte filters.
+     * Call before the Latte engine processes any template.
+     *
+     * @param class-string $class
+     */
+    public function addFilterSource(string $class): void
+    {
+        if (!in_array($class, $this->extraSources, true)) {
+            $this->extraSources[] = $class;
+        }
+    }
+
     /**
      * @return array[]
      * @throws ReflectionException
@@ -29,6 +45,12 @@ class FilterExtension extends Extension
 
         if (class_exists(Filters::class)) {
             $res = array_merge($res, $this->getMethods(Filters::class));
+        }
+
+        foreach ($this->extraSources as $source) {
+            if (class_exists($source)) {
+                $res = array_merge($res, $this->getMethods($source));
+            }
         }
 
         return $res;

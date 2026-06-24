@@ -10,6 +10,7 @@ use Latte\Compiler\Nodes\AuxiliaryNode;
 use Latte\Compiler\PrintContext;
 use Latte\Compiler\Tag;
 use Latte\Extension;
+use Noirapi\Config;
 use Override;
 
 /** @psalm-api  */
@@ -61,12 +62,10 @@ class Macros extends Extension
     public function pager(Tag $tag): Node
     {
 
-        /** @psalm-suppress UndefinedConstant */
-        $file = ROOT . '/app/layouts/pager.latte';
+        $file = Config::getLayouts() . '/pager.latte';
 
         if (! is_readable($file)) {
-            /** @psalm-suppress UndefinedConstant */
-            $file = ROOT . '/noirapi/Templates/pager.latte';
+            $file = Config::getRoot() . '/noirapi/Templates/pager.latte';
         }
 
         return new AuxiliaryNode(
@@ -107,12 +106,10 @@ class Macros extends Extension
     public function breadcrumb(Tag $tag): Node
     {
 
-        /** @psalm-suppress UndefinedConstant */
-        $file = ROOT . '/app/layouts/BreadCrumbs.latte';
+        $file = Config::getLayouts() . '/BreadCrumbs.latte';
 
         if (! is_readable($file)) {
-            /** @psalm-suppress UndefinedConstant */
-            $file = ROOT . '/noirapi/Templates/BreadCrumbs.latte';
+            $file = Config::getRoot() . '/noirapi/Templates/BreadCrumbs.latte';
         }
 
         return new AuxiliaryNode(
@@ -246,12 +243,10 @@ class Macros extends Extension
     public function message(Tag $tag): AuxiliaryNode
     {
 
-        /** @psalm-suppress UndefinedConstant */
-        $file = ROOT . '/app/layouts/message.latte';
+        $file = Config::getLayouts() . '/message.latte';
 
         if (! is_readable($file)) {
-            /** @psalm-suppress UndefinedConstant */
-            $file = ROOT . '/noirapi/Templates/message.latte';
+            $file = Config::getRoot() . '/noirapi/Templates/message.latte';
         }
 
         return new AuxiliaryNode(

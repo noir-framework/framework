@@ -6,33 +6,28 @@ namespace Noirapi\Helpers;
 
 use Nette\Schema\ValidationException;
 
-/**
- * @psalm-api
- * @psalm-suppress MissingConstructor
- */
+/** @psalm-api */
 class Message
 {
-    public string $message;
-    public string $type = 'info';
-    public int $timeout_ms = 5000;
-    public bool $html = false;
+    public function __construct(
+        public string      $message    = '',
+        public MessageType $type       = MessageType::Info,
+        public int         $timeout_ms = 5000,
+        public bool        $html       = false,
+    ) {}
 
     /**
      * @param string $message
-     * @param string|null $type
+     * @param string|MessageType|null $type
      * @return Message
      */
-    public static function new(string $message, ?string $type = null): Message
+    public static function new(string $message, string|MessageType|null $type = null): Message
     {
+        $resolvedType = $type instanceof MessageType
+            ? $type
+            : (MessageType::tryFrom((string) ($type ?? '')) ?? MessageType::Info);
 
-        $static = new self();
-
-        $static->message = $message;
-        if ($type !== null) {
-            $static->type = $type;
-        }
-
-        return $static;
+        return new self($message, $resolvedType);
     }
 
     public static function fromSchema(ValidationException $e, ?string $type = null): Message
@@ -69,7 +64,7 @@ class Message
      */
     public function primary(): Message
     {
-        $this->type = 'primary';
+        $this->type = MessageType::Primary;
 
         return $this;
     }
@@ -79,7 +74,7 @@ class Message
      */
     public function secondary(): Message
     {
-        $this->type = 'secondary';
+        $this->type = MessageType::Secondary;
 
         return $this;
     }
@@ -90,7 +85,7 @@ class Message
      */
     public function light(): Message
     {
-        $this->type = 'light';
+        $this->type = MessageType::Light;
 
         return $this;
     }
@@ -101,7 +96,7 @@ class Message
      */
     public function dark(): Message
     {
-        $this->type = 'dark';
+        $this->type = MessageType::Dark;
 
         return $this;
     }
@@ -111,7 +106,7 @@ class Message
      */
     public function danger(): Message
     {
-        $this->type = 'danger';
+        $this->type = MessageType::Danger;
 
         return $this;
     }
@@ -121,7 +116,7 @@ class Message
      */
     public function success(): Message
     {
-        $this->type = 'success';
+        $this->type = MessageType::Success;
 
         return $this;
     }
@@ -131,7 +126,7 @@ class Message
      */
     public function warning(): Message
     {
-        $this->type = 'warning';
+        $this->type = MessageType::Warning;
 
         return $this;
     }
@@ -141,7 +136,7 @@ class Message
      */
     public function info(): Message
     {
-        $this->type = 'info';
+        $this->type = MessageType::Info;
 
         return $this;
     }

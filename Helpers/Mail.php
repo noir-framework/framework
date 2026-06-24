@@ -23,25 +23,18 @@ use Symfony\Component\Mime\Email;
 
 use function is_string;
 
-/**
- * @psalm-api
- * @psalm-suppress PropertyNotSetInConstructor
- */
+/** @psalm-api */
 class Mail
 {
     private Email $message;
     private string $body = '';
-    /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
-    private string $error;
+    private string $error = '';
     private bool $debug;
-    private string $debug_data;
-    private Transport\TransportInterface $transport;
+    private string $debug_data = '';
     private string $dsn;
 
     public function __construct(string $dsn, bool $debug = false)
     {
-
-        $this->transport = Transport::fromDsn($dsn);
         $this->debug = $debug;
         $this->message = new Email();
         $this->dsn = $dsn;
@@ -53,9 +46,8 @@ class Mail
      * @param string $subject
      * @return Mail
      */
-    public function new(string|array $from, array|string $to, string $subject): Mail
+    public function new(string|array $from, array|string $to, string $subject): self
     {
-
         if (is_string($from)) {
             $this->message->from($from);
         } else {
@@ -80,9 +72,8 @@ class Mail
      * @param array $cc
      * @return $this
      */
-    public function setCC(array $cc): Mail
+    public function setCC(array $cc): self
     {
-
         foreach ($cc as $address) {
             $this->message->addCc($address);
         }
@@ -94,9 +85,8 @@ class Mail
      * @param array $bcc
      * @return $this
      */
-    public function setBCC(array $bcc): Mail
+    public function setBCC(array $bcc): self
     {
-
         foreach ($bcc as $address) {
             $this->message->addBcc($address);
         }
@@ -109,19 +99,16 @@ class Mail
      * @param array $params
      * @return Mail
      */
-    public function setTemplate(string $template, array $params): Mail
+    public function setTemplate(string $template, array $params): self
     {
 
-        /** @psalm-suppress UndefinedConstant */
-        $file = ROOT  . "/app/templates/$template.latte";
+        $file = Config::getAppRoot() . "/templates/$template.latte";
         if (! is_readable($file)) {
             throw new RuntimeException('Unable to load template: ' . $file);
         }
 
         $latte = new Engine();
-
-        /** @psalm-suppress UndefinedConstant */
-        $latte->setTempDirectory(ROOT . '/temp');
+        $latte->setCacheDirectory(Config::getTemp());
         $this->body = $latte->renderToString($file, $params);
 
         return $this;
@@ -131,7 +118,7 @@ class Mail
      * @param string $email
      * @return $this
      */
-    public function setReplyTo(string $email): Mail
+    public function setReplyTo(string $email): self
     {
         $this->message->replyTo($email);
 
@@ -142,7 +129,7 @@ class Mail
      * @param string $body
      * @return $this
      */
-    public function setBody(string $body): Mail
+    public function setBody(string $body): self
     {
 
         $this->body = $body;
@@ -155,7 +142,7 @@ class Mail
      * @param string $value
      * @return Mail
      */
-    public function addHeader(string $key, string $value): Mail
+    public function addHeader(string $key, string $value): self
     {
 
         $this->message->getHeaders()->addTextHeader($key, $value);
@@ -169,7 +156,7 @@ class Mail
      * @param string|null $mime_type
      * @return Mail
      */
-    public function attach(string $data, string $filename, ?string $mime_type = null): Mail
+    public function attach(string $data, string $filename, ?string $mime_type = null): self
     {
 
         $this->message->attach($data, $filename, $mime_type);
@@ -183,7 +170,7 @@ class Mail
      * @param string|null $mime_type
      * @return Mail
      */
-    public function attachFile(string $file, string $name, ?string $mime_type = null): Mail
+    public function attachFile(string $file, string $name, ?string $mime_type = null): self
     {
 
         if (! is_readable($file)) {
@@ -201,7 +188,7 @@ class Mail
      * @param string|null $mime_type
      * @return Mail
      */
-    public function embed(string $data, string $filename, ?string $mime_type = null): Mail
+    public function embed(string $data, string $filename, ?string $mime_type = null): self
     {
 
         $this->message->embed($data, $filename, $mime_type);
@@ -215,7 +202,7 @@ class Mail
      * @param string|null $mime_type
      * @return Mail
      */
-    public function embedFile(string $file, string $name, ?string $mime_type = null): Mail
+    public function embedFile(string $file, string $name, ?string $mime_type = null): self
     {
 
         if (! is_readable($file)) {
@@ -248,12 +235,11 @@ class Mail
             '',
         ];
 
-        $this->message->text(preg_replace($search, $replace, $text->getText()));
+        $this->message->text(preg_replace($search, $replace, $text->getText()) ?? '');
 
         // This is used for testing!!!
         if (str_starts_with($this->dsn, 'null://')) {
-
-            $res = $this->transport->send($this->message);
+            $res = Transport::fromDsn($this->dsn)->send($this->message);
             /** @noinspection NullPointerExceptionInspection */
             $message_id = $res->getMessageId();
 
@@ -264,7 +250,7 @@ class Mail
         }
 
         try {
-            $res = $this->transport->send($this->message);
+            $res = Transport::fromDsn($this->dsn)->send($this->message);
         } catch (TransportExceptionInterface $e) {
             $this->error = $e->getMessage();
             $this->debug_data = $this->getDebug();
@@ -288,21 +274,13 @@ class Mail
     /**
      * @return $this
      */
-    public function noResponders(): Mail
+    public function noResponders(): self
     {
-
         $this->addHeader('X-Auto-Response-Suppress', 'OOF, DR, RN, NRN, AutoReply');
 
         return $this;
     }
 
-    public function replyTo(string $email): Mail
-    {
-
-        $this->message->replyTo($email);
-
-        return $this;
-    }
     /**
      * @return string
      */

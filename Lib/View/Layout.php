@@ -10,6 +10,7 @@ use function is_string;
 
 class Layout
 {
+    /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
     public string $name = '';
     public string $title = '';
     public array $breadcrumbs = [];
@@ -98,7 +99,7 @@ class Layout
     public function addBreadCrumb(int|string $name, ?string $url = null, ?bool $active = null): void
     {
 
-        $key = md5(! is_string($name) ? (string)$name : $name);
+        $key = ! is_string($name) ? (string)$name : $name;
 
         $this->breadcrumbs[$key] = [
             'name'   => is_string($name) ? $this->translator->translate($name) : (string)$name,

@@ -7,7 +7,6 @@ declare(strict_types=1);
 namespace Noirapi\Helpers;
 
 use Exception;
-use Nette\StaticClass;
 use Noirapi\Config;
 use Random\Randomizer;
 use ReflectionClass;
@@ -22,7 +21,6 @@ use function bin2hex;
 use function chr;
 use function count;
 use function defined;
-use function get_class;
 use function is_array;
 use function is_object;
 use function ord;
@@ -33,9 +31,9 @@ use function strlen;
 use function vsprintf;
 
 /** @psalm-api  */
-class Utils
+final class Utils
 {
-    use StaticClass;
+    private function __construct() {}
 
     /**
      * @param int $len
@@ -91,24 +89,6 @@ class Utils
     }
 
     /**
-     * @param int $len
-     * @return string
-     * @throws Exception
-     */
-    public static function randomString(int $len = 8): string
-    {
-        /** @noinspection SpellCheckingInspection */
-        $chars = '23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
-        $res = '';
-
-        for ($i = 1; $i <= $len; $i++) {
-            $res .= $chars[random_int(1, strlen($chars) - 1)];
-        }
-
-        return $res;
-    }
-
-    /**
      * @param string $cmd
      * @param array $env
      * @return void
@@ -161,7 +141,7 @@ class Utils
         $depth = (int) $depth;
 
         if (is_object($class)) {
-            $class = get_class($class);
+            $class = $class::class;
         }
 
         $path = explode('\\', $class);
@@ -268,25 +248,6 @@ class Utils
     }
 
     /**
-     * @param mixed $var
-     * @param mixed $scope
-     * @return int|string|void
-     */
-    public static function var_name(mixed &$var, mixed $scope = false) // phpcs:ignore
-    {
-        $old = $var;
-        if (
-            ($key = array_search(
-                $var = 'unique' . mt_rand() . 'value',
-                $scope === false ? $GLOBALS : $scope,
-                true
-            )) && $var = $old
-        ) {
-            return $key;
-        }
-    }
-
-    /**
      * @param array $a1
      * @param array $a2
      * @return array
@@ -320,11 +281,7 @@ class Utils
      */
     public static function base64UrlEncode(string $data): string
     {
-        return str_replace(
-            ['+', '/', '=', '_', '-'],
-            ['', '', '', '', ''],
-            base64_encode($data)
-        );
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
     /**

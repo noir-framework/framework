@@ -17,20 +17,10 @@ mb_internal_encoding('UTF-8');
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 
-define('ROOT', dirname(__DIR__));
-const APPROOT = ROOT . '/app';
-const WWWROOT = ROOT . '/htdocs';
-
-if (file_exists(ROOT . '/vendor' . DIRECTORY_SEPARATOR . 'autoload.php')) {
+if (file_exists(dirname(__DIR__) . '/vendor' . DIRECTORY_SEPARATOR . 'autoload.php')) {
     /** @psalm-suppress MissingFile */
-    require_once(ROOT . '/vendor' . DIRECTORY_SEPARATOR . 'autoload.php');
+    require_once(dirname(__DIR__) . '/vendor' . DIRECTORY_SEPARATOR . 'autoload.php');
 }
-
-const PATH_VIEWS = APPROOT . '/views/';
-const PATH_TEMPLATES = APPROOT . '/templates/';
-const PATH_LAYOUTS = APPROOT . '/layouts/';
-const PATH_TEMP = ROOT . '/temp/';
-const PATH_LOGS = ROOT . '/logs/';
 
 $config = getenv('CONFIG');
 
@@ -55,7 +45,6 @@ if (is_array($_sessionCfg) && isset($_sessionCfg['driver'])) {
 }
 unset($_sessionCfg, $handler);
 
-define('SESSION_ROOT', Config::get('SESSION_ROOT') ?? (ROOT . '/sessions'));
 
 Config::set('is_https', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
 
@@ -68,8 +57,8 @@ Debugger::$logSeverity = E_NOTICE | E_WARNING;
 
 if (session_save_path() !== false && is_dir(session_save_path())) {
     $session = new TracyFileSession(session_save_path());
-} elseif (is_dir(PATH_TEMP)) {
-    $session = new TracyFileSession(PATH_TEMP);
+} elseif (is_dir(Config::getTemp())) {
+    $session = new TracyFileSession(Config::getTemp());
 } elseif (ini_get('upload_tmp_dir') !== false && is_dir(ini_get('upload_tmp_dir'))) {
     $session = new TracyFileSession(ini_get('upload_tmp_dir'));
 } elseif (is_dir(sys_get_temp_dir())) {
@@ -85,7 +74,7 @@ if (Utils::isDev($_SERVER["REMOTE_ADDR"] ?? "")) {
     if (session_status() !== PHP_SESSION_ACTIVE) {
         session_start();
     }
-    Debugger::enable(Debugger::Development, PATH_LOGS);
+    Debugger::enable(Debugger::Development, Config::getLogs());
 } else {
-    Debugger::enable(Debugger::Production, PATH_LOGS, Config::get('dev_email'));
+    Debugger::enable(Debugger::Production, Config::getLogs(), Config::get('dev_email'));
 }

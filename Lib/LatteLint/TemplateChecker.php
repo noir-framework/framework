@@ -143,7 +143,7 @@ class TemplateChecker
     {
         $vars = [];
         // Matches: {varType SomeType\With\Namespace[] $varName}
-        preg_match_all('/\{varType\s+([^\s{}]+)\s+\$([a-zA-Z_][a-zA-Z0-9_]*)\s*\}/', $source, $matches, PREG_SET_ORDER);
+        preg_match_all('/\{varType\s+([^\s{}]+)\s+\$(\w+)\s*\}/', $source, $matches, PREG_SET_ORDER);
         foreach ($matches as $m) {
             $vars[$m[2]] = $m[1];
         }

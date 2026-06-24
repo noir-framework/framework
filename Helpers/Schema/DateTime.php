@@ -33,6 +33,7 @@ class DateTime implements Schema
 
     protected \DateTime|null $date = null;
     protected \DateTime|null $time = null;
+    protected ?string $default = null;
 
     /**
      * @param string $format
@@ -62,6 +63,17 @@ class DateTime implements Schema
     public function setDate(string $date, string $format): self
     {
         $this->date = \DateTime::createFromFormat($format, $date, $this->timeZone);
+
+        return $this;
+    }
+
+    /**
+     * @param string $value date string in the schema's own format
+     * @return $this
+     */
+    public function default(string $value): self
+    {
+        $this->default = $value;
 
         return $this;
     }
@@ -144,7 +156,7 @@ class DateTime implements Schema
             if (! empty($normalized)) {
                 $normalized->setTime((int)$this->time->format('H'), (int)$this->time->format('i'), (int)$this->time->format('s')); //phpcs:ignore
             } else {
-                $normalized = $this->date;
+                $normalized = $this->time;
             }
         }
 
@@ -194,6 +206,12 @@ class DateTime implements Schema
     {
         if ($this->required) {
             $context->addError('The mandatory option %path% is missing.', Message::MissingItem);
+
+            return null;
+        }
+
+        if ($this->default !== null) {
+            return $this->normalize($this->default, $context);
         }
 
         return null;

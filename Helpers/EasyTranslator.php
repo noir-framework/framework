@@ -6,6 +6,7 @@ namespace Noirapi\Helpers;
 
 use Nette\Neon\Exception;
 use Nette\Neon\Neon;
+use Noirapi\Config;
 use Noirapi\Interfaces\Translator;
 
 use Override;
@@ -29,8 +30,7 @@ class EasyTranslator implements Translator
         private readonly string $controller,
         private readonly string $function
     ) {
-        /** @psalm-suppress UndefinedConstant */
-        $file = APPROOT . '/translations/' . $this->language . '.neon';
+        $file = Config::getAppRoot() . '/translations/' . $this->language . '.neon';
         if (is_file($file)) {
             self::$cache[$this->language] = Neon::decodeFile($file);
         } else {

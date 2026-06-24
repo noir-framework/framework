@@ -7,6 +7,7 @@ namespace Noirapi\Lib;
 use Latte\Bridges\Tracy\TracyExtension;
 use Latte\Engine;
 use Latte\Essential\TranslatorExtension;
+use Latte\Feature;
 use Nette\Neon\Exception;
 use Noirapi\Config;
 use Noirapi\Exceptions\FileNotFoundException;
@@ -55,8 +56,7 @@ class View
         $this->dev = $dev;
 
         $this->latte = new Engine();
-        /** @psalm-suppress UndefinedConstant */
-        $this->latte->setTempDirectory(ROOT . '/temp');
+        $this->latte->setCacheDirectory(Config::getTemp());
 
         //enable regeneration of the template files
         $this->latte->setAutoRefresh();
@@ -116,8 +116,8 @@ class View
             $this->latte->addExtension(new TracyExtension());
         }
 
-        $this->latte->setStrictParsing();
-        $this->latte->setStrictTypes();
+        $this->latte->setFeature(Feature::StrictParsing);
+        $this->latte->setFeature(Feature::StrictTypes);
 
         self::$uri = $request->uri;
     }
@@ -228,8 +228,8 @@ class View
 
         $path = $controller === null ? lcfirst($this->request->controller) : lcfirst($controller);
 
-        /** @psalm-suppress UndefinedConstant */
-        $file = PATH_VIEWS . self::$template_dir_prefix . $path . DIRECTORY_SEPARATOR .  $template . self::LATTE_EXT;
+        $prefix = self::$template_dir_prefix !== '/' ? '/' . trim(self::$template_dir_prefix, '/') . '/' : '/';
+        $file = Config::getViews() . $prefix . $path . DIRECTORY_SEPARATOR . $template . self::LATTE_EXT;
 
         if (is_readable($file)) {
             $this->template = $file;
@@ -278,8 +278,7 @@ class View
             return $this;
         }
 
-        /** @psalm-suppress UndefinedConstant */
-        $file = PATH_LAYOUTS . $layout_file . self::LATTE_EXT;
+        $file = Config::getLayouts() . '/' . $layout_file . self::LATTE_EXT;
 
         if (is_readable($file)) {
             $this->layout_file = $file;
@@ -314,8 +313,7 @@ class View
         if ($controller === null) {
             $controller = strtolower($this->request->controller);
         }
-        /** @psalm-suppress UndefinedConstant */
-        $file = PATH_VIEWS . strtolower($controller) . DIRECTORY_SEPARATOR . $template . self::LATTE_EXT;
+        $file = Config::getViews() . '/' . strtolower($controller) . DIRECTORY_SEPARATOR . $template . self::LATTE_EXT;
 
         return is_readable($file);
     }
@@ -328,8 +326,7 @@ class View
      */
     public function layoutExists(string $layout): bool
     {
-        /** @psalm-suppress UndefinedConstant */
-        $file = PATH_LAYOUTS . $layout . self::LATTE_EXT;
+        $file = Config::getLayouts() . '/' . $layout . self::LATTE_EXT;
 
         return is_readable($file);
     }
@@ -390,7 +387,7 @@ class View
                 $this->params->$key = $value;
             }
         } elseif (isset($this->params->$namespace)) {
-            throw new RuntimeException("Duplicate key ain view params: $namespace");
+            throw new RuntimeException("Duplicate key in view params: $namespace");
         } else {
             $this->params->$namespace = $params;
         }

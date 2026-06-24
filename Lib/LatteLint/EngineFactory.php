@@ -10,7 +10,9 @@ use Latte\Loaders\StringLoader;
 use Latte\Tools\LinterExtension;
 use Noirapi\Lib\View\FilterExtension;
 use Noirapi\Lib\View\Macros;
+
 use function class_exists;
+
 use const PHP_BINARY;
 
 /**

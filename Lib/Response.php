@@ -45,7 +45,7 @@ class Response
     public const string TYPE_JSON = 'application/json';
     public const string TYPE_XML = 'text/xml';
     public const string TYPE_TEXT = 'text/plain';
-    public const string TYPE_HTML = 'text/html; charset: utf-8';
+    public const string TYPE_HTML = 'text/html; charset=utf-8';
     public const string TYPE_PDF = 'application/pdf';
     public const string TYPE_CSV = 'text/csv';
     public const string TYPE_CSS = 'text/css';
@@ -103,7 +103,7 @@ class Response
         }
 
         if (is_array($this->body)) {
-            $this->body += $body;
+            $this->body = array_merge($this->body, $body);
 
             return $this;
         }
@@ -436,6 +436,10 @@ class Response
         $written = 0;
 
         $fh = fopen('php://temp', 'rwb');
+        if ($fh === false) {
+            throw new RuntimeException('Unable to open php://temp for CSV generation');
+        }
+
         if ($this->csv_header) {
             fputcsv($fh, array_keys(current((array)$data)), $this->csv_separator, $this->csv_enclosure, $this->csv_escape); //phpcs:ignore
         }

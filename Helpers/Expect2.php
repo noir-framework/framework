@@ -11,7 +11,6 @@ namespace Noirapi\Helpers;
 
 use DateTimeZone;
 use Exception;
-use Nette;
 use Nette\Schema\Schema;
 use Noirapi\Helpers\Schema\Cidr;
 use Noirapi\Helpers\Schema\Date;
@@ -31,7 +30,7 @@ use function is_string;
 /** @psalm-api  */
 final class Expect2
 {
-    use Nette\SmartObject;
+    private function __construct() {}
 
     /**
      * @param string $format

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Auth\Providers;
 
+use Noirapi\Auth\AuthMethod;
 use Noirapi\Auth\AuthResult;
 use Noirapi\Auth\Contracts\AuthProviderInterface;
 
@@ -27,7 +28,7 @@ use Noirapi\Auth\Contracts\AuthProviderInterface;
 class PasswordProvider implements AuthProviderInterface
 {
     /**
-     * @param \Closure(string $email): ?array{password:string, name:?string, avatar_url:?string} $userLookup
+     * @param \Closure(string $email): ?array{'password':string, 'name':?string, 'avatar_url':?string} $userLookup
      */
     public function __construct(
         private readonly \Closure $userLookup,
@@ -54,12 +55,11 @@ class PasswordProvider implements AuthProviderInterface
             return null;
         }
 
-        $result            = new AuthResult();
-        $result->method    = 'password';
-        $result->email     = $email;
-        $result->name      = $data['name'] ?? null;
-        $result->avatarUrl = $data['avatar_url'] ?? null;
-
-        return $result;
+        return new AuthResult(
+            method:    AuthMethod::Password,
+            email:     $email,
+            name:      $data['name'] ?? null,
+            avatarUrl: $data['avatar_url'] ?? null,
+        );
     }
 }

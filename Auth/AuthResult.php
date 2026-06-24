@@ -12,10 +12,10 @@ namespace Noirapi\Auth;
  */
 class AuthResult
 {
-    /** 'password' | 'oauth' | 'magic_link' */
-    public string  $method    = 'unknown';
-
-    public ?string $email     = null;
-    public ?string $name      = null;
-    public ?string $avatarUrl = null;
+    public function __construct(
+        public ?AuthMethod $method    = null,
+        public ?string     $email     = null,
+        public ?string     $name      = null,
+        public ?string     $avatarUrl = null,
+    ) {}
 }
