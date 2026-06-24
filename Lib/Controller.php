@@ -171,7 +171,7 @@ class Controller
     {
         Session::remove('message');
 
-        if ($translation_key !== null) {
+        if ($translation_key !== null || $this->view?->translator !== null) {
             try {
                 if ($text instanceof Message) {
                     $text->message = $this->view?->translator
