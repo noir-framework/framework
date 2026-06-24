@@ -151,7 +151,17 @@ class Route
 
         /** @psalm-suppress RedundantCondition */
         if ($this->request->language === null && ! empty($languages)) {
-            $this->redirect('/' . (Config::get('default_language') ?? 'en') . $uri, 307);
+            $detected = null;
+            $detector = Config::get('language_detector');
+            if ($detector !== null && class_exists($detector)) {
+                $ip = $this->server['HTTP_X_FORWARDED_FOR'] ?? $this->server['REMOTE_ADDR'] ?? '';
+                $ip = explode(',', $ip)[0];
+                $detected = (new $detector())->detect(trim($ip));
+                if (! isset($languages[$detected])) {
+                    $detected = null;
+                }
+            }
+            $this->redirect('/' . ($detected ?? Config::get('default_language') ?? 'en') . $uri, 307);
             if ($dev) {
                 self::handleRouteUrlDebugBar($this->request, $this->response, $this->server);
             }
