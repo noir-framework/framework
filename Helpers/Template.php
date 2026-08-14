@@ -7,6 +7,7 @@ namespace Noirapi\Helpers;
 use Latte;
 use Noirapi\Config;
 use Noirapi\Exceptions\FileNotFoundException;
+use Noirapi\Lib\View\FilterExtension;
 
 /**
  * @psalm-api
@@ -24,8 +25,7 @@ class Template
         $this->latte = new Latte\Engine();
         $this->latte->setAutoRefresh();
         $this->latte->setCacheDirectory(Config::getTemp());
-        /** @psalm-suppress UndefinedClass */
-        $this->latte->addFilterLoader('\\noirapi\\helpers\\Filters::init');
+        $this->latte->addExtension(new FilterExtension());
     }
 
     /**
