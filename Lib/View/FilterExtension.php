@@ -57,6 +57,23 @@ class FilterExtension extends Extension
     }
 
     /**
+     * No-op passthrough. `nocheck` marks an expression for noirapi/bin/latte-lint
+     * and noirapi/Lib/LatteLint/EngineFactory.php to skip their static
+     * escaping/type checks on that expression; it carries no runtime meaning of
+     * its own, but templates using it (e.g. app/layouts/message.latte,
+     * app/views/profile/index.latte) still need it registered as a real filter
+     * here, or the actual runtime engine throws "Filter 'nocheck' is not
+     * defined" the moment that line executes.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    public static function nocheck(mixed $value): mixed
+    {
+        return $value;
+    }
+
+    /**
      * @param string $string
      * @return string
      */
