@@ -41,10 +41,19 @@ class TemplateChecker
     private Engine $engine;
     private VarUsageCollector $collector;
 
+    /** @var string[]  Additional always-available vars, e.g. from BaseVarAnalyzer */
+    private array $globalVars = [];
+
     public function __construct(Engine $engine, VarUsageCollector $collector)
     {
         $this->engine = $engine;
         $this->collector = $collector;
+    }
+
+    /** @param string[] $vars */
+    public function setGlobalVars(array $vars): void
+    {
+        $this->globalVars = $vars;
     }
 
     /**
@@ -107,7 +116,7 @@ class TemplateChecker
         }
 
         // --- Step 3: variable usage check ---
-        $systemVars = array_flip(self::SYSTEM_VARS);
+        $systemVars = array_flip([...self::SYSTEM_VARS, ...$this->globalVars]);
         $declaredKeys = array_flip(array_keys($declaredVars));
         $localKeys = array_flip(array_keys($this->collector->localVars));
         $parentKeys = array_flip($parentVars);

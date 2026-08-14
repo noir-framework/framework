@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\LatteLint;
 
+use Noirapi\Lib\Controller;
+
 use function array_keys;
 use function array_merge;
 use function array_unique;
@@ -25,6 +27,10 @@ class Checker
 {
     private TemplateChecker $templateChecker;
     private ControllerAnalyzer $controllerAnalyzer;
+    private BaseVarAnalyzer $baseVarAnalyzer;
+
+    /** @var string[]  SYSTEM_VARS plus vars discovered via BaseVarAnalyzer, resolved once per run() */
+    private array $globalVars = [];
 
     /**
      * @param string $viewsDir        Absolute path to the views directory.
@@ -43,6 +49,7 @@ class Checker
 
         $this->templateChecker = new TemplateChecker($engine, $collector);
         $this->controllerAnalyzer = new ControllerAnalyzer();
+        $this->baseVarAnalyzer = new BaseVarAnalyzer();
     }
 
     public function run(): CheckResult
@@ -56,6 +63,19 @@ class Checker
         $controllerMap = $this->controllerCheck
             ? $this->controllerAnalyzer->analyze($this->controllersDir)
             : [];
+
+        // Vars every controller's base class(es) inject into every view (e.g. App\Site's
+        // addParam('user', ...)), resolved via the real class hierarchy - not tied to any
+        // one controller/template, so used for both layouts and regular templates alike.
+        $this->globalVars = self::SYSTEM_VARS;
+        foreach (array_keys($controllerMap) as $shortName) {
+            $fqcn = $this->controllerAnalyzer->getFqcn($shortName);
+            if ($fqcn !== null) {
+                $this->globalVars = [...$this->globalVars, ...$this->baseVarAnalyzer->analyze($fqcn, Controller::class)];
+            }
+        }
+        $this->globalVars = array_values(array_unique($this->globalVars));
+        $this->templateChecker->setGlobalVars($this->globalVars);
 
         // Collect all template files
         $files = $this->findTemplates($this->viewsDir);
@@ -88,7 +108,9 @@ class Checker
     private function buildParentVarMap(): array
     {
         $map = [];
-        $files = $this->findTemplates($this->viewsDir);
+        // Layouts include partials too (e.g. default.latte's {include _theme_select.latte}),
+        // so they need to be scanned for parent-var-forwarding just like views.
+        $files = array_merge($this->findTemplates($this->viewsDir), $this->findTemplates($this->layoutsDir));
 
         foreach ($files as $file) {
             $source = file_get_contents($file);
@@ -96,10 +118,12 @@ class Checker
                 continue;
             }
 
-            // Find {include '_name'} or {include '_name', key: $val, ...}
+            // Find {include '_name'}, {include "_name"}, or bare {include _name.latte}
+            // (all with optional trailing ', key: $val, ...' args)
             preg_match_all("/\{include\s+'([^']+)'/", $source, $matches, PREG_SET_ORDER);
             preg_match_all('/\{include\s+"([^"]+)"/', $source, $m2, PREG_SET_ORDER);
-            $includes = array_merge($matches, $m2);
+            preg_match_all('/\{include\s+([A-Za-z0-9_.\/-]+)/', $source, $m5, PREG_SET_ORDER);
+            $includes = array_merge($matches, $m2, $m5);
 
             // Also find renderTemplate('_name', [...]) calls
             preg_match_all("/renderTemplate\s*\(\s*'([^']+)'/", $source, $m3, PREG_SET_ORDER);
@@ -151,8 +175,10 @@ class Checker
     /**
      * Variables always injected by View — never appear in controller display() calls.
      * These should be excluded from the "template declares but controller doesn't pass" check.
+     * (Vars injected by base controllers like App\Site's addParam('user', ...) are added to
+     * this at runtime by BaseVarAnalyzer — see $globalVars.)
      */
-    private const array SYSTEM_VARS = ['layout', 'request', 'template', 'message', 'nonce'];
+    private const array SYSTEM_VARS = ['layout', 'request', 'template', 'message', 'nonce', 'languages'];
 
     /**
      * Checks that the variables a controller method passes to display() match
@@ -195,9 +221,9 @@ class Checker
         }
 
         // Variables the template declares with {varType} but the controller never passes
-        // (exclude system vars always injected by View)
+        // (exclude system vars always injected by View, plus vars injected by base controllers)
         foreach ($templateVars as $var) {
-            if (in_array($var, self::SYSTEM_VARS, true)) {
+            if (in_array($var, $this->globalVars, true)) {
                 continue;
             }
             if (! in_array($var, $controllerVars, true)) {
