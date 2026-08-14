@@ -13,6 +13,7 @@ use function file_get_contents;
 use function preg_match_all;
 use function restore_error_handler;
 use function set_error_handler;
+use function substr_count;
 
 use const E_USER_DEPRECATED;
 use const E_USER_NOTICE;
@@ -22,6 +23,7 @@ use const E_USER_WARNING;
  * Checks a single Latte template file for:
  *  1. Syntax errors and semantic issues (unknown filters, classes, functions)
  *  2. Variables used without a {varType} declaration
+ *  3. Variables declared with {varType} but never used in the template
  */
 class TemplateChecker
 {
@@ -140,6 +142,21 @@ class TemplateChecker
             }
         }
 
+        // --- Step 4: unused variable check ---
+        // A partial forwards all its declared vars to nested includes without necessarily
+        // referencing them itself, so skip this check there to avoid false positives.
+        if (! $isPartial) {
+            $declaredLines = $this->extractVarTypeLines($source);
+            $implicitlyUsed = $this->extractImplicitTagVarUsage($source);
+            foreach ($declaredVars as $name => $type) {
+                if (isset($this->collector->usedVars[$name]) || isset($implicitlyUsed[$name])) {
+                    continue;
+                }
+                $line = $declaredLines[$name] ?? 0;
+                $result->warning($file, $line, "Variable \$$name declared with {varType} but never used in template");
+            }
+        }
+
         return $result;
     }
 
@@ -158,5 +175,40 @@ class TemplateChecker
         }
 
         return $vars;
+    }
+
+    /**
+     * Returns the 1-based source line of each {varType Type $name} declaration.
+     *
+     * @return array<string, int>
+     */
+    private function extractVarTypeLines(string $source): array
+    {
+        $lines = [];
+        preg_match_all('/\{varType\s+([^\s{}]+)\s+\$(\w+)\s*\}/', $source, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+        foreach ($matches as $m) {
+            $name = $m[2][0];
+            $offset = $m[0][1];
+            $lines[$name] = substr_count($source, "\n", 0, $offset) + 1;
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Some custom Latte tags (Noirapi\Lib\View\Macros) implicitly read a fixed
+     * variable name out of the current template scope without it ever appearing
+     * as a {$var} reference, e.g. {pager} reads $pager. Treat those as "used".
+     *
+     * @return array<string, true>
+     */
+    private function extractImplicitTagVarUsage(string $source): array
+    {
+        $used = [];
+        if (preg_match('/\{pager\s*\}/', $source) === 1) {
+            $used['pager'] = true;
+        }
+
+        return $used;
     }
 }
