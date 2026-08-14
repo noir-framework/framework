@@ -7,6 +7,11 @@ namespace Noirapi\Lib\Traits;
 use ReflectionClass;
 use ReflectionProperty;
 
+/**
+ * @deprecated The #[LazyModel]-attribute lazy-loading handled by __get() below is
+ * deprecated in favor of PHP 8.4 property hooks (see Noirapi\Lib\Attributes\LazyModel).
+ * The plain Nette\SmartObject delegation this trait also provides is unaffected.
+ */
 trait SmartObject
 {
     use \Nette\SmartObject;

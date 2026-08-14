@@ -45,6 +45,10 @@ class EngineFactory
         // Latte's built-in semantic linter (validates filters, classes, functions, constants)
         $engine->addExtension(new LinterExtension());
 
+        // nocheck is a Latte compile-time modifier consumed by Passes; register as passthrough
+        // so LinterExtension doesn't flag it as unknown (kept in sync with bin/latte-lint)
+        $engine->addFilter('nocheck', static fn (mixed $v): mixed => $v);
+
         // Our custom variable-usage tracker
         $engine->addExtension($collector);
 
