@@ -222,12 +222,18 @@ class Checker
 
         // Variables the template declares with {varType} but the controller never passes
         // (exclude system vars always injected by View, plus vars injected by base controllers)
-        foreach ($templateVars as $var) {
-            if (in_array($var, $this->globalVars, true)) {
+        foreach ($templateVars as $templateVar) {
+            if (in_array($templateVar, $this->globalVars, true)) {
                 continue;
             }
-            if (! in_array($var, $controllerVars, true)) {
-                $result->warning($file, 0, "Template declares {varType} for '\$$var' but controller does not pass it");
+            /**
+             * @psalm-suppress RedundantCondition Psalm infers $this->globalVars and
+             * $controllerVars too narrowly from other call sites in this class to see
+             * that a var absent from one can still be present in the other; both are
+             * genuinely independent runtime-derived lists.
+             */
+            if (! in_array($templateVar, $controllerVars, true)) {
+                $result->warning($file, 0, "Template declares {varType} for '\$$templateVar' but controller does not pass it");
             }
         }
 

@@ -34,6 +34,9 @@ class VarUsageCollector extends Extension
     /** fast lookup set during traversal */
     private array $localVarSet = [];
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function reset(): void
     {
         $this->usedVars = [];
@@ -41,7 +44,12 @@ class VarUsageCollector extends Extension
         $this->localVarSet = [];
     }
 
-    /** @return array<string, callable> */
+    /**
+     * @return array<string, callable(TemplateNode): (void|\stdClass)>
+     *
+     * @psalm-mutation-free
+     */
+    #[\Override]
     public function getPasses(): array
     {
         return ['lintVarUsage' => $this->collectPass(...)];
@@ -52,6 +60,9 @@ class VarUsageCollector extends Extension
         (new NodeTraverser())->traverse($node, $this->enter(...));
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     private function enter(Node $node): void
     {
         if ($node instanceof ForeachNode) {
@@ -119,6 +130,9 @@ class VarUsageCollector extends Extension
         }
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     private function declareLocal(string $name, int $line): void
     {
         if (! isset($this->localVars[$name])) {

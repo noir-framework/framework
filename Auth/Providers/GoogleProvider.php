@@ -19,39 +19,73 @@ use RuntimeException;
  *
  * Google Console: create an OAuth 2.0 Web Application credential.
  * Scopes needed: openid, email, profile
+ *
+ * @psalm-api
  */
 class GoogleProvider extends OAuthProvider
 {
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getName(): string
     {
         return 'google';
     }
+
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getLabel(): string
     {
         return 'Google';
     }
+
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getIcon(): string
     {
         return 'bi-google';
     }
 
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     protected function getAuthorizationUrl(): string
     {
         return 'https://accounts.google.com/o/oauth2/v2/auth';
     }
 
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     protected function getTokenUrl(): string
     {
         return 'https://oauth2.googleapis.com/token';
     }
 
-    /** @return string[] */
+    /**
+     * @return string[] 
+     *
+     * @psalm-pure
+     */
+    #[\Override]
     protected function getScopes(): array
     {
         return ['openid', 'email', 'profile'];
     }
 
-    /** Request offline access so we receive a refresh token. */
+    /**
+     * Request offline access so we receive a refresh token.
+     *
+     * @psalm-pure
+     */
+    #[\Override]
     protected function extraAuthParams(): array
     {
         return [
@@ -63,6 +97,7 @@ class GoogleProvider extends OAuthProvider
     /**
      * @throws RuntimeException
      */
+    #[\Override]
     public function fetchUser(string $accessToken): OAuthResult
     {
         $data = $this->bearerGet(

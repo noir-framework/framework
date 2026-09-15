@@ -12,6 +12,7 @@ use function substr;
 
 use const STDERR;
 
+/** @psalm-api */
 class CheckResult
 {
     /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
@@ -22,21 +23,33 @@ class CheckResult
     /** @var array{file: string, line: int, message: string}[] */
     private array $warnings = [];
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function error(string $file, int $line, string $message): void
     {
         $this->errors[] = ['file' => $file, 'line' => $line, 'message' => $message];
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function warning(string $file, int $line, string $message): void
     {
         $this->warnings[] = ['file' => $file, 'line' => $line, 'message' => $message];
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function hasErrors(): bool
     {
         return ! empty($this->errors);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function hasWarnings(): bool
     {
         return ! empty($this->warnings);
@@ -54,6 +67,9 @@ class CheckResult
         return $this->warnings;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function merge(self $other): void
     {
         foreach ($other->errors as $e) {
@@ -66,6 +82,9 @@ class CheckResult
 
     public function print(string $stripPrefix = ''): void
     {
+        /**
+         * @psalm-pure
+         */
         $fmt = static function (array $item) use ($stripPrefix): string {
             $file = $item['file'];
             if ($stripPrefix !== '' && str_starts_with($file, $stripPrefix)) {
@@ -84,6 +103,9 @@ class CheckResult
         }
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function summary(): string
     {
         return count($this->errors) . ' error(s), ' . count($this->warnings) . ' warning(s)';

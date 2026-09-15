@@ -35,7 +35,10 @@ class CurlBarPanel implements IBarPanel
 
     /**
      * Get total queries execution time
+     *
      * @return string
+     *
+     * @psalm-external-mutation-free
      */
     protected function getTotalTime(): string
     {
@@ -44,6 +47,8 @@ class CurlBarPanel implements IBarPanel
 
     /**
      * @return string
+     *
+     * @psalm-external-mutation-free
      */
     #[Override]
     public function getTab(): string
@@ -71,7 +76,10 @@ class CurlBarPanel implements IBarPanel
 
     /**
      * Renders HTML code for custom panel.
+     *
      * @return string
+     *
+     * @psalm-external-mutation-free
      */
     #[Override]
     public function getPanel(): string

@@ -66,7 +66,11 @@ class Request
 
     /**
      * @param array $server
+     *
      * @return array
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of str_replace(); leaving unannotated satisfies both.
      */
     private static function globalsRequestHeaders(array $server): array
     {
@@ -100,7 +104,10 @@ class Request
 
     /**
      * @param array $server
+     *
      * @return bool
+     *
+     * @psalm-pure
      */
     private static function isHttps(array $server): bool
     {
@@ -119,6 +126,9 @@ class Request
         return false;
     }
 
+    /**
+     * @psalm-pure
+     */
     private static function isAjax(array $server): bool
     {
         if (isset($server['HTTP_X_REQUESTED_WITH']) && strtolower($server['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') { //phpcs:ignore
@@ -134,9 +144,14 @@ class Request
 
     /**
      * @param bool $https
+     *
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function setHttps(bool $https): static
     {
@@ -147,9 +162,14 @@ class Request
 
     /**
      * @param bool $ajax
+     *
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function setAjax(bool $ajax): static
     {
@@ -186,8 +206,12 @@ class Request
 
     /**
      * @param string $name
+     *
      * @return string|null
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-mutation-free
      */
     public function getHeader(string $name): ?string
     {
@@ -197,8 +221,12 @@ class Request
 
     /**
      * @param string $name
+     *
      * @return string|null
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-mutation-free
      */
     public function getCookie(string $name): ?string
     {

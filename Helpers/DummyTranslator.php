@@ -7,14 +7,21 @@ namespace Noirapi\Helpers;
 use Noirapi\Interfaces\Translator;
 use Override;
 
-/** @psalm-api  */
+/**
+ * @psalm-api
+ *
+ * @psalm-external-mutation-free
+ */
 class DummyTranslator implements Translator
 {
     /**
      * @param string $message
      * @param string|null $key
      * @param mixed ...$args
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     #[Override]
     public function translate(string $message, ?string $key = null, mixed ...$args): string

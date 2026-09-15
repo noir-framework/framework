@@ -23,6 +23,8 @@ use RuntimeException;
  *   $manager  = AuthManager::fromConfig(Config::get('auth') ?? [], Config::get('mail') ?? [], $appUrl);
  *   $provider = $manager->get('google');
  *   $url      = $provider->getRedirectUrl();
+ *
+ * @psalm-api
  */
 class AuthManager
 {
@@ -33,10 +35,16 @@ class AuthManager
     private ?MagicLinkProvider $magicLinkProvider = null;
     private ?TotpProvider $totpProvider = null;
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct() {}
 
     /* ── OAuth provider registry ─────────────────────────────── */
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function register(AuthProviderInterface $provider): void
     {
         $this->providers[$provider->getName()] = $provider;
@@ -44,6 +52,8 @@ class AuthManager
 
     /**
      * @throws RuntimeException  if the provider is not registered
+     *
+     * @psalm-mutation-free
      */
     public function get(string $name): AuthProviderInterface
     {
@@ -51,6 +61,9 @@ class AuthManager
             ?? throw new RuntimeException("OAuth provider '$name' is not configured.");
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function has(string $name): bool
     {
         return isset($this->providers[$name]);
@@ -60,6 +73,8 @@ class AuthManager
      * All registered OAuth providers, in registration order.
      *
      * @return AuthProviderInterface[]
+     *
+     * @psalm-mutation-free
      */
     public function getAll(): array
     {
@@ -68,6 +83,9 @@ class AuthManager
 
     /* ── Password provider ───────────────────────────────────── */
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function setPasswordProvider(PasswordProvider $provider): void
     {
         $this->passwordProvider = $provider;
@@ -78,6 +96,9 @@ class AuthManager
         return $this->passwordProvider;
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function hasPasswordProvider(): bool
     {
         return $this->passwordProvider !== null;
@@ -85,6 +106,9 @@ class AuthManager
 
     /* ── Magic-link provider ─────────────────────────────────── */
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function setMagicLinkProvider(MagicLinkProvider $provider): void
     {
         $this->magicLinkProvider = $provider;
@@ -95,6 +119,9 @@ class AuthManager
         return $this->magicLinkProvider;
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function hasMagicLinkProvider(): bool
     {
         return $this->magicLinkProvider !== null;
@@ -102,6 +129,9 @@ class AuthManager
 
     /* ── TOTP provider ───────────────────────────────────────── */
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function setTotpProvider(TotpProvider $provider): void
     {
         $this->totpProvider = $provider;
@@ -109,6 +139,8 @@ class AuthManager
 
     /**
      * @throws RuntimeException if auth.totp.issuer is not set in config
+     *
+     * @psalm-mutation-free
      */
     public function getTotpProvider(): TotpProvider
     {

@@ -28,7 +28,10 @@ class Tasks
      * @param Server $server
      * @param int $timeout
      * @param string $taskNamespace
+     *
      * @psalm-suppress UndefinedClass
+     *
+     * @psalm-mutation-free
      */
     public function __construct(Server $server, int $timeout = 300, string $taskNamespace = 'App\\Tasks\\')
     {

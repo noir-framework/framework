@@ -14,6 +14,7 @@ use RuntimeException;
 
 /**
  * @psalm-consistent-constructor
+ * @psalm-api
  */
 class Model
 {
@@ -92,12 +93,17 @@ class Model
 
     /**
      * @return PDO[]
+     *
+     * @psalm-external-mutation-free
      */
     public static function tracyGetPdo(): array
     {
         return self::$pdo;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public static function flushPdoCache(): void
     {
         self::$pdo = [];
@@ -105,8 +111,12 @@ class Model
 
     /**
      * @return void
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function clear(): void
     {

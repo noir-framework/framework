@@ -18,6 +18,7 @@ use function count;
 
 /**
  * @codeCoverageIgnore
+ * @psalm-api
  */
 class PDOBarPanel implements IBarPanel
 {
@@ -59,6 +60,9 @@ class PDOBarPanel implements IBarPanel
     /** @var PDO[] */
     private array $pdo;
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(array $pdo)
     {
         $this->pdo = $pdo;
@@ -66,8 +70,12 @@ class PDOBarPanel implements IBarPanel
 
     /**
      * Get total queries execution time
+     *
      * @param string $idx
+     *
      * @return string
+     *
+     * @psalm-mutation-free
      */
     protected function getTotalTime(string $idx): string
     {
@@ -76,8 +84,12 @@ class PDOBarPanel implements IBarPanel
 
     /**
      * Renders HTML code for custom tab.
+     *
      * @return string
+     *
      * @noinspection TypeUnsafeComparisonInspection
+     *
+     * @psalm-mutation-free
      */
     #[Override]
     public function getTab(): string

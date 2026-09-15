@@ -26,6 +26,8 @@ class FilterExtension extends Extension
      * Call before the Latte engine processes any template.
      *
      * @param class-string $class
+     *
+     * @psalm-external-mutation-free
      */
     public function addFilterSource(string $class): void
     {
@@ -35,7 +37,7 @@ class FilterExtension extends Extension
     }
 
     /**
-     * @return array[]
+     * @return array<string, callable>
      * @throws ReflectionException
      */
     #[Override]
@@ -66,7 +68,10 @@ class FilterExtension extends Extension
      * defined" the moment that line executes.
      *
      * @param mixed $value
+     *
      * @return mixed
+     *
+     * @psalm-pure
      */
     public static function nocheck(mixed $value): mixed
     {
@@ -75,7 +80,10 @@ class FilterExtension extends Extension
 
     /**
      * @param string $string
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     public static function urlencode(string $string): string
     {
@@ -84,7 +92,10 @@ class FilterExtension extends Extension
 
     /**
      * @param string $string
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     public static function urldecode(string $string): string
     {
@@ -93,7 +104,10 @@ class FilterExtension extends Extension
 
     /**
      * @param string $string
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     public static function html_entity_decode(string $string): string //phpcs:ignore
     {
@@ -103,7 +117,12 @@ class FilterExtension extends Extension
     /**
      * @param string $date
      * @param string $format
+     *
      * @return string
+     *
+     * @psalm-suppress MissingPureAnnotation date()/strtotime() are time-dependent;
+     * Psalm and PHPStan disagree on whether that counts as impure. Leaving
+     * unannotated satisfies both.
      */
     public static function date_format(string $date, string $format): string //phpcs:ignore
     {
@@ -112,7 +131,10 @@ class FilterExtension extends Extension
 
     /**
      * @param int|bool|string $bool
+     *
      * @return int
+     *
+     * @psalm-pure
      */
     public static function inverse(int|bool|string $bool): int
     {
@@ -126,7 +148,10 @@ class FilterExtension extends Extension
 
     /**
      * @param string $data
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     public static function base64_encode(string $data): string //phpcs:ignore
     {
@@ -135,8 +160,13 @@ class FilterExtension extends Extension
 
     /**
      * @param object|array $data
+     *
      * @return string
+     *
      * @throws JsonException
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of json_encode(); leaving unannotated satisfies both.
      */
     public static function json_prettify(object|array $data): string //phpcs:ignore
     {

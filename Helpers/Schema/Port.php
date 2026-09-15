@@ -22,6 +22,9 @@ class Port implements Schema
     /** @var array{?int, ?int} */
     private array $range = [null, null];
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function required(bool $state = true): self
     {
         $this->required = $state;
@@ -29,6 +32,9 @@ class Port implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function nullable(bool $state = true): self
     {
         $this->nullable = $state;
@@ -38,7 +44,10 @@ class Port implements Schema
 
     /**
      * @param int $min
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function min(int $min): Port
     {
@@ -49,7 +58,10 @@ class Port implements Schema
 
     /**
      * @param int $max
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function max(int $max): Port
     {
@@ -104,7 +116,10 @@ class Port implements Schema
 
     /**
      * @inheritDoc
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function merge($value, $base)
@@ -114,7 +129,10 @@ class Port implements Schema
 
     /**
      * @inheritDoc
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function complete($value, Context $context)
@@ -140,7 +158,10 @@ class Port implements Schema
     /**
      * @param int|string $value
      * @param array{?int, ?int} $range
+     *
      * @return bool
+     *
+     * @psalm-pure
      */
     private function isInRange(int|string $value, array $range): bool
     {

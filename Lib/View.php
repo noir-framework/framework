@@ -252,8 +252,12 @@ class View
 
     /**
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function noLayout(): self
     {
@@ -361,10 +365,14 @@ class View
 
     /**
      * @return array
-     * @noinspection PhpUnused
-     * @psalm-suppress PossiblyUnusedMethod
      *
+     * @noinspection PhpUnused
+     *
+     * @psalm-suppress PossiblyUnusedMethod
+
      * this is used by the system panel
+     *
+     * @psalm-mutation-free
      */
     public function getParams(): array
     {

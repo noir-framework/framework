@@ -11,7 +11,10 @@ use RuntimeException;
 use function is_array;
 use function is_string;
 
-/** @psalm-suppress MissingTemplateParam */
+/**
+ * @psalm-suppress MissingTemplateParam
+ * @psalm-api
+ */
 class PDOStatement extends NativePdoStatement
 {
     /**
@@ -24,7 +27,11 @@ class PDOStatement extends NativePdoStatement
      */
     protected array $bindings = [];
 
-    /** @psalm-suppress PossiblyUnusedMethod */
+    /**
+     * @psalm-suppress PossiblyUnusedMethod 
+     *
+     * @psalm-mutation-free
+     */
     protected function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;

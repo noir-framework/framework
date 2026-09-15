@@ -25,6 +25,9 @@ class TracyFileSession implements SessionStorage
     /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
     private array $data = [];
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(string $dir)
     {
         $this->dir = $dir;
@@ -46,6 +49,20 @@ class TracyFileSession implements SessionStorage
     }
 
     /**
+     * $id is only ever used to build a file path after passing the allowlist
+     * regex in open() (exactly 10 word characters, anchored), so it cannot
+     * contain '/' or '..' and cannot escape $this->dir - safe for file ops.
+     *
+     * @psalm-taint-escape file
+     *
+     * @psalm-mutation-free
+     */
+    private function sessionFilePath(string $id): string
+    {
+        return $this->dir . '/' . self::FILE_PREFIX . $id;
+    }
+
+    /**
      * @return void
      * @throws RandomException
      */
@@ -55,12 +72,12 @@ class TracyFileSession implements SessionStorage
         if (
             !is_string($id)
             || !preg_match('#^\w{10}\z#i', $id)
-            || !($file = @fopen($path = $this->dir . '/' . self::FILE_PREFIX . $id, 'r+b')) // intentionally @
+            || !($file = @fopen($path = $this->sessionFilePath($id), 'r+b')) // intentionally @
         ) {
             $id = bin2hex(random_bytes(5));
             setcookie($this->cookieName, $id, time() + self::COOKIE_LIFETIME, '/', '', secure: false, httponly: true);
 
-            $file = @fopen($path = $this->dir . '/' . self::FILE_PREFIX . $id, 'c+b'); // intentionally @
+            $file = @fopen($path = $this->sessionFilePath($id), 'c+b'); // intentionally @
             if ($file === false) {
                 throw new RuntimeException("Unable to create file '$path'. " . error_get_last()['message']);
             }

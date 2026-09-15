@@ -19,26 +19,55 @@ use RuntimeException;
  *
  * GitHub: Settings → Developer settings → OAuth Apps → New OAuth App
  * Scopes needed: read:user, user:email
+ *
+ * @psalm-api
  */
 class GitHubProvider extends OAuthProvider
 {
     private const string USER_AGENT = 'noirapi-oauth/1.0';
 
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getName(): string  { return 'github'; }
+
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getLabel(): string { return 'GitHub'; }
+
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getIcon(): string  { return 'bi-github'; }
 
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     protected function getAuthorizationUrl(): string
     {
         return 'https://github.com/login/oauth/authorize';
     }
 
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     protected function getTokenUrl(): string
     {
         return 'https://github.com/login/oauth/access_token';
     }
 
-    /** @return string[] */
+    /**
+     * @return string[] 
+     *
+     * @psalm-pure
+     */
+    #[\Override]
     protected function getScopes(): array
     {
         return ['read:user', 'user:email'];
@@ -47,6 +76,7 @@ class GitHubProvider extends OAuthProvider
     /**
      * @throws RuntimeException
      */
+    #[\Override]
     public function fetchUser(string $accessToken): OAuthResult
     {
         $headers = ['User-Agent' => self::USER_AGENT];

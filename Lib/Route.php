@@ -382,7 +382,10 @@ class Route
     /**
      * @param string $location
      * @param int $status
+     *
      * @return void
+     *
+     * @psalm-external-mutation-free
      */
     private function redirect(string $location, int $status = 302): void
     {

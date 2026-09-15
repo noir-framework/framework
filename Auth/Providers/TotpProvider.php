@@ -25,6 +25,8 @@ use RobThree\Auth\TwoFactorAuthException;
  *   Login verification  → window = 2  (±1 min, tight)
  *   Setup confirmation  → window = 20 (±10 min, allows slow setup)
  *   Disable / sudo      → window = 10 (±5 min)
+ *
+ * @psalm-api
  */
 class TotpProvider implements AuthProviderInterface
 {
@@ -37,18 +39,27 @@ class TotpProvider implements AuthProviderInterface
 
     /* ── AuthProviderInterface ───────────────────────────────── */
 
+    /**
+     * @psalm-pure
+     */
     #[\Override]
     public function getName(): string
     {
         return 'totp';
     }
 
+    /**
+     * @psalm-pure
+     */
     #[\Override]
     public function getLabel(): string
     {
         return 'Authenticator App';
     }
 
+    /**
+     * @psalm-pure
+     */
     #[\Override]
     public function getIcon(): string
     {

@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Noirapi\Tracy;
+namespace Noirapi\Lib\Tracy;
 
 use Noirapi\Lib\View;
 use Override;
 use Tracy\IBarPanel;
 
+/** @psalm-api */
 class SystemBarPanel implements IBarPanel
 {
     /**
@@ -24,6 +25,9 @@ class SystemBarPanel implements IBarPanel
 
     private View $view;
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(View $view)
     {
 
@@ -32,6 +36,8 @@ class SystemBarPanel implements IBarPanel
 
     /**
      * @return string
+     *
+     * @psalm-mutation-free
      */
     #[Override]
     public function getTab(): string
@@ -54,6 +60,8 @@ class SystemBarPanel implements IBarPanel
 
     /**
      * @return string
+     *
+     * @psalm-pure
      */
     #[Override]
     public function getPanel(): string

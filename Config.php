@@ -104,7 +104,10 @@ class Config
     /**
      * @param string $option
      * @param mixed $default
+     *
      * @return mixed
+     *
+     * @psalm-external-mutation-free
      */
     public static function get(string $option, mixed $default = null): mixed
     {
@@ -142,7 +145,10 @@ class Config
     /**
      * @param string $option
      * @param mixed $data
+     *
      * @return void
+     *
+     * @psalm-external-mutation-free
      */
     public static function set(string $option, mixed $data): void
     {
@@ -151,7 +157,10 @@ class Config
 
     /**
      * @return array
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getAll(): array
     {
@@ -160,7 +169,10 @@ class Config
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getRoot(): string
     {
@@ -170,7 +182,10 @@ class Config
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getTemp(): string
     {
@@ -179,7 +194,10 @@ class Config
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getLogs(): string
     {
@@ -188,7 +206,10 @@ class Config
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getWwwRoot(): string
     {
@@ -197,7 +218,10 @@ class Config
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getAppRoot(): string
     {
@@ -206,7 +230,10 @@ class Config
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getViews(): string
     {
@@ -215,7 +242,10 @@ class Config
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getTemplates(): string
     {
@@ -224,7 +254,10 @@ class Config
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getLayouts(): string
     {

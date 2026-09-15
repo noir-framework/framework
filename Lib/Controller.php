@@ -24,6 +24,7 @@ use Throwable;
 use Tracy\Debugger;
 use function strlen;
 
+/** @psalm-api */
 class Controller
 {
     public Request $request;
@@ -129,8 +130,12 @@ class Controller
 
     /**
      * @return Response
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function ok(): Response
     {
@@ -139,8 +144,12 @@ class Controller
 
     /**
      * @return Response
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function notFound(): Response
     {
@@ -149,8 +158,12 @@ class Controller
 
     /**
      * @return Response
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function internalServerError(): Response
     {

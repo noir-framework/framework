@@ -127,7 +127,10 @@ class Mail
 
     /**
      * @param string $body
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function setBody(string $body): self
     {

@@ -26,7 +26,10 @@ class Json implements Schema
 
     /**
      * @param bool $state
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function required(bool $state = true): self
     {
@@ -37,7 +40,10 @@ class Json implements Schema
 
     /**
      * @param bool $state
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function nullable(bool $state = true): self
     {
@@ -82,8 +88,12 @@ class Json implements Schema
     /**
      * @param $value
      * @param $base
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function merge($value, $base)
@@ -94,8 +104,12 @@ class Json implements Schema
     /**
      * @param $value
      * @param Context $context
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function complete($value, Context $context)

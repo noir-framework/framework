@@ -25,6 +25,9 @@ class Ip implements Schema
     private string $from = 'string';
     private string $to = 'string';
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function fromBin(): self
     {
         $this->from = 'bin';
@@ -34,6 +37,8 @@ class Ip implements Schema
 
     /**
      * @return self
+     *
+     * @psalm-external-mutation-free
      */
     public function fromString(): self
     {
@@ -42,6 +47,9 @@ class Ip implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function fromLong(): self
     {
         $this->from = 'long';
@@ -49,6 +57,9 @@ class Ip implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function toBin(): self
     {
         $this->to = 'bin';
@@ -56,6 +67,9 @@ class Ip implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function toString(): self
     {
         $this->to = 'string';
@@ -63,6 +77,9 @@ class Ip implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function toLong(): self
     {
         $this->to = 'long';
@@ -70,6 +87,9 @@ class Ip implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function required(bool $state = true): self
     {
         $this->required = $state;
@@ -77,6 +97,9 @@ class Ip implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function nullable(bool $state = true): self
     {
         $this->nullable = $state;
@@ -199,7 +222,10 @@ class Ip implements Schema
     /**
      * @param mixed $value
      * @param mixed $base
+     *
      * @return mixed
+     *
+     * @psalm-pure
      */
     #[Override]
     public function merge(mixed $value, mixed $base): mixed
@@ -210,7 +236,10 @@ class Ip implements Schema
     /**
      * @param mixed $value
      * @param Context $context
+     *
      * @return mixed
+     *
+     * @psalm-pure
      */
     #[Override]
     public function complete(mixed $value, Context $context): mixed

@@ -24,18 +24,36 @@ use Noirapi\Auth\Contracts\AuthProviderInterface;
  *           'avatar_url' => $user->avatar_url,
  *       ];
  *   });
+ *
+ * @psalm-api
  */
 class PasswordProvider implements AuthProviderInterface
 {
     /**
      * @param \Closure(string $email): ?array{'password':string, 'name':?string, 'avatar_url':?string} $userLookup
+     *
+     * @psalm-mutation-free
      */
     public function __construct(
         private readonly \Closure $userLookup,
     ) {}
 
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getName(): string  { return 'password'; }
+
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getLabel(): string { return 'Password'; }
+
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getIcon(): string  { return 'bi-lock'; }
 
     /**
@@ -47,6 +65,7 @@ class PasswordProvider implements AuthProviderInterface
 
         if ($data === null) {
             /* Timing-safe: still run a hash to prevent user-enumeration via timing */
+            /** @psalm-suppress UnusedFunctionCall Result intentionally discarded - only the CPU cost matters here. */
             password_verify($password, '$2y$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ01234');
             return null;
         }

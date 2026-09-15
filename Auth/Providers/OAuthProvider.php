@@ -19,12 +19,17 @@ use RuntimeException;
  *   getTokenUrl() — provider's /token endpoint
  *   getScopes() — list of requested scopes
  *   fetchUser() — fetch profile using the access token
+ *
+ * @psalm-api
  */
 abstract class OAuthProvider implements AuthProviderInterface
 {
     private const string SESSION_STATE_KEY = 'oauth_state';
     private const string SESSION_ACTION_KEY = 'oauth_action';
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(
         protected readonly string $clientId,
         protected readonly string $clientSecret,
@@ -33,13 +38,24 @@ abstract class OAuthProvider implements AuthProviderInterface
 
     /* ── Abstract interface ──────────────────────────────────── */
 
+    /** @psalm-pure */
     abstract protected function getAuthorizationUrl(): string;
+
+    /** @psalm-pure */
     abstract protected function getTokenUrl(): string;
 
-    /** @return string[] */
+    /**
+     * @return string[]
+     *
+     * @psalm-pure
+     */
     abstract protected function getScopes(): array;
 
-    /** Exchange an access token for a normalised OAuthResult. */
+    /**
+     * Exchange an access token for a normalised OAuthResult.
+     *
+     * @psalm-external-mutation-free
+     */
     abstract public function fetchUser(string $accessToken): OAuthResult;
 
     /* ── Public API ──────────────────────────────────────────── */
@@ -170,7 +186,10 @@ abstract class OAuthProvider implements AuthProviderInterface
      * Override in subclasses e.g. ['access_type' => 'offline'] for Google.
      *
      * @return array<string,string>
+     *
      * @psalm-suppress MissingPureAnnotation
+     *
+     * @psalm-pure
      */
     protected function extraAuthParams(): array
     {

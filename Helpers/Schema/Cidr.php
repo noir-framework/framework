@@ -18,11 +18,17 @@ class Cidr implements Schema
     private bool $nullable = false;
     private bool $multiple;
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(bool $multiple)
     {
         $this->multiple = $multiple;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function required(bool $state = true): self
     {
         $this->required = $state;
@@ -30,6 +36,9 @@ class Cidr implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function nullable(): self
     {
         $this->nullable = true;
@@ -90,7 +99,10 @@ class Cidr implements Schema
     /**
      * @param mixed $value
      * @param mixed $base
+     *
      * @return mixed
+     *
+     * @psalm-pure
      */
     #[Override]
     public function merge(mixed $value, mixed $base): mixed
@@ -101,7 +113,10 @@ class Cidr implements Schema
     /**
      * @param mixed $value
      * @param Context $context
+     *
      * @return mixed
+     *
+     * @psalm-pure
      */
     #[Override]
     public function complete(mixed $value, Context $context): mixed
@@ -127,7 +142,10 @@ class Cidr implements Schema
 
     /**
      * @param string $cidr
+     *
      * @return bool
+     *
+     * @psalm-pure
      */
     private function validateCidr(string $cidr): bool
     {

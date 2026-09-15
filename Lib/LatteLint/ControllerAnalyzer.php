@@ -82,6 +82,8 @@ class ControllerAnalyzer
     /**
      * Returns the fully-qualified class name discovered for a controller short
      * name during the last analyze() call, if any.
+     *
+     * @psalm-mutation-free
      */
     public function getFqcn(string $controllerShortName): ?string
     {
@@ -190,6 +192,8 @@ class ControllerAnalyzer
 
     /**
      * Returns the literal string value of a call's first argument, if it is one.
+     *
+     * @psalm-mutation-free
      */
     private function literalStringArg(MethodCall $call): ?string
     {
@@ -204,6 +208,8 @@ class ControllerAnalyzer
      * Extracts string keys from the array argument of display([...]).
      *
      * @return string[]
+     *
+     * @psalm-mutation-free
      */
     private function extractArrayKeys(MethodCall $call): array
     {

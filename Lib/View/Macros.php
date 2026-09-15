@@ -16,6 +16,9 @@ use Override;
 /** @psalm-api  */
 class Macros extends Extension
 {
+    /**
+     * @psalm-mutation-free
+     */
     #[Override]
     public function getTags(): array
     {

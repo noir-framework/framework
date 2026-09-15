@@ -8,6 +8,11 @@ use Noirapi\Interfaces\Translator;
 
 use function is_string;
 
+/**
+ * @psalm-api
+ *
+ * @psalm-external-mutation-free
+ */
 class Layout
 {
     /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
@@ -24,6 +29,9 @@ class Layout
 
     private Translator $translator;
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(Translator $translator)
     {
         $this->translator = $translator;
@@ -31,8 +39,12 @@ class Layout
 
     /**
      * @param string $line
+     *
      * @return void
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public function addToHead(string $line): void
     {
@@ -41,9 +53,14 @@ class Layout
 
     /**
      * @param string $name
+     *
      * @return void
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function setName(string $name): void
     {
@@ -61,9 +78,14 @@ class Layout
 
     /**
      * @param string|null $title
+     *
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function setTitle(?string $title): static
     {
@@ -77,9 +99,14 @@ class Layout
 
     /**
      * @param string $title
+     *
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function appendTitle(string $title): static
     {
@@ -92,9 +119,14 @@ class Layout
      * @param int|string $name
      * @param string|null $url
      * @param bool|null $active
+     *
      * @return void
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function addBreadCrumb(int|string $name, ?string $url = null, ?bool $active = null): void
     {
@@ -111,8 +143,12 @@ class Layout
     /**
      * @param string $key
      * @param mixed $value
+     *
      * @return void
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function add(string $key, mixed $value): void
     {
@@ -122,8 +158,12 @@ class Layout
     /**
      * @param string $key
      * @param mixed $value
+     *
      * @return void
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function set(string $key, mixed $value): void
     {
@@ -133,9 +173,14 @@ class Layout
     /**
      * @param string $key
      * @param mixed|null $default
+     *
      * @return mixed
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-mutation-free
      */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -144,9 +189,14 @@ class Layout
 
     /**
      * @param string $key
+     *
      * @return bool
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-mutation-free
      */
     public function exists(string $key): bool
     {
@@ -155,9 +205,14 @@ class Layout
 
     /**
      * @param string $js
+     *
      * @return void
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function addTopJS(string $js): void
     {
@@ -168,9 +223,14 @@ class Layout
 
     /**
      * @param string $js
+     *
      * @return void
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function addBottomJS(string $js): void
     {
@@ -181,9 +241,14 @@ class Layout
 
     /**
      * @param string $css
+     *
      * @return void
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function addTopCss(string $css): void
     {
@@ -194,9 +259,14 @@ class Layout
 
     /**
      * @param string $css
+     *
      * @return void
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function addBottomCss(string $css): void
     {
@@ -207,9 +277,14 @@ class Layout
 
     /**
      * @param string $name
+     *
      * @return mixed|null
+     *
      * @noinspection MagicMethodsValidityInspection
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-mutation-free
      */
     public function __get(string $name)
     {
@@ -218,8 +293,12 @@ class Layout
 
     /**
      * @return bool
+     *
      * @noinspection PhpUnused
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-mutation-free
      */
     public function hasTitle(): bool
     {

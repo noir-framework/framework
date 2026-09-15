@@ -30,6 +30,10 @@ use function is_string;
 /** @psalm-api  */
 final class Expect2
 {
+    /**
+     * @psalm-mutation-free
+     * @psalm-suppress UnusedConstructor Private and intentionally never called - exists only to block instantiation of this static-factory class.
+     */
     private function __construct() {}
 
     /**
@@ -67,6 +71,8 @@ final class Expect2
 
     /**
      * @return Ip
+     *
+     * @psalm-pure
      */
     public static function Ip(): Ip // phpcs:ignore
     {
@@ -75,12 +81,17 @@ final class Expect2
 
     /**
      * @return Domain
+     *
+     * @psalm-pure
      */
     public static function Domain(): Domain // phpcs:ignore
     {
         return new Domain();
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function Numeric(): Numeric // phpcs:ignore
     {
         return new Numeric();
@@ -88,6 +99,8 @@ final class Expect2
 
     /**
      * @return Url
+     *
+     * @psalm-pure
      */
     public static function Url(): Url // phpcs:ignore
     {
@@ -96,6 +109,8 @@ final class Expect2
 
     /**
      * @return Json
+     *
+     * @psalm-pure
      */
     public static function Json(): Json // phpcs:ignore
     {
@@ -104,6 +119,8 @@ final class Expect2
 
     /**
      * @return Recaptcha
+     *
+     * @psalm-pure
      */
     public static function Recaptcha(): Recaptcha // phpcs:ignore
     {
@@ -112,7 +129,11 @@ final class Expect2
 
     /**
      * @param bool $multiple
+     *
      * @return Cidr
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of the Cidr() constructor call; leaving unannotated satisfies both.
      */
     public static function Cidr(bool $multiple = false): Cidr // phpcs:ignore
     {

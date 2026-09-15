@@ -43,6 +43,9 @@ class FileUpload
         return $static;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function min(int $min): self
     {
         $this->min = $min;
@@ -50,6 +53,9 @@ class FileUpload
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function max(int $max): self
     {
         $this->max = $max;
@@ -59,8 +65,12 @@ class FileUpload
 
     /**
      * @param string $contentType
+     *
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public function allowedContentType(string $contentType): self
     {
@@ -71,8 +81,12 @@ class FileUpload
 
     /**
      * @param string $extension
+     *
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public function extension(string $extension): self
     {
@@ -87,8 +101,12 @@ class FileUpload
     /**
      * @param int $width
      * @param int $height
+     *
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public function minDimension(int $width, int $height): self
     {
@@ -101,8 +119,12 @@ class FileUpload
     /**
      * @param int $width
      * @param int $height
+     *
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public function maxDimension(int $width, int $height): self
     {
@@ -114,7 +136,10 @@ class FileUpload
 
     /**
      * @return true
+     *
      * @throws FileUploadValidation
+     *
+     * @psalm-mutation-free
      */
     public function process(): true
     {
@@ -185,7 +210,10 @@ class FileUpload
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-mutation-free
      */
     public function getFileName(): string
     {
@@ -204,8 +232,11 @@ class FileUpload
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
      * @noinspection GetSetMethodCorrectnessInspection
+     *
+     * @psalm-mutation-free
      */
     public function getContentType(): string
     {
@@ -214,6 +245,8 @@ class FileUpload
 
     /**
      * @return int
+     *
+     * @psalm-mutation-free
      */
     public function getSize(): int
     {
@@ -222,7 +255,10 @@ class FileUpload
 
     /**
      * @return string
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-mutation-free
      */
     public function getFullPath(): string
     {
@@ -231,8 +267,11 @@ class FileUpload
 
     /**
      * @return string
+     *
      * @noinspection GetSetMethodCorrectnessInspection
      * @noinspection PhpUnused
+     *
+     * @psalm-mutation-free
      */
     public function getExtension(): string
     {
@@ -241,7 +280,10 @@ class FileUpload
 
     /**
      * @return bool
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-mutation-free
      */
     public function isNoFile(): bool
     {
@@ -250,6 +292,8 @@ class FileUpload
 
     /**
      * @return bool
+     *
+     * @psalm-mutation-free
      */
     private function isImage(): bool
     {

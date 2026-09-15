@@ -7,9 +7,14 @@ namespace Noirapi\Auth;
 /**
  * OAuth-specific auth result.
  * Extends the generic AuthResult with provider identity and token fields.
+ *
+ * @psalm-api
  */
 class OAuthResult extends AuthResult
 {
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(
         public string  $provider,
         public string  $providerUserId,

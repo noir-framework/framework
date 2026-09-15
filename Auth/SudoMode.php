@@ -17,6 +17,8 @@ use Noirapi\Lib\Session;
  *   SudoMode::grant();     // mark session as elevated
  *   SudoMode::isActive();  // true for the lifetime of the session
  *   SudoMode::revoke();    // explicit teardown (e.g. on logout)
+ *
+ * @psalm-api
  */
 class SudoMode
 {

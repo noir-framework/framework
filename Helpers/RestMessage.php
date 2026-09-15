@@ -45,8 +45,12 @@ class RestMessage
 
     /**
      * @return string
+     *
      * @throws JsonException
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-mutation-free
      */
     public function toJson(): string
     {
@@ -64,7 +68,10 @@ class RestMessage
 
     /**
      * @param string $name
+     *
      * @return mixed|null
+     *
+     * @psalm-mutation-free
      */
     public function __get(string $name)
     {
@@ -74,7 +81,10 @@ class RestMessage
     /**
      * @param string $name
      * @param mixed $value
+     *
      * @return void
+     *
+     * @psalm-external-mutation-free
      */
     public function __set(string $name, mixed $value)
     {
@@ -83,7 +93,10 @@ class RestMessage
 
     /**
      * @param string $name
+     *
      * @return bool
+     *
+     * @psalm-mutation-free
      */
     public function __isset(string $name): bool
     {

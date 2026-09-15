@@ -48,6 +48,9 @@ class GenericPanel implements IBarPanel
 
     public array $data;
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(string $title, array $data)
     {
         $this->title = $title;
@@ -56,6 +59,8 @@ class GenericPanel implements IBarPanel
 
     /**
      * @return string
+     *
+     * @psalm-mutation-free
      */
     #[Override]
     public function getTab(): string
@@ -69,6 +74,8 @@ class GenericPanel implements IBarPanel
 
     /**
      * @return string
+     *
+     * @psalm-mutation-free
      */
     #[Override]
     public function getPanel(): string

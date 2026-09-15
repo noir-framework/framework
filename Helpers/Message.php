@@ -9,6 +9,9 @@ use Nette\Schema\ValidationException;
 /** @psalm-api */
 class Message
 {
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(
         public string      $message    = '',
         public MessageType $type       = MessageType::Info,
@@ -19,17 +22,26 @@ class Message
     /**
      * @param string $message
      * @param string|MessageType|null $type
+     *
      * @return Message
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of the Message constructor call; leaving unannotated satisfies both.
      */
     public static function new(string $message, string|MessageType|null $type = null): Message
     {
         $resolvedType = $type instanceof MessageType
             ? $type
-            : (MessageType::tryFrom((string) ($type ?? '')) ?? MessageType::Info);
+            : (MessageType::tryFrom($type ?? '') ?? MessageType::Info);
 
         return new self($message, $resolvedType);
     }
 
+    /**
+     * @psalm-external-mutation-free
+     * @psalm-suppress ImpureMethodCall self::new() is intentionally left without a
+     * purity annotation - see the @psalm-suppress note on its declaration.
+     */
     public static function fromSchema(ValidationException $e, ?string $type = null): Message
     {
 
@@ -39,8 +51,12 @@ class Message
 
     /**
      * @param int $timeout_ms
+     *
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public function timeout(int $timeout_ms): Message
     {
@@ -51,6 +67,8 @@ class Message
 
     /**
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function html(): Message
     {
@@ -61,6 +79,8 @@ class Message
 
     /**
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function primary(): Message
     {
@@ -71,6 +91,8 @@ class Message
 
     /**
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function secondary(): Message
     {
@@ -81,7 +103,10 @@ class Message
 
     /**
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public function light(): Message
     {
@@ -92,7 +117,10 @@ class Message
 
     /**
      * @return $this
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public function dark(): Message
     {
@@ -103,6 +131,8 @@ class Message
 
     /**
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function danger(): Message
     {
@@ -113,6 +143,8 @@ class Message
 
     /**
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function success(): Message
     {
@@ -123,6 +155,8 @@ class Message
 
     /**
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function warning(): Message
     {
@@ -133,6 +167,8 @@ class Message
 
     /**
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function info(): Message
     {

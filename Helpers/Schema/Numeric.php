@@ -21,6 +21,9 @@ class Numeric implements Schema
     /** @var array{?int, ?int} */
     private array $range = [null, null];
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function required(bool $state = true): self
     {
         $this->required = $state;
@@ -28,6 +31,9 @@ class Numeric implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function nullable(bool $state = true): self
     {
         $this->nullable = $state;
@@ -37,7 +43,10 @@ class Numeric implements Schema
 
     /**
      * @param int|string $min
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function min(int|string $min): Numeric
     {
@@ -48,7 +57,10 @@ class Numeric implements Schema
 
     /**
      * @param int|string $max
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function max(int|string $max): Numeric
     {
@@ -102,6 +114,8 @@ class Numeric implements Schema
 
     /**
      * @inheritDoc
+     *
+     * @psalm-pure
      */
     #[Override]
     public function merge(mixed $value, mixed $base): mixed
@@ -111,6 +125,8 @@ class Numeric implements Schema
 
     /**
      * @inheritDoc
+     *
+     * @psalm-pure
      */
     #[Override]
     public function complete(mixed $value, Context $context)
@@ -135,7 +151,10 @@ class Numeric implements Schema
     /**
      * @param int|string $value
      * @param array{?int, ?int} $range
+     *
      * @return bool
+     *
+     * @psalm-pure
      */
     private function isInRange(int|string $value, array $range): bool
     {

@@ -48,6 +48,9 @@ class DateTime implements Schema
         $this->name = $name;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function setTime(string $time, string $format): self
     {
         $this->time = \DateTime::createFromFormat($format, $time, $this->timeZone);
@@ -58,7 +61,10 @@ class DateTime implements Schema
     /**
      * @param string $date
      * @param string $format
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function setDate(string $date, string $format): self
     {
@@ -69,7 +75,10 @@ class DateTime implements Schema
 
     /**
      * @param string $value date string in the schema's own format
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function default(string $value): self
     {
@@ -80,7 +89,10 @@ class DateTime implements Schema
 
     /**
      * @param bool $state
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function required(bool $state = true): self
     {
@@ -91,7 +103,10 @@ class DateTime implements Schema
 
     /**
      * @param bool $state
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function nullable(bool $state = true): self
     {
@@ -102,7 +117,10 @@ class DateTime implements Schema
 
     /**
      * @param string $format
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function format(string $format): self
     {
@@ -176,8 +194,12 @@ class DateTime implements Schema
     /**
      * @param $value
      * @param $base
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function merge($value, $base): mixed
@@ -188,8 +210,12 @@ class DateTime implements Schema
     /**
      * @param $value
      * @param Context $context
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function complete($value, Context $context): mixed

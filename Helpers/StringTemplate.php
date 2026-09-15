@@ -10,6 +10,7 @@ use Latte;
 use Noirapi\Config;
 use Noirapi\Lib\View\FilterExtension;
 
+/** @psalm-api */
 class StringTemplate
 {
     private Latte\Engine $latte;

@@ -28,6 +28,7 @@ use function is_object;
 use function is_resource;
 use function is_string;
 
+/** @psalm-api */
 class Response
 {
     /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
@@ -67,7 +68,10 @@ class Response
 
     /**
      * @param mixed $body
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function setBody(mixed $body): Response
     {
@@ -182,7 +186,10 @@ class Response
 
     /**
      * @return RestMessage
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-mutation-free
      */
     public function getRestMessage(): RestMessage
     {
@@ -195,7 +202,10 @@ class Response
 
     /**
      * @param int $status
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function withStatus(int $status): Response
     {
@@ -214,7 +224,10 @@ class Response
 
     /**
      * @param string $contentType
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function setContentType(string $contentType): Response
     {
@@ -235,7 +248,10 @@ class Response
 
     /**
      * @param string $location
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function withLocation(string $location): Response
     {
@@ -246,7 +262,10 @@ class Response
 
     /**
      * @return string|null
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-mutation-free
      */
     public function getLocation(): ?string
     {
@@ -256,8 +275,12 @@ class Response
     /**
      * @param string $key
      * @param string $value
+     *
      * @return $this
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function addHeader(string $key, string $value): Response
     {
@@ -268,8 +291,12 @@ class Response
 
     /**
      * @param string $key
+     *
      * @return $this
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function removeHeader(string $key): Response
     {
@@ -280,6 +307,8 @@ class Response
 
     /**
      * @return array
+     *
+     * @psalm-mutation-free
      */
     public function getHeaders(): array
     {
@@ -298,8 +327,12 @@ class Response
 
     /**
      * @param string $filename
+     *
      * @return $this
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-mutation-free
      */
     public function downloadFile(string $filename): Response
     {
@@ -310,8 +343,12 @@ class Response
 
     /**
      * @param string $filename
+     *
      * @return $this
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-mutation-free
      */
     public function inlineFile(string $filename): Response
     {
@@ -326,8 +363,11 @@ class Response
      * @param string $key
      * @param string $value
      * @param int $expire
+     *
      * @return $this
      * $expire is the max date in the future supported by php
+     *
+     * @psalm-external-mutation-free
      */
     public function addCookie(string $key, string $value, int $expire = 2147483647): Response
     {
@@ -345,8 +385,12 @@ class Response
 
     /**
      * @param string $key
+     *
      * @return $this
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-mutation-free
      */
     public function clearCookie(string $key): Response
     {
@@ -365,8 +409,12 @@ class Response
 
     /**
      * @param callable $callback
+     *
      * @return $this
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function addHeaderCallback(callable $callback): Response
     {
@@ -377,8 +425,12 @@ class Response
 
     /**
      * @param string $root
+     *
      * @return $this
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function setXmlRoot(string $root): Response
     {
@@ -389,7 +441,10 @@ class Response
 
     /**
      * @return $this
+     *
      * @psalm-suppress PossiblyUnusedMethod
+     *
+     * @psalm-external-mutation-free
      */
     public function disableCsvHeader(): Response
     {

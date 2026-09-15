@@ -39,6 +39,9 @@ class SessionPanel implements IBarPanel
     public array $SESSION;
     public int $status;
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(array $SESSION, int $status)
     {
         $this->SESSION = $SESSION;
@@ -47,6 +50,8 @@ class SessionPanel implements IBarPanel
 
     /**
      * @return string
+     *
+     * @psalm-mutation-free
      */
     #[Override]
     public function getTab(): string

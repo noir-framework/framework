@@ -7,6 +7,7 @@ namespace Noirapi\Lib\PDO;
 use Override;
 use PDO as NativePdo;
 
+/** @psalm-api */
 class PDO extends NativePdo
 {
     /**
@@ -68,6 +69,8 @@ class PDO extends NativePdo
      *
      * @param string $statement
      * @param float $time Elapsed seconds with microseconds
+     *
+     * @psalm-external-mutation-free
      */
     public function addLog(string $statement, float $time): void
     {

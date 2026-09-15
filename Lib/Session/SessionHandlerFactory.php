@@ -33,6 +33,9 @@ class SessionHandlerFactory
         };
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     private static function resolveSqlitePath(string $dsn): string
     {
         if ($dsn === ':memory:' || str_starts_with($dsn, '/')) {

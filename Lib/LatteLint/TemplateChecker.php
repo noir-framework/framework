@@ -46,13 +46,20 @@ class TemplateChecker
     /** @var string[]  Additional always-available vars, e.g. from BaseVarAnalyzer */
     private array $globalVars = [];
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(Engine $engine, VarUsageCollector $collector)
     {
         $this->engine = $engine;
         $this->collector = $collector;
     }
 
-    /** @param string[] $vars */
+    /**
+     * @param string[] $vars 
+     *
+     * @psalm-external-mutation-free
+     */
     public function setGlobalVars(array $vars): void
     {
         $this->globalVars = $vars;
@@ -148,7 +155,7 @@ class TemplateChecker
         if (! $isPartial) {
             $declaredLines = $this->extractVarTypeLines($source);
             $implicitlyUsed = $this->extractImplicitTagVarUsage($source);
-            foreach ($declaredVars as $name => $type) {
+            foreach (array_keys($declaredVars) as $name) {
                 if (isset($this->collector->usedVars[$name]) || isset($implicitlyUsed[$name])) {
                     continue;
                 }
@@ -164,6 +171,9 @@ class TemplateChecker
      * Returns declared vars as [name => type] parsed from {varType Type $name} tags.
      *
      * @return array<string, string>
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of preg_match_all(); leaving unannotated satisfies both.
      */
     public function extractVarTypeDeclarations(string $source): array
     {
@@ -181,6 +191,9 @@ class TemplateChecker
      * Returns the 1-based source line of each {varType Type $name} declaration.
      *
      * @return array<string, int>
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of preg_match_all(); leaving unannotated satisfies both.
      */
     private function extractVarTypeLines(string $source): array
     {
@@ -201,6 +214,9 @@ class TemplateChecker
      * as a {$var} reference, e.g. {pager} reads $pager. Treat those as "used".
      *
      * @return array<string, true>
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of preg_match(); leaving unannotated satisfies both.
      */
     private function extractImplicitTagVarUsage(string $source): array
     {

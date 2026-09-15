@@ -15,17 +15,36 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
  * Responsibility: sending the magic-link email only.
  * Token generation and verification live in the app-layer AuthGateway
  * (which has access to the database).
+ *
+ * @psalm-api
  */
 class MagicLinkProvider implements AuthProviderInterface
 {
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(
         private readonly string $mailDsn,
         private readonly string $mailFrom,
         private readonly string $appUrl,
     ) {}
 
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getName(): string  { return 'magic_link'; }
+
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getLabel(): string { return 'Magic Link'; }
+
+    /**
+     * @psalm-pure
+     */
+    #[\Override]
     public function getIcon(): string  { return 'bi-envelope-at'; }
 
     /**

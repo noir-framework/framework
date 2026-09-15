@@ -29,7 +29,10 @@ class Recaptcha implements Schema
 
     /**
      * @param bool $state
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function required(bool $state = true): self
     {
@@ -41,7 +44,10 @@ class Recaptcha implements Schema
 
     /**
      * @param bool $state
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function nullable(bool $state = true): self
     {
@@ -53,7 +59,10 @@ class Recaptcha implements Schema
 
     /**
      * @param string $secret
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function secret(string $secret): self
     {
@@ -63,6 +72,9 @@ class Recaptcha implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function ip(string $ip): self
     {
 
@@ -112,8 +124,12 @@ class Recaptcha implements Schema
     /**
      * @param $value
      * @param $base
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function merge($value, $base): mixed
@@ -125,8 +141,12 @@ class Recaptcha implements Schema
     /**
      * @param $value
      * @param Context $context
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function complete($value, Context $context): mixed

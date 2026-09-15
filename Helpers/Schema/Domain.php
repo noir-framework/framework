@@ -23,7 +23,10 @@ class Domain implements Schema
 
     /**
      * @param bool $required
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function required(bool $required = true): Domain
     {
@@ -34,7 +37,10 @@ class Domain implements Schema
 
     /**
      * @param bool $wildcard
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function wildcard(bool $wildcard = true): Domain
     {
@@ -83,8 +89,12 @@ class Domain implements Schema
     /**
      * @param $value
      * @param $base
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function merge($value, $base): mixed
@@ -95,8 +105,12 @@ class Domain implements Schema
     /**
      * @param $value
      * @param Context $context
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function complete($value, Context $context): mixed

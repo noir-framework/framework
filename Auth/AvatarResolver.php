@@ -10,6 +10,8 @@ namespace Noirapi\Auth;
  * Iterates over the user's linked OAuth accounts and returns the first
  * non-empty avatar_url. If none are found it calls the $fallback callable
  * (e.g. return a local identicon path).
+ *
+ * @psalm-api
  */
 class AvatarResolver
 {

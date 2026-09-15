@@ -33,6 +33,10 @@ use function vsprintf;
 /** @psalm-api  */
 final class Utils
 {
+    /**
+     * @psalm-mutation-free
+     * @psalm-suppress UnusedConstructor Private and intentionally never called - exists only to block instantiation of this static-factory class.
+     */
     private function __construct() {}
 
     /**
@@ -100,7 +104,10 @@ final class Utils
 
     /**
      * @param mixed $object
+     *
      * @return mixed|null
+     *
+     * @psalm-pure
      */
     public static function returnNull(mixed $object): mixed
     {
@@ -133,7 +140,10 @@ final class Utils
     /**
      * @param string|object $class
      * @param int|string $depth
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     public static function getClassName(string|object $class, int|string $depth = 1): string
     {
@@ -166,6 +176,9 @@ final class Utils
 
     /**
      * @return bool
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of defined(); leaving unannotated satisfies both.
      */
     public static function is_tty(): bool // phpcs:ignore
     {
@@ -174,8 +187,12 @@ final class Utils
 
     /**
      * @param string $string
+     *
      * @return string
+     *
      * @noinspection SpellCheckingInspection
+     *
+     * @psalm-pure
      */
     public static function mb_ucfirst(string $string): string // phpcs:ignore
     {
@@ -231,8 +248,13 @@ final class Utils
     /**
      * @param mixed $class
      * @param bool $public_only
+     *
      * @return array
+     *
      * @throws ReflectionException
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of instantiating ReflectionClass; leaving unannotated satisfies both.
      */
     public static function getClassProperties(mixed $class, bool $public_only = true): array
     {
@@ -250,8 +272,12 @@ final class Utils
     /**
      * @param array $a1
      * @param array $a2
+     *
      * @return array
+     *
      * @noinspection TypeUnsafeComparisonInspection
+     *
+     * @psalm-pure
      */
     public static function array_diff_recursive(array $a1, array $a2): array // phpcs:ignore
     {
@@ -277,7 +303,10 @@ final class Utils
 
     /**
      * @param string $data
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     public static function base64UrlEncode(string $data): string
     {
@@ -286,7 +315,10 @@ final class Utils
 
     /**
      * @param string $data
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     public static function base64UrlDecode(string $data): string
     {
@@ -366,7 +398,10 @@ final class Utils
     /**
      * @param string $ip
      * @param string $range
+     *
      * @return bool
+     *
+     * @psalm-pure
      */
     private static function inRange(string $ip, string $range): bool
     {

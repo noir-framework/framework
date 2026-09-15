@@ -109,7 +109,10 @@ class EasyTranslator implements Translator
 
     /**
      * @param string $message
+     *
      * @return string
+     *
+     * @psalm-mutation-free
      */
     private function urlTranslate(string $message): string
     {

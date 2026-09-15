@@ -26,7 +26,10 @@ class Url implements Schema
 
     /**
      * @param bool $state
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function required(bool $state = true): self
     {
@@ -37,7 +40,10 @@ class Url implements Schema
 
     /**
      * @param bool $state
+     *
      * @return $this
+     *
+     * @psalm-external-mutation-free
      */
     public function nullable(bool $state = true): self
     {
@@ -46,6 +52,9 @@ class Url implements Schema
         return $this;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function require_https(bool $state = true): self //phpcs:ignore
     {
         $this->https = $state;
@@ -106,8 +115,12 @@ class Url implements Schema
     /**
      * @param $value
      * @param $base
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function merge($value, $base)
@@ -118,8 +131,12 @@ class Url implements Schema
     /**
      * @param $value
      * @param Context $context
+     *
      * @return mixed
+     *
      * @psalm-suppress MissingParamType
+     *
+     * @psalm-pure
      */
     #[Override]
     public function complete($value, Context $context)

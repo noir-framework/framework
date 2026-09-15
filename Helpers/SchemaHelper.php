@@ -6,14 +6,21 @@ namespace Noirapi\Helpers;
 
 use Nette\Schema\ValidationException;
 
-/** @psalm-api  */
+/**
+ * @psalm-api
+ *
+ * @psalm-external-mutation-free
+ */
 class SchemaHelper
 {
     public static array $messages = [];
 
     /**
      * @param array $messages
+     *
      * @return void
+     *
+     * @psalm-external-mutation-free
      */
     public static function set(array $messages): void
     {
@@ -24,8 +31,12 @@ class SchemaHelper
      * @param string $code
      * @param string $field
      * @param string $message
+     *
      * @return void
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function addMessage(string $code, string $field, string $message): void
     {
@@ -34,7 +45,10 @@ class SchemaHelper
 
     /**
      * @param ValidationException $exceptions
+     *
      * @return string
+     *
+     * @psalm-external-mutation-free
      */
     public static function message(ValidationException $exceptions): string
     {
