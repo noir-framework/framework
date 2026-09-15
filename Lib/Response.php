@@ -28,7 +28,15 @@ use RuntimeException;
 use SimpleXMLElement;
 use stdClass;
 
-/** @psalm-api */
+/**
+ * @psalm-api
+ * @SuppressWarnings("PHPMD.TooManyFields") this is a plain value object
+ * representing the full outgoing HTTP response; each field is a distinct,
+ * independently-needed piece of response state (status, headers, body, etc.).
+ * @SuppressWarnings("PHPMD.ExcessiveClassComplexity") coordinates serialization
+ * across every supported content type (HTML/JSON/XML/CSV) - complexity is
+ * inherent to that responsibility, not a design smell.
+ */
 class Response
 {
     /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */

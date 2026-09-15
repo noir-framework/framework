@@ -13,7 +13,12 @@ use Latte\Extension;
 use Noirapi\Config;
 use Override;
 
-/** @psalm-api  */
+/**
+ * @psalm-api
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods") each public method is a
+ * distinct Latte tag handler registered in getTags() - Latte's Extension
+ * contract requires them to be callable, so this can't shrink below the tag count.
+ */
 class Macros extends Extension
 {
     /**

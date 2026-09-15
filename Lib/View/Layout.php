@@ -12,6 +12,9 @@ use Noirapi\Interfaces\Translator;
  * @psalm-api
  *
  * @psalm-external-mutation-free
+ *
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods") one public fluent setter per
+ * layout concern (title, css, js, breadcrumbs, etc.) is the intended API shape.
  */
 class Layout
 {

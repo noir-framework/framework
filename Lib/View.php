@@ -23,6 +23,11 @@ use Noirapi\Lib\View\Macros;
 use RuntimeException;
 use stdClass;
 
+/**
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects") coordinates the Latte
+ * engine, layout, translator, and response together to render a template -
+ * that coordination is this class's entire purpose.
+ */
 class View
 {
     public Request $request;

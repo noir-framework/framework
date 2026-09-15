@@ -17,7 +17,13 @@ use Nette\Schema\Message;
 use Nette\Schema\Schema;
 use Override;
 
-/** @psalm-api  */
+/**
+ * @psalm-api
+ * @SuppressWarnings("PHPMD.ShortClassName") matches its Schema-type siblings
+ * (Port, Numeric, Domain, Cidr) - short, direct names are the convention here.
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods") one public fluent setter per
+ * validation option is the intended API shape of this Schema implementation.
+ */
 class Ip implements Schema
 {
     private bool $required = false;

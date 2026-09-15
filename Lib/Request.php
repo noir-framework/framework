@@ -7,6 +7,9 @@ namespace Noirapi\Lib;
 /**
  * @psalm-suppress MissingConstructor
  * @psalm-api
+ * @SuppressWarnings("PHPMD.TooManyFields") this is a plain value object
+ * representing the full incoming HTTP request; each field is a distinct,
+ * independently-needed piece of request state (headers, method, uri, etc.).
  */
 class Request
 {

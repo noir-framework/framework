@@ -30,7 +30,12 @@ use function str_split;
 use function strlen;
 use function vsprintf;
 
-/** @psalm-api  */
+/**
+ * @psalm-api
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods") a static grab-bag of small,
+ * unrelated helpers is this class's intended purpose - splitting it would
+ * just scatter one-line helpers across arbitrarily-named classes.
+ */
 final class Utils
 {
     /**

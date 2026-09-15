@@ -29,6 +29,10 @@ use function glob;
  *
  * Result structure: [controllerShortName => [templateName => string[]]]
  * e.g. ['Deliveries' => ['index' => ['locations', 'sort', 'by'], 'edit' => [...]]]
+ *
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects") walking a controller's AST
+ * for display() calls necessarily touches many PhpParser node types - that's
+ * inherent to source-level static analysis, not a design smell.
  */
 class ControllerAnalyzer
 {

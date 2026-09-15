@@ -34,6 +34,13 @@ use ReflectionNamedType;
 use function in_array;
 use function strlen;
 
+/**
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects") this is the framework's
+ * central dispatcher - matching a request to a controller method necessarily
+ * touches routing, reflection, the DI attributes, and every exception type
+ * a controller can throw.
+ * @SuppressWarnings("PHPMD.ExcessiveClassComplexity") same rationale as above.
+ */
 class Route
 {
     /**

@@ -102,7 +102,7 @@ class PDOStatement extends NativePdoStatement
         $result = $query;
 
         foreach ($bindings as $value) {
-            $valueForPresentation = $this->translateValueForPresentationInsideStatement($value);
+            $valueForPresentation = $this->formatBoundValueForLog($value);
             $result = preg_replace('/\?/', $valueForPresentation, $result, 1);
 
             if ($result === null) {
@@ -117,7 +117,7 @@ class PDOStatement extends NativePdoStatement
      * @param mixed $value
      * @return string
      */
-    private function translateValueForPresentationInsideStatement(mixed $value): string
+    private function formatBoundValueForLog(mixed $value): string
     {
 
         $result = $value;

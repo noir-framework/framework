@@ -27,7 +27,12 @@ use Noirapi\Helpers\Schema\Time;
 use Noirapi\Helpers\Schema\Url;
 use RuntimeException;
 
-/** @psalm-api  */
+/**
+ * @psalm-api
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects") this is a static factory
+ * facade over every Schema type (Port, Numeric, Domain, Cidr, Ip, etc.) -
+ * referencing all of them is the entire point of this class.
+ */
 final class Expect2
 {
     /**

@@ -14,6 +14,9 @@ use RuntimeException;
 /**
  * @psalm-consistent-constructor
  * @psalm-api
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods") this is the base ORM query
+ * builder every app model extends; each public method is a distinct query
+ * operation (select/insert/update/delete/etc.) consumers rely on directly.
  */
 class Model
 {

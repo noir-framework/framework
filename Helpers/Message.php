@@ -6,7 +6,11 @@ namespace Noirapi\Helpers;
 
 use Nette\Schema\ValidationException;
 
-/** @psalm-api */
+/**
+ * @psalm-api
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods") one public fluent setter per
+ * message-style variant is the intended API shape of this builder.
+ */
 class Message
 {
     /**

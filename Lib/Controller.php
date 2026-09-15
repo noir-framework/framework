@@ -24,7 +24,14 @@ use Throwable;
 use Tracy\Debugger;
 use function strlen;
 
-/** @psalm-api */
+/**
+ * @psalm-api
+ * @SuppressWarnings("PHPMD.CouplingBetweenObjects") this is the base controller
+ * every app controller extends; it's the intended integration point between
+ * the request lifecycle, model resolution, view rendering, and auth/session
+ * handling, so touching most of the framework's public surface is its job.
+ * @SuppressWarnings("PHPMD.ExcessiveClassComplexity") same rationale as above.
+ */
 class Controller
 {
     public Request $request;
