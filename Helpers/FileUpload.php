@@ -146,8 +146,8 @@ class FileUpload
         $this->validateBasics();
 
         if (
-            in_array($this->file['type'], $this->image_types, true)
-            && ($this->minWidth !== null || $this->minHeight !== null || $this->maxWidth !== null || $this->maxHeight !== null)
+            ($this->minWidth !== null || $this->minHeight !== null || $this->maxWidth !== null || $this->maxHeight !== null)
+            && in_array($this->file['type'], $this->image_types, true)
         ) {
             $this->validateImageDimensions();
         }

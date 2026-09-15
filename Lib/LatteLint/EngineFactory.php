@@ -40,11 +40,9 @@ class EngineFactory
         // App-level macros (optional) - App\Lib\Macros does not exist until the
         // consuming app scaffolds it; the class_exists guard makes this safe at
         // runtime even though static analysis can't see the class yet.
-        /**
-         * @noinspection PhpUndefinedClassInspection
-         * @noinspection PhpParamsInspection
-         */
+        /** @noinspection PhpUndefinedClassInspection */
         if (class_exists(\App\Lib\Macros::class)) {
+            /** @noinspection PhpParamsInspection */
             $engine->addExtension(new \App\Lib\Macros());
         }
 

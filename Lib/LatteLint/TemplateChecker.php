@@ -225,7 +225,7 @@ class TemplateChecker
     {
         $vars = [];
         // Matches: {varType SomeType\With\Namespace[] $varName}
-        preg_match_all('/\{varType\s+([^\s{}]+)\s+\$(\w+)\s*\}/', $source, $matches, PREG_SET_ORDER);
+        preg_match_all('/\{varType\s+([^\s{}]+)\s+\$(\w+)\s*}/', $source, $matches, PREG_SET_ORDER);
         foreach ($matches as $m) {
             $vars[$m[2]] = $m[1];
         }
@@ -244,7 +244,7 @@ class TemplateChecker
     private function extractVarTypeLines(string $source): array
     {
         $lines = [];
-        preg_match_all('/\{varType\s+([^\s{}]+)\s+\$(\w+)\s*\}/', $source, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+        preg_match_all('/\{varType\s+([^\s{}]+)\s+\$(\w+)\s*}/', $source, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
         foreach ($matches as $m) {
             $name = $m[2][0];
             $offset = $m[0][1];
@@ -267,7 +267,7 @@ class TemplateChecker
     private function extractImplicitTagVarUsage(string $source): array
     {
         $used = [];
-        if (preg_match('/\{pager\s*\}/', $source) === 1) {
+        if (preg_match('/\{pager\s*}/', $source) === 1) {
             $used['pager'] = true;
         }
 
