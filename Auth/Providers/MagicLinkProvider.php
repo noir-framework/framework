@@ -6,6 +6,7 @@ namespace Noirapi\Auth\Providers;
 
 use Noirapi\Auth\Contracts\AuthProviderInterface;
 use Noirapi\Helpers\Mail;
+use Override;
 use RuntimeException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
@@ -18,22 +19,22 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
  *
  * @psalm-api
  */
-class MagicLinkProvider implements AuthProviderInterface
+readonly class MagicLinkProvider implements AuthProviderInterface
 {
     /**
      * @psalm-mutation-free
      */
     public function __construct(
-        private readonly string $mailDsn,
-        private readonly string $mailFrom,
-        private readonly string $appUrl,
+        private string $mailDsn,
+        private string $mailFrom,
+        private string $appUrl,
     ) {
     }
 
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return 'magic_link';
@@ -42,7 +43,7 @@ class MagicLinkProvider implements AuthProviderInterface
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function getLabel(): string
     {
         return 'Magic Link';
@@ -51,7 +52,7 @@ class MagicLinkProvider implements AuthProviderInterface
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function getIcon(): string
     {
         return 'bi-envelope-at';
@@ -61,6 +62,7 @@ class MagicLinkProvider implements AuthProviderInterface
      * Send the magic-link sign-in email.
      *
      * @throws RuntimeException | TransportExceptionInterface
+     * @noinspection PhpUnused
      */
     public function sendEmail(
         string $toEmail,

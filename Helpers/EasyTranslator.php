@@ -112,15 +112,7 @@ class EasyTranslator implements Translator
             }
         }
 
-        if (isset($translations[$this->controller][$this->function][$key])) {
-            return $translations[$this->controller][$this->function][$key];
-        }
-
-        if (isset($translations[$this->controller][$key])) {
-            return $translations[$this->controller][$key];
-        }
-
-        return $translations[$key] ?? null;
+        return $translations[$this->controller][$this->function][$key] ?? $translations[$this->controller][$key] ?? $translations[$key] ?? null;
     }
 
     /**

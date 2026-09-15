@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\Session;
 
+use Override;
+use SessionHandlerInterface;
+
 /** @psalm-api */
-abstract class AbstractSessionHandler implements \SessionHandlerInterface
+abstract class AbstractSessionHandler implements SessionHandlerInterface
 {
     /** Set when a session cookie arrives but the backing session was missing or expired. */
     private static bool $staleSession = false;
 
     /**
      * @psalm-external-mutation-free
+     * @noinspection PhpUnused
      */
     public static function wasStale(): bool
     {
@@ -21,7 +25,7 @@ abstract class AbstractSessionHandler implements \SessionHandlerInterface
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function open(string $path, string $name): bool
     {
         return true;
@@ -30,13 +34,13 @@ abstract class AbstractSessionHandler implements \SessionHandlerInterface
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function close(): bool
     {
         return true;
     }
 
-    #[\Override]
+    #[Override]
     public function read(string $id): string|false
     {
         $data = $this->doRead($id);
@@ -52,7 +56,7 @@ abstract class AbstractSessionHandler implements \SessionHandlerInterface
     /**
      * @psalm-mutation-free
      */
-    #[\Override]
+    #[Override]
     public function write(string $id, string $data): bool
     {
         return $this->doWrite($id, $data);
@@ -61,7 +65,7 @@ abstract class AbstractSessionHandler implements \SessionHandlerInterface
     /**
      * @psalm-mutation-free
      */
-    #[\Override]
+    #[Override]
     public function destroy(string $id): bool
     {
         return $this->doDestroy($id);
@@ -70,7 +74,7 @@ abstract class AbstractSessionHandler implements \SessionHandlerInterface
     /**
      * @psalm-mutation-free
      */
-    #[\Override]
+    #[Override]
     public function gc(int $max_lifetime): int|false
     {
         return $this->doGc($max_lifetime);

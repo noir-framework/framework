@@ -10,6 +10,7 @@ declare(strict_types=1);
 use Noirapi\Config;
 use Noirapi\Helpers\TracyFileSession;
 use Noirapi\Helpers\Utils;
+use Noirapi\Lib\Session\SessionHandlerFactory;
 use Tracy\Debugger;
 use Tracy\NativeSession;
 
@@ -40,7 +41,7 @@ Config::init($config);
 
 $_sessionCfg = Config::get('session');
 if (is_array($_sessionCfg) && isset($_sessionCfg['driver'])) {
-    $handler = \Noirapi\Lib\Session\SessionHandlerFactory::create($_sessionCfg);
+    $handler = SessionHandlerFactory::create($_sessionCfg);
     session_set_save_handler($handler, true);
 }
 unset($_sessionCfg, $handler);
@@ -67,6 +68,7 @@ if (session_save_path() !== false && is_dir(session_save_path())) {
     $session = new NativeSession();
 }
 
+/** @noinspection PhpUnhandledExceptionInspection */
 Debugger::setSessionStorage($session);
 
 if (Utils::isDev($_SERVER["REMOTE_ADDR"] ?? "")) {

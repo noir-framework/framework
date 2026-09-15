@@ -16,6 +16,8 @@ use Latte\Essential\Nodes\ParametersNode;
 use Latte\Essential\Nodes\VarNode;
 use Latte\Extension;
 
+use Override;
+use stdClass;
 use function is_string;
 use function str_starts_with;
 
@@ -45,11 +47,11 @@ class VarUsageCollector extends Extension
     }
 
     /**
-     * @return array<string, callable(TemplateNode): (void|\stdClass)>
+     * @return array<string, callable(TemplateNode): (void|stdClass)>
      *
      * @psalm-mutation-free
      */
-    #[\Override]
+    #[Override]
     public function getPasses(): array
     {
         return ['lintVarUsage' => $this->collectPass(...)];
@@ -57,7 +59,7 @@ class VarUsageCollector extends Extension
 
     private function collectPass(TemplateNode $node): void
     {
-        (new NodeTraverser())->traverse($node, $this->enter(...));
+        new NodeTraverser()->traverse($node, $this->enter(...));
     }
 
     /**

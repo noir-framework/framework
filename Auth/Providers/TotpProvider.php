@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Auth\Providers;
 
 use Noirapi\Auth\Contracts\AuthProviderInterface;
+use Override;
 use RobThree\Auth\TwoFactorAuth;
 use RobThree\Auth\TwoFactorAuthException;
 
@@ -32,6 +33,10 @@ class TotpProvider implements AuthProviderInterface
 {
     private TwoFactorAuth $tfa;
 
+    /**
+     * @param string $issuer
+     * @throws TwoFactorAuthException
+     */
     public function __construct(string $issuer)
     {
         $this->tfa = new TwoFactorAuth($issuer);
@@ -42,7 +47,7 @@ class TotpProvider implements AuthProviderInterface
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return 'totp';
@@ -51,7 +56,7 @@ class TotpProvider implements AuthProviderInterface
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function getLabel(): string
     {
         return 'Authenticator App';
@@ -60,7 +65,7 @@ class TotpProvider implements AuthProviderInterface
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function getIcon(): string
     {
         return 'bi-shield-lock';
@@ -72,6 +77,7 @@ class TotpProvider implements AuthProviderInterface
      * Generate a new TOTP secret key (Base32-encoded, 160-bit).
      *
      * @throws TwoFactorAuthException
+     * @noinspection PhpUnused
      */
     public function createSecret(): string
     {
@@ -84,6 +90,7 @@ class TotpProvider implements AuthProviderInterface
      * @param string $accountName  Typically the user's email address.
      * @param string $secret       The secret returned by createSecret().
      * @throws TwoFactorAuthException
+     * @noinspection PhpUnused
      */
     public function getQRCodeUri(string $accountName, string $secret): string
     {
@@ -93,10 +100,10 @@ class TotpProvider implements AuthProviderInterface
     /**
      * Verify a 6-digit TOTP code against the stored secret.
      *
-     * @param string $storedSecret  Value from users.tfa column.
-     * @param string $code          User-submitted 6-digit code.
-     * @param int    $window        Clock-drift tolerance in 30-second steps.
-     * @throws TwoFactorAuthException
+     * @param string $storedSecret Value from users.tfa column.
+     * @param string $code User-submitted 6-digit code.
+     * @param int $window Clock-drift tolerance in 30-second steps.
+     * @return bool
      */
     public function verify(string $storedSecret, string $code, int $window = 2): bool
     {

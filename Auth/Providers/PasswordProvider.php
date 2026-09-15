@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Noirapi\Auth\Providers;
 
+use Closure;
 use Noirapi\Auth\AuthMethod;
 use Noirapi\Auth\AuthResult;
 use Noirapi\Auth\Contracts\AuthProviderInterface;
+use Override;
 
 /**
  * Password-based authentication provider.
@@ -27,34 +29,44 @@ use Noirapi\Auth\Contracts\AuthProviderInterface;
  *
  * @psalm-api
  */
-class PasswordProvider implements AuthProviderInterface
+readonly class PasswordProvider implements AuthProviderInterface
 {
     /**
-     * @param \Closure(string $email): ?array{'password':string, 'name':?string, 'avatar_url':?string} $userLookup
+     * @param Closure(string $email): ?array{'password':string, 'name':?string, 'avatar_url':?string} $userLookup
      *
      * @psalm-mutation-free
      */
     public function __construct(
-        private readonly \Closure $userLookup,
-    ) {}
+        private Closure $userLookup,
+    ) {
+    }
 
     /**
      * @psalm-pure
      */
-    #[\Override]
-    public function getName(): string  { return 'password'; }
+    #[Override]
+    public function getName(): string
+    {
+        return 'password';
+    }
 
     /**
      * @psalm-pure
      */
-    #[\Override]
-    public function getLabel(): string { return 'Password'; }
+    #[Override]
+    public function getLabel(): string
+    {
+        return 'Password';
+    }
 
     /**
      * @psalm-pure
      */
-    #[\Override]
-    public function getIcon(): string  { return 'bi-lock'; }
+    #[Override]
+    public function getIcon(): string
+    {
+        return 'bi-lock';
+    }
 
     /**
      * Verify credentials and return an AuthResult on success, null on failure.
@@ -67,10 +79,11 @@ class PasswordProvider implements AuthProviderInterface
             /* Timing-safe: still run a hash to prevent user-enumeration via timing */
             /** @psalm-suppress UnusedFunctionCall Result intentionally discarded - only the CPU cost matters here. */
             password_verify($password, '$2y$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ01234');
+
             return null;
         }
 
-        if (!password_verify($password, $data['password'])) {
+        if (! password_verify($password, $data['password'])) {
             return null;
         }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Lib\Session;
 
 use Memcached;
+use Override;
 use RuntimeException;
 
 /**
@@ -36,7 +37,7 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     /**
      * @psalm-mutation-free
      */
-    #[\Override]
+    #[Override]
     protected function doRead(string $id): ?string
     {
         $val = $this->mc->get($this->prefix . $id);
@@ -47,7 +48,7 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     /**
      * @psalm-mutation-free
      */
-    #[\Override]
+    #[Override]
     protected function doWrite(string $id, string $data): bool
     {
         return $this->mc->set($this->prefix . $id, $data, $this->ttl);
@@ -56,7 +57,7 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     /**
      * @psalm-mutation-free
      */
-    #[\Override]
+    #[Override]
     protected function doDestroy(string $id): bool
     {
         $this->mc->delete($this->prefix . $id);
@@ -67,7 +68,7 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     protected function doGc(int $maxLifetime): int|false
     {
         return 0;

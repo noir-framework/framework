@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Auth\Providers;
 
 use Noirapi\Auth\OAuthResult;
+use Override;
 use RuntimeException;
 
 /**
@@ -27,7 +28,7 @@ class GoogleProvider extends OAuthProvider
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function getName(): string
     {
         return 'google';
@@ -36,7 +37,7 @@ class GoogleProvider extends OAuthProvider
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function getLabel(): string
     {
         return 'Google';
@@ -45,7 +46,7 @@ class GoogleProvider extends OAuthProvider
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     public function getIcon(): string
     {
         return 'bi-google';
@@ -54,7 +55,7 @@ class GoogleProvider extends OAuthProvider
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     protected function getAuthorizationUrl(): string
     {
         return 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -63,7 +64,7 @@ class GoogleProvider extends OAuthProvider
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     protected function getTokenUrl(): string
     {
         return 'https://oauth2.googleapis.com/token';
@@ -74,7 +75,7 @@ class GoogleProvider extends OAuthProvider
      *
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     protected function getScopes(): array
     {
         return ['openid', 'email', 'profile'];
@@ -85,7 +86,7 @@ class GoogleProvider extends OAuthProvider
      *
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     protected function extraAuthParams(): array
     {
         return [
@@ -97,7 +98,7 @@ class GoogleProvider extends OAuthProvider
     /**
      * @throws RuntimeException
      */
-    #[\Override]
+    #[Override]
     public function fetchUser(string $accessToken): OAuthResult
     {
         $data = $this->bearerGet(

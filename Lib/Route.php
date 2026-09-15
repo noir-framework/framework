@@ -23,6 +23,7 @@ use Noirapi\Lib\Attributes\AutoWire;
 use Noirapi\Lib\Attributes\NotFound;
 use Noirapi\Lib\Tracy\GenericPanel;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
 use ReflectionParameter;
 use Swoole\Http\Server;
@@ -45,17 +46,14 @@ class Route
 {
     /**
      * @psalm-suppress PropertyNotSetInConstructor
-     * @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection
      */
     private Request $request;
     /**
      * @psalm-suppress PropertyNotSetInConstructor
-     * @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection
      */
     private Response $response;
     /**
      * @psalm-suppress PropertyNotSetInConstructor
-     * @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection
      */
     private array $server;
 
@@ -226,7 +224,7 @@ class Route
         if ($detector !== null && class_exists($detector)) {
             $ip = $this->server['HTTP_X_FORWARDED_FOR'] ?? $this->server['REMOTE_ADDR'] ?? '';
             $ip = explode(',', $ip)[0];
-            $detected = (new $detector())->detect(trim($ip));
+            $detected = new $detector()->detect(trim($ip));
             if (! isset($languages[$detected])) {
                 $detected = null;
             }
@@ -255,7 +253,6 @@ class Route
             $method = $this->request->route[1][1];
             $args = $this->request->route[2];
 
-            /** @noinspection PhpUnhandledExceptionInspection */
             $reflection = new ReflectionMethod($controller, $method);
 
             $realArgs = [];
@@ -303,6 +300,7 @@ class Route
      * @param Controller $controller
      * @param array $args
      * @return array|false
+     * @throws ReflectionException
      */
     private function resolveAutoWiredArgs(ReflectionMethod $reflection, Controller $controller, array &$args): array|false
     {
@@ -382,6 +380,7 @@ class Route
         Controller $controller,
     ): array {
         if ($typeReflection->isEnum() && $typeReflection->implementsInterface(BackedEnum::class)) {
+            /** @noinspection PhpUndefinedMethodInspection */
             $result = $type::tryFrom($value);
 
             return $result === null ? ['status' => 'not_found'] : ['status' => 'ok', 'value' => $result];

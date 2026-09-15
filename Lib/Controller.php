@@ -20,9 +20,9 @@ use Noirapi\Helpers\MessageType;
 use Noirapi\Helpers\RestMessage;
 use Noirapi\Helpers\Utils;
 use Noirapi\Lib\Tracy\PDOBarPanel;
+use function strlen;
 use Throwable;
 use Tracy\Debugger;
-use function strlen;
 
 /**
  * @psalm-api
@@ -40,7 +40,9 @@ class Controller
     //phpcs:disable
     public ?Model $model = null {
         get => $this->model ??= $this->resolveModel();
-        set { $this->model = $value; }
+        set {
+            $this->model = $value;
+        }
     }
     //phpcs:enable
     public ?View $view = null;
@@ -67,7 +69,7 @@ class Controller
 
         // We need this when we are moving across domains
         if (isset($this->request->get['message'], $this->request->get['type'])) {
-            $type    = MessageType::tryFrom((string) $this->request->get['type']) ?? MessageType::Info;
+            $type = MessageType::tryFrom((string) $this->request->get['type']) ?? MessageType::Info;
             $message = strip_tags((string) $this->request->get['message']);
             if ($message !== '') {
                 $this->message($message, $type);
@@ -83,10 +85,11 @@ class Controller
         }
         $driver = array_key_first($db);
         $params = $db[$driver];
-        $class  = static::MODEL_PATH . Utils::getClassName($this::class);
+        $class = static::MODEL_PATH . Utils::getClassName($this::class);
         if (class_exists($class) && is_subclass_of($class, Model::class)) {
             return new $class($driver, $params);
         }
+
         return new Model($driver, $params);
     }
 
@@ -306,6 +309,7 @@ class Controller
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of filter_var(); leaving unannotated satisfies both.
+     * @noinspection UnknownInspectionInspection
      */
     private function refererCrossDomainUrl(array $parsed): string
     {
@@ -354,6 +358,7 @@ class Controller
      * @return void
      * @throws LoginException
      * @throws MessageException
+     * @noinspection PhpUnused
      */
     public function hasResource(Acl $acl, string $return_path = '/', int $status_code = 301): void
     {
@@ -375,6 +380,7 @@ class Controller
      * @return void
      * @throws LoginException
      * @throws MessageException
+     * @noinspection PhpUnused
      */
     public function isAllowed(Acl $acl, string $return_path = '/', int $status_code = 301): void
     {

@@ -10,6 +10,7 @@ use Noirapi\Auth\Providers\GoogleProvider;
 use Noirapi\Auth\Providers\MagicLinkProvider;
 use Noirapi\Auth\Providers\PasswordProvider;
 use Noirapi\Auth\Providers\TotpProvider;
+use RobThree\Auth\TwoFactorAuthException;
 use RuntimeException;
 
 /**
@@ -85,12 +86,14 @@ class AuthManager
 
     /**
      * @psalm-external-mutation-free
+     * @noinspection PhpUnused
      */
     public function setPasswordProvider(PasswordProvider $provider): void
     {
         $this->passwordProvider = $provider;
     }
 
+    /** @noinspection PhpUnused */
     public function getPasswordProvider(): ?PasswordProvider
     {
         return $this->passwordProvider;
@@ -98,6 +101,7 @@ class AuthManager
 
     /**
      * @psalm-mutation-free
+     * @noinspection PhpUnused
      */
     public function hasPasswordProvider(): bool
     {
@@ -114,6 +118,7 @@ class AuthManager
         $this->magicLinkProvider = $provider;
     }
 
+    /** @noinspection PhpUnused */
     public function getMagicLinkProvider(): ?MagicLinkProvider
     {
         return $this->magicLinkProvider;
@@ -121,6 +126,7 @@ class AuthManager
 
     /**
      * @psalm-mutation-free
+     * @noinspection PhpUnused
      */
     public function hasMagicLinkProvider(): bool
     {
@@ -141,6 +147,7 @@ class AuthManager
      * @throws RuntimeException if auth.totp.issuer is not set in config
      *
      * @psalm-mutation-free
+     * @noinspection PhpUnused
      */
     public function getTotpProvider(): TotpProvider
     {
@@ -168,9 +175,12 @@ class AuthManager
      *     magic_link:
      *       enabled: true    # also requires mail.dsn to be set
      *
-     * @param array<string,mixed> $config      Contents of Config::get('auth') ?? []
-     * @param array<string,mixed> $mailConfig  Contents of Config::get('mail')  ?? []
-     * @param string              $appUrl      Base URL used in magic-link generation
+     * @param array<string,mixed> $config Contents of Config::get('auth') ?? []
+     * @param array<string,mixed> $mailConfig Contents of Config::get('mail')  ?? []
+     * @param string $appUrl Base URL used in magic-link generation
+     * @return AuthManager
+     * @throws TwoFactorAuthException
+     * @noinspection PhpUnused
      */
     public static function fromConfig(
         array  $config,

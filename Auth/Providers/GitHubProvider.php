@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Auth\Providers;
 
 use Noirapi\Auth\OAuthResult;
+use Override;
 use RuntimeException;
 
 /**
@@ -29,25 +30,34 @@ class GitHubProvider extends OAuthProvider
     /**
      * @psalm-pure
      */
-    #[\Override]
-    public function getName(): string  { return 'github'; }
+    #[Override]
+    public function getName(): string
+    {
+        return 'github';
+    }
 
     /**
      * @psalm-pure
      */
-    #[\Override]
-    public function getLabel(): string { return 'GitHub'; }
+    #[Override]
+    public function getLabel(): string
+    {
+        return 'GitHub';
+    }
 
     /**
      * @psalm-pure
      */
-    #[\Override]
-    public function getIcon(): string  { return 'bi-github'; }
+    #[Override]
+    public function getIcon(): string
+    {
+        return 'bi-github';
+    }
 
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     protected function getAuthorizationUrl(): string
     {
         return 'https://github.com/login/oauth/authorize';
@@ -56,18 +66,18 @@ class GitHubProvider extends OAuthProvider
     /**
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     protected function getTokenUrl(): string
     {
         return 'https://github.com/login/oauth/access_token';
     }
 
     /**
-     * @return string[] 
+     * @return string[]
      *
      * @psalm-pure
      */
-    #[\Override]
+    #[Override]
     protected function getScopes(): array
     {
         return ['read:user', 'user:email'];
@@ -76,7 +86,7 @@ class GitHubProvider extends OAuthProvider
     /**
      * @throws RuntimeException
      */
-    #[\Override]
+    #[Override]
     public function fetchUser(string $accessToken): OAuthResult
     {
         $headers = ['User-Agent' => self::USER_AGENT];
@@ -91,13 +101,14 @@ class GitHubProvider extends OAuthProvider
            If not returned in the user object, fetch the verified primary one. */
         $email = null;
 
-        if (!empty($data['email'])) {
+        if (! empty($data['email'])) {
             $email = strtolower(trim($data['email']));
         } else {
             $emails = $this->bearerGet('https://api.github.com/user/emails', $accessToken, $headers);
             foreach ($emails as $entry) {
-                if (!empty($entry['primary']) && !empty($entry['verified'])) {
+                if (! empty($entry['primary']) && ! empty($entry['verified'])) {
                     $email = strtolower(trim($entry['email']));
+
                     break;
                 }
             }

@@ -11,6 +11,7 @@ class SQLiteSessionHandler extends AbstractSessionHandler
 {
     private PDO $pdo;
 
+    /** @noinspection SqlNoDataSourceInspection */
     public function __construct(string $path)
     {
         $this->pdo = new PDO('sqlite:' . $path, null, null, [
@@ -29,6 +30,8 @@ class SQLiteSessionHandler extends AbstractSessionHandler
     /**
      * @param string $id
      * @return string|null
+     * @noinspection SqlResolve
+     * @noinspection SqlNoDataSourceInspection
      */
     #[Override]
     protected function doRead(string $id): ?string
@@ -37,13 +40,14 @@ class SQLiteSessionHandler extends AbstractSessionHandler
         $stmt->execute([$id]);
         $row = $stmt->fetch();
 
-        if (!$row) {
+        if (! $row) {
             return null;
         }
 
         $maxLifetime = (int)ini_get('session.gc_maxlifetime');
         if ($row->last_activity < time() - $maxLifetime) {
             $this->doDestroy($id);
+
             return null;
         }
 
@@ -54,6 +58,9 @@ class SQLiteSessionHandler extends AbstractSessionHandler
      * @param string $id
      * @param string $data
      * @return bool
+     * @noinspection SqlResolve
+     * @noinspection SqlNoDataSourceInspection
+     * @noinspection SqlIdentifier
      */
     #[Override]
     protected function doWrite(string $id, string $data): bool
@@ -61,12 +68,15 @@ class SQLiteSessionHandler extends AbstractSessionHandler
         $stmt = $this->pdo->prepare(
             'INSERT OR REPLACE INTO sessions (id, data, last_activity) VALUES (?, ?, ?)'
         );
+
         return $stmt->execute([$id, $data, time()]);
     }
 
     /**
      * @param string $id
      * @return bool
+     * @noinspection SqlResolve
+     * @noinspection SqlNoDataSourceInspection
      */
     #[Override]
     protected function doDestroy(string $id): bool
@@ -77,12 +87,15 @@ class SQLiteSessionHandler extends AbstractSessionHandler
     /**
      * @param int $maxLifetime
      * @return int|false
+     * @noinspection SqlResolve
+     * @noinspection SqlNoDataSourceInspection
      */
     #[Override]
     protected function doGc(int $maxLifetime): int|false
     {
         $stmt = $this->pdo->prepare('DELETE FROM sessions WHERE last_activity < ?');
         $stmt->execute([time() - $maxLifetime]);
+
         return $stmt->rowCount();
     }
 }

@@ -37,6 +37,10 @@ $server->on('start', function () use ($listen_ip, $listen_port) {
     echo "Swoole http server is started at http://$listen_ip:$listen_port\n";
 });
 
+/**
+ * @throws Throwable
+ * @throws JsonException
+ */
 $server->on('request', function (Swoole\Http\Request $request, Swoole\Http\Response $response) use ($server) {
 
     $request->server['headers'] = $request->header;
