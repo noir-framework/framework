@@ -6,12 +6,12 @@ use Noirapi\Config;
 use Noirapi\Lib\Route;
 use Swoole\Http\Server;
 
-if(! extension_loaded('swoole')) {
+if (! extension_loaded('swoole')) {
     throw new RuntimeException('Swoole extension is mandatory');
 }
 
 /** @psalm-suppress MissingFile */
-include(__DIR__ . '/include.php');
+include (__DIR__ . '/include.php');
 
 $listen_ip = Config::get('swoole.listen_ip') ?? '127.0.0.1';
 $listen_port = Config::get('swoole.listen_port') ?? 9400;
@@ -23,7 +23,7 @@ $server->set([
     'task_worker_num' => Config::get('swoole.task_workers') ?? 1,
 ]);
 
-if(! empty($static_files)) {
+if (! empty($static_files)) {
     $server->set([
         'document_root'         => Config::getWwwRoot(),
         'enable_static_handler' => true,
@@ -77,7 +77,7 @@ $server->on('request', function (Swoole\Http\Request $request, Swoole\Http\Respo
 
 $server->on('Task', static function (Server $server, int $task_id, int $reactorId, mixed $data) {
 
-    if(isset($data[ 'class' ], $data[ 'params' ])) {
+    if (isset($data[ 'class' ], $data[ 'params' ])) {
         echo "Begin task: \t" . $task_id . "\t" . $data['class'] . "\n";
         $class = new $data['class']();
         /** @psalm-suppress InvalidFunctionCall $class */

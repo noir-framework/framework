@@ -70,9 +70,9 @@ class TracyFileSession implements SessionStorage
     {
         $id = $_COOKIE[$this->cookieName] ?? null;
         if (
-            !is_string($id)
-            || !preg_match('#^\w{10}\z#i', $id)
-            || !($file = @fopen($path = $this->sessionFilePath($id), 'r+b')) // intentionally @
+            ! is_string($id)
+            || ! preg_match('#^\w{10}\z#i', $id)
+            || ! ($file = @fopen($path = $this->sessionFilePath($id), 'r+b')) // intentionally @
         ) {
             $id = bin2hex(random_bytes(5));
             setcookie($this->cookieName, $id, time() + self::COOKIE_LIFETIME, '/', '', secure: false, httponly: true);
@@ -83,7 +83,7 @@ class TracyFileSession implements SessionStorage
             }
         }
 
-        if (!@flock($file, LOCK_EX)) { // intentionally @
+        if (! @flock($file, LOCK_EX)) { // intentionally @
             throw new RuntimeException("Unable to acquire exclusive lock on '$path'. " . error_get_last()['message']);
         }
 

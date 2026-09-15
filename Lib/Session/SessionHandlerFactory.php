@@ -17,16 +17,16 @@ class SessionHandlerFactory
         $driver = $cfg['driver'] ?? '';
 
         return match ($driver) {
-            'mysql'     => new MySQLSessionHandler(
-                $cfg['dsn']  ?? '',
+            'mysql' => new MySQLSessionHandler(
+                $cfg['dsn'] ?? '',
                 $cfg['user'] ?? null,
                 $cfg['pass'] ?? null,
             ),
-            'sqlite'    => new SQLiteSessionHandler(
+            'sqlite' => new SQLiteSessionHandler(
                 self::resolveSqlitePath($cfg['dsn'] ?? 'sessions.db')
             ),
             'memcached' => new MemcachedSessionHandler(
-                $cfg['dsn']    ?? 'localhost:11211',
+                $cfg['dsn'] ?? 'localhost:11211',
                 $cfg['prefix'] ?? 'sess_',
             ),
             default => throw new RuntimeException("Unknown session driver: '$driver'"),
@@ -41,6 +41,7 @@ class SessionHandlerFactory
         if ($dsn === ':memory:' || str_starts_with($dsn, '/')) {
             return $dsn;
         }
+
         return Config::getRoot() . '/data/' . $dsn;
     }
 }

@@ -31,7 +31,7 @@ class FilterExtension extends Extension
      */
     public function addFilterSource(string $class): void
     {
-        if (!in_array($class, $this->extraSources, true)) {
+        if (! in_array($class, $this->extraSources, true)) {
             $this->extraSources[] = $class;
         }
     }

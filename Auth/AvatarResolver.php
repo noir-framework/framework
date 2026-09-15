@@ -28,7 +28,7 @@ class AvatarResolver
                 ? ($account['avatar_url'] ?? null)
                 : ($account->avatar_url ?? null);
 
-            if (!empty($url)) {
+            if (! empty($url)) {
                 return (string) $url;
             }
         }

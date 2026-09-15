@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Noirapi;
 
+use function is_array;
+use JsonException;
 use Nette\Neon\Exception;
 use Nette\Neon\Neon;
-use Noirapi\Exceptions\ConfigException;
 
+use Noirapi\Exceptions\ConfigException;
+use RuntimeException;
 use Tracy\Debugger;
-use function is_array;
 
 /** @psalm-api */
 class Config
@@ -35,7 +37,7 @@ class Config
     {
         $file = self::getRoot() . '/app/config/' . $config . '.neon';
 
-        if (!is_readable($file)) {
+        if (! is_readable($file)) {
             throw new ConfigException('Config file not found:' . $file);
         }
 
@@ -77,7 +79,12 @@ class Config
 
         if (is_readable($cacheFile)) {
             $cached = file_get_contents($cacheFile);
-            $decoded = json_decode($cached, true);
+
+            try {
+                $decoded = json_decode($cached, true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException) {
+                $decoded = null;
+            }
 
             if (is_array($decoded) && ($decoded['mtime'] ?? null) === $sourceMtime) {
                 return $decoded['data'];
@@ -88,15 +95,20 @@ class Config
             $parsed = Neon::decodeFile($file);
         } catch (Exception $e) {
             Debugger::log($e, Debugger::ERROR);
+
             return null;
         }
 
         $cacheDir = dirname($cacheFile);
-        if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0777, true);
+        if (! is_dir($cacheDir) && ! mkdir($cacheDir, 0777, true) && ! is_dir($cacheDir)) {
+            throw new RuntimeException('Failed to create cache directory: ' . $cacheDir);
         }
 
-        file_put_contents($cacheFile, json_encode(['mtime' => $sourceMtime, 'data' => $parsed]), LOCK_EX);
+        file_put_contents(
+            $cacheFile,
+            json_encode(['mtime' => $sourceMtime, 'data' => $parsed], JSON_THROW_ON_ERROR),
+            LOCK_EX,
+        );
 
         return $parsed;
     }
@@ -177,6 +189,7 @@ class Config
     public static function getRoot(): string
     {
         static $root = null;
+
         return $root ??= dirname(__FILE__, 2);
     }
 

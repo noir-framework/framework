@@ -6,26 +6,26 @@ declare(strict_types=1);
 
 namespace Noirapi\Helpers;
 
-use Exception;
-use Noirapi\Config;
-use Random\Randomizer;
-use ReflectionClass;
-use ReflectionException;
-use ReflectionProperty;
-use RuntimeException;
-use stdClass;
-
 use function array_key_exists;
 use function array_slice;
 use function bin2hex;
 use function chr;
 use function count;
 use function defined;
+use Exception;
 use function is_array;
+
 use function is_object;
+use Noirapi\Config;
 use function ord;
 use function proc_close;
 use function proc_open;
+use Random\Randomizer;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionProperty;
+use RuntimeException;
+use stdClass;
 use function str_split;
 use function strlen;
 use function vsprintf;
@@ -37,7 +37,9 @@ final class Utils
      * @psalm-mutation-free
      * @psalm-suppress UnusedConstructor Private and intentionally never called - exists only to block instantiation of this static-factory class.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * @param int $len
@@ -160,7 +162,7 @@ final class Utils
             $depth = count($path);
         }
 
-        return implode('\\', array_slice($path, - $depth));
+        return implode('\\', array_slice($path, -$depth));
     }
 
     /**
@@ -323,6 +325,7 @@ final class Utils
     public static function base64UrlDecode(string $data): string
     {
         $result = base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '='), true);
+
         return $result !== false ? $result : throw new RuntimeException('base64UrlDecode failed');
     }
 
@@ -392,7 +395,7 @@ final class Utils
             '2c0f:f248::/32',
         ];
 
-        return array_any($cf_ranges, static fn($range) => self::inRange($remote_address, $range));
+        return array_any($cf_ranges, static fn ($range) => self::inRange($remote_address, $range));
     }
 
     /**
@@ -405,7 +408,7 @@ final class Utils
      */
     private static function inRange(string $ip, string $range): bool
     {
-        if (!str_contains($range, '/')) {
+        if (! str_contains($range, '/')) {
             $range .= '/32';
         }
 

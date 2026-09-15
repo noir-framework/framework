@@ -9,7 +9,6 @@ use Noirapi\Config;
 use Noirapi\Lib\PDO\PDO;
 use Opis\Database\Connection;
 use Opis\Database\Database;
-use Random\RandomException;
 use RuntimeException;
 
 /**
@@ -61,6 +60,7 @@ class Model
     {
         $static = new static();
         $static->connect(true);
+
         return $static;
     }
 
@@ -241,6 +241,7 @@ class Model
         $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_OBJ);
+
         return $pdo;
     }
 }

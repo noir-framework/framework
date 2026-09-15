@@ -12,21 +12,21 @@ declare(strict_types=1);
 namespace Noirapi\Lib;
 
 use Exception;
-use JsonException;
-use LaLit\Array2XML;
-use Noirapi\Helpers\RestMessage;
-use RuntimeException;
-use SimpleXMLElement;
-use stdClass;
-
 use function gettype;
 use function is_array;
 use function is_callable;
 use function is_float;
 use function is_int;
 use function is_object;
+
 use function is_resource;
 use function is_string;
+use JsonException;
+use LaLit\Array2XML;
+use Noirapi\Helpers\RestMessage;
+use RuntimeException;
+use SimpleXMLElement;
+use stdClass;
 
 /** @psalm-api */
 class Response
@@ -73,7 +73,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function setBody(mixed $body): Response
+    public function setBody(mixed $body): self
     {
         if ($body === null) {
             $body = '';
@@ -100,7 +100,7 @@ class Response
      * @return $this
      * @psalm-suppress PossiblyUnusedMethod
      */
-    public function appendBody(mixed $body): Response
+    public function appendBody(mixed $body): self
     {
         if (gettype($body) !== gettype($this->body)) {
             throw new RuntimeException('Invalid body type: ' . gettype($body) . ' for response->body type: ' . gettype($this->body)); //phpcs:ignore
@@ -207,7 +207,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function withStatus(int $status): Response
+    public function withStatus(int $status): self
     {
         $this->status = $status;
 
@@ -229,7 +229,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function setContentType(string $contentType): Response
+    public function setContentType(string $contentType): self
     {
         $this->contentType = $contentType;
         $this->addHeader('Content-Type', $contentType);
@@ -253,7 +253,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function withLocation(string $location): Response
+    public function withLocation(string $location): self
     {
         $this->headers['Location'] = $location;
 
@@ -282,7 +282,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function addHeader(string $key, string $value): Response
+    public function addHeader(string $key, string $value): self
     {
         $this->headers[$key] = $value;
 
@@ -298,7 +298,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function removeHeader(string $key): Response
+    public function removeHeader(string $key): self
     {
         unset($this->headers[$key]);
 
@@ -334,7 +334,7 @@ class Response
      *
      * @psalm-mutation-free
      */
-    public function downloadFile(string $filename): Response
+    public function downloadFile(string $filename): self
     {
         $this->addHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
@@ -350,7 +350,7 @@ class Response
      *
      * @psalm-mutation-free
      */
-    public function inlineFile(string $filename): Response
+    public function inlineFile(string $filename): self
     {
         $this->addHeader('Content-Disposition', 'inline; filename="' . $filename . '"');
         $this->addHeader('Content-Transfer-Encoding', 'binary');
@@ -369,7 +369,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function addCookie(string $key, string $value, int $expire = 2147483647): Response
+    public function addCookie(string $key, string $value, int $expire = 2147483647): self
     {
         $this->cookies[$key] = [
             'key'      => $key,
@@ -392,7 +392,7 @@ class Response
      *
      * @psalm-mutation-free
      */
-    public function clearCookie(string $key): Response
+    public function clearCookie(string $key): self
     {
         $this->addCookie($key, '', 0);
 
@@ -416,7 +416,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function addHeaderCallback(callable $callback): Response
+    public function addHeaderCallback(callable $callback): self
     {
         $this->headerCallback[] = $callback;
 
@@ -432,7 +432,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function setXmlRoot(string $root): Response
+    public function setXmlRoot(string $root): self
     {
         $this->xml_root = $root;
 
@@ -446,7 +446,7 @@ class Response
      *
      * @psalm-external-mutation-free
      */
-    public function disableCsvHeader(): Response
+    public function disableCsvHeader(): self
     {
         $this->csv_header = false;
 

@@ -6,14 +6,14 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\Tracy;
 
-use Override;
-use Tracy\IBarPanel;
-
 use function count;
 use function in_array;
+
 use function is_array;
 use function is_object;
 use function is_string;
+use Override;
+use Tracy\IBarPanel;
 
 /** @psalm-suppress UnusedClass */
 class SessionPanel implements IBarPanel

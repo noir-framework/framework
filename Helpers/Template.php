@@ -43,7 +43,7 @@ class Template
      * @throws FileNotFoundException
      * @noinspection PhpUnused
      */
-    public function setTemplate(string $template): Template
+    public function setTemplate(string $template): self
     {
         $file = Config::getTemplates() . DIRECTORY_SEPARATOR . $template . self::LATTE_EXT;
 

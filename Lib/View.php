@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib;
 
+use function count;
 use Latte\Bridges\Tracy\TracyExtension;
 use Latte\Engine;
 use Latte\Essential\TranslatorExtension;
@@ -21,7 +22,6 @@ use Noirapi\Lib\View\Layout;
 use Noirapi\Lib\View\Macros;
 use RuntimeException;
 use stdClass;
-use function count;
 
 class View
 {
@@ -166,7 +166,7 @@ class View
 
         // For PJAX responses the layout (<head>) is skipped, so prepend any
         // page-specific <link> tags so pjax.js can inject them into <head>.
-        if ($this->request->ajax && !empty($this->layout->params['top-css'])) {
+        if ($this->request->ajax && ! empty($this->layout->params['top-css'])) {
             $links = implode('', array_map(
                 static fn (string $css) => '<link rel="stylesheet" href="' . htmlspecialchars($css, ENT_QUOTES) . '">',
                 $this->layout->params['top-css']

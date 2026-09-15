@@ -13,11 +13,12 @@ class Message
      * @psalm-mutation-free
      */
     public function __construct(
-        public string      $message    = '',
-        public MessageType $type       = MessageType::Info,
+        public string      $message = '',
+        public MessageType $type = MessageType::Info,
         public int         $timeout_ms = 5000,
-        public bool        $html       = false,
-    ) {}
+        public bool        $html = false,
+    ) {
+    }
 
     /**
      * @param string $message
@@ -28,7 +29,7 @@ class Message
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of the Message constructor call; leaving unannotated satisfies both.
      */
-    public static function new(string $message, string|MessageType|null $type = null): Message
+    public static function new(string $message, string|MessageType|null $type = null): self
     {
         $resolvedType = $type instanceof MessageType
             ? $type
@@ -42,7 +43,7 @@ class Message
      * @psalm-suppress ImpureMethodCall self::new() is intentionally left without a
      * purity annotation - see the @psalm-suppress note on its declaration.
      */
-    public static function fromSchema(ValidationException $e, ?string $type = null): Message
+    public static function fromSchema(ValidationException $e, ?string $type = null): self
     {
 
         return self::new(SchemaHelper::message($e), $type);
@@ -58,7 +59,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function timeout(int $timeout_ms): Message
+    public function timeout(int $timeout_ms): self
     {
         $this->timeout_ms = $timeout_ms;
 
@@ -70,7 +71,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function html(): Message
+    public function html(): self
     {
         $this->html = true;
 
@@ -82,7 +83,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function primary(): Message
+    public function primary(): self
     {
         $this->type = MessageType::Primary;
 
@@ -94,7 +95,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function secondary(): Message
+    public function secondary(): self
     {
         $this->type = MessageType::Secondary;
 
@@ -108,7 +109,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function light(): Message
+    public function light(): self
     {
         $this->type = MessageType::Light;
 
@@ -122,7 +123,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function dark(): Message
+    public function dark(): self
     {
         $this->type = MessageType::Dark;
 
@@ -134,7 +135,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function danger(): Message
+    public function danger(): self
     {
         $this->type = MessageType::Danger;
 
@@ -146,7 +147,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function success(): Message
+    public function success(): self
     {
         $this->type = MessageType::Success;
 
@@ -158,7 +159,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function warning(): Message
+    public function warning(): self
     {
         $this->type = MessageType::Warning;
 
@@ -170,7 +171,7 @@ class Message
      *
      * @psalm-external-mutation-free
      */
-    public function info(): Message
+    public function info(): self
     {
         $this->type = MessageType::Info;
 

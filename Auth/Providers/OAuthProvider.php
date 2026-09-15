@@ -34,7 +34,8 @@ abstract class OAuthProvider implements AuthProviderInterface
         protected readonly string $clientId,
         protected readonly string $clientSecret,
         protected readonly string $redirectUri,
-    ) {}
+    ) {
+    }
 
     /* ── Abstract interface ──────────────────────────────────── */
 
@@ -97,7 +98,7 @@ abstract class OAuthProvider implements AuthProviderInterface
     {
         /* CSRF state check */
         $expected = Session::get(self::SESSION_STATE_KEY);
-        $action   = Session::get(self::SESSION_ACTION_KEY) ?? 'login';
+        $action = Session::get(self::SESSION_ACTION_KEY) ?? 'login';
         Session::remove(self::SESSION_STATE_KEY);
         Session::remove(self::SESSION_ACTION_KEY);
 
@@ -108,6 +109,7 @@ abstract class OAuthProvider implements AuthProviderInterface
         /* Provider-side error */
         if (isset($queryParams['error'])) {
             $desc = $queryParams['error_description'] ?? $queryParams['error'];
+
             throw new RuntimeException('Provider error: ' . $desc);
         }
 
@@ -116,15 +118,15 @@ abstract class OAuthProvider implements AuthProviderInterface
             throw new RuntimeException('No authorisation code received.');
         }
 
-        $tokenData   = $this->exchangeCode($code);
+        $tokenData = $this->exchangeCode($code);
         $accessToken = $tokenData['access_token'] ?? '';
 
         if ($accessToken === '') {
             throw new RuntimeException('No access token in provider response.');
         }
 
-        $result               = $this->fetchUser($accessToken);
-        $result->accessToken  = $accessToken;
+        $result = $this->fetchUser($accessToken);
+        $result->accessToken = $accessToken;
         $result->refreshToken = $tokenData['refresh_token'] ?? null;
 
         if (isset($tokenData['expires_in'])) {
@@ -168,8 +170,8 @@ abstract class OAuthProvider implements AuthProviderInterface
             throw new RuntimeException('No access token in refresh response.');
         }
 
-        $result               = $this->fetchUser($accessToken);
-        $result->accessToken  = $accessToken;
+        $result = $this->fetchUser($accessToken);
+        $result->accessToken = $accessToken;
         $result->refreshToken = $data['refresh_token'] ?? $refreshToken;
 
         if (isset($data['expires_in'])) {

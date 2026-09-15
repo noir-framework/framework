@@ -27,25 +27,35 @@ class MagicLinkProvider implements AuthProviderInterface
         private readonly string $mailDsn,
         private readonly string $mailFrom,
         private readonly string $appUrl,
-    ) {}
+    ) {
+    }
 
     /**
      * @psalm-pure
      */
     #[\Override]
-    public function getName(): string  { return 'magic_link'; }
+    public function getName(): string
+    {
+        return 'magic_link';
+    }
 
     /**
      * @psalm-pure
      */
     #[\Override]
-    public function getLabel(): string { return 'Magic Link'; }
+    public function getLabel(): string
+    {
+        return 'Magic Link';
+    }
 
     /**
      * @psalm-pure
      */
     #[\Override]
-    public function getIcon(): string  { return 'bi-envelope-at'; }
+    public function getIcon(): string
+    {
+        return 'bi-envelope-at';
+    }
 
     /**
      * Send the magic-link sign-in email.
@@ -58,7 +68,7 @@ class MagicLinkProvider implements AuthProviderInterface
         string $token,
         int    $ttlMinutes = 15,
     ): void {
-        $url  = rtrim($this->appUrl, '/') . '/auth/magic-link/' . $token;
+        $url = rtrim($this->appUrl, '/') . '/auth/magic-link/' . $token;
         $mail = new Mail($this->mailDsn);
         $mail->new($this->mailFrom, $toEmail, 'Your sign-in link')
             ->setTemplate('magic-link', [

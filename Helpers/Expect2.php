@@ -11,6 +11,8 @@ namespace Noirapi\Helpers;
 
 use DateTimeZone;
 use Exception;
+use function is_callable;
+use function is_string;
 use Nette\Schema\Schema;
 use Noirapi\Helpers\Schema\Cidr;
 use Noirapi\Helpers\Schema\Date;
@@ -21,11 +23,9 @@ use Noirapi\Helpers\Schema\Json;
 use Noirapi\Helpers\Schema\Numeric;
 use Noirapi\Helpers\Schema\Recaptcha;
 use Noirapi\Helpers\Schema\Time;
+
 use Noirapi\Helpers\Schema\Url;
 use RuntimeException;
-
-use function is_callable;
-use function is_string;
 
 /** @psalm-api  */
 final class Expect2
@@ -34,7 +34,9 @@ final class Expect2
      * @psalm-mutation-free
      * @psalm-suppress UnusedConstructor Private and intentionally never called - exists only to block instantiation of this static-factory class.
      */
-    private function __construct() {}
+    private function __construct()
+    {
+    }
 
     /**
      * @param string $format

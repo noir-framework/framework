@@ -48,7 +48,7 @@ class Numeric implements Schema
      *
      * @psalm-external-mutation-free
      */
-    public function min(int|string $min): Numeric
+    public function min(int|string $min): self
     {
         $this->range[0] = is_string($min) ? (int)$min : $min;
 
@@ -62,7 +62,7 @@ class Numeric implements Schema
      *
      * @psalm-external-mutation-free
      */
-    public function max(int|string $max): Numeric
+    public function max(int|string $max): self
     {
         $this->range[1] = is_string($max) ? (int)$max : $max;
 

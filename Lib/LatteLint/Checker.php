@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\LatteLint;
 
-use Noirapi\Lib\Controller;
-
 use function array_keys;
+
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -14,6 +13,7 @@ use function basename;
 use function dirname;
 use function file_get_contents;
 use function glob;
+use Noirapi\Lib\Controller;
 use function preg_match;
 use function preg_match_all;
 use function str_starts_with;
@@ -29,7 +29,7 @@ class Checker
     private ControllerAnalyzer $controllerAnalyzer;
     private BaseVarAnalyzer $baseVarAnalyzer;
 
-    /** @var string[]  SYSTEM_VARS plus vars discovered via BaseVarAnalyzer, resolved once per run() */
+    /** @var string[] SYSTEM_VARS plus vars discovered via BaseVarAnalyzer, resolved once per run() */
     private array $globalVars = [];
 
     /**

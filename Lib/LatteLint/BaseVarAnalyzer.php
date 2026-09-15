@@ -14,7 +14,6 @@ use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use PhpParser\PhpVersion;
 use ReflectionClass;
-use ReflectionException;
 
 use function array_unique;
 use function array_values;
@@ -57,11 +56,7 @@ class BaseVarAnalyzer
             return [];
         }
 
-        try {
-            $reflection = new ReflectionClass($controllerFqcn);
-        } catch (ReflectionException) {
-            return [];
-        }
+        $reflection = new ReflectionClass($controllerFqcn);
 
         $vars = [];
         $ancestor = $reflection->getParentClass();

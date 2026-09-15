@@ -37,7 +37,13 @@ class EngineFactory
         $engine->addExtension(new Macros());
         $engine->addExtension(new TranslatorExtension(null));
 
-        // App-level macros (optional)
+        // App-level macros (optional) - App\Lib\Macros does not exist until the
+        // consuming app scaffolds it; the class_exists guard makes this safe at
+        // runtime even though static analysis can't see the class yet.
+        /**
+         * @noinspection PhpUndefinedClassInspection
+         * @noinspection PhpParamsInspection
+         */
         if (class_exists(\App\Lib\Macros::class)) {
             $engine->addExtension(new \App\Lib\Macros());
         }

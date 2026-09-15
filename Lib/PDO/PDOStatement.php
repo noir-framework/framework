@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\PDO;
 
-use Override;
-use PDOStatement as NativePdoStatement;
-use RuntimeException;
-
 use function is_array;
 use function is_string;
+use Override;
+
+use PDOStatement as NativePdoStatement;
+use RuntimeException;
 
 /**
  * @psalm-suppress MissingTemplateParam
@@ -28,7 +28,7 @@ class PDOStatement extends NativePdoStatement
     protected array $bindings = [];
 
     /**
-     * @psalm-suppress PossiblyUnusedMethod 
+     * @psalm-suppress PossiblyUnusedMethod
      *
      * @psalm-mutation-free
      */

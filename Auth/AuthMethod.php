@@ -6,7 +6,7 @@ namespace Noirapi\Auth;
 
 enum AuthMethod: string
 {
-    case Password  = 'password';
-    case OAuth     = 'oauth';
+    case Password = 'password';
+    case OAuth = 'oauth';
     case MagicLink = 'magic_link';
 }

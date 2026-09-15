@@ -49,7 +49,7 @@ class Port implements Schema
      *
      * @psalm-external-mutation-free
      */
-    public function min(int $min): Port
+    public function min(int $min): self
     {
         $this->range[0] = $min;
 
@@ -63,7 +63,7 @@ class Port implements Schema
      *
      * @psalm-external-mutation-free
      */
-    public function max(int $max): Port
+    public function max(int $max): self
     {
         $this->range[1] = $max;
 

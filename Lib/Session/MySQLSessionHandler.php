@@ -30,13 +30,14 @@ class MySQLSessionHandler extends AbstractSessionHandler
         $stmt->execute([$id]);
         $row = $stmt->fetch();
 
-        if (!$row) {
+        if (! $row) {
             return null;
         }
 
         $maxLifetime = (int)ini_get('session.gc_maxlifetime');
         if ($row->last_activity < time() - $maxLifetime) {
             $this->doDestroy($id);
+
             return null;
         }
 
@@ -55,6 +56,7 @@ class MySQLSessionHandler extends AbstractSessionHandler
             'INSERT INTO sessions (id, data, last_activity) VALUES (?, ?, ?)
              ON DUPLICATE KEY UPDATE data = VALUES(data), last_activity = VALUES(last_activity)'
         );
+
         return $stmt->execute([$id, $data, time()]);
     }
 
@@ -77,6 +79,7 @@ class MySQLSessionHandler extends AbstractSessionHandler
     {
         $stmt = $this->pdo->prepare('DELETE FROM sessions WHERE last_activity < ?');
         $stmt->execute([time() - $maxLifetime]);
+
         return $stmt->rowCount();
     }
 }

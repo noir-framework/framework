@@ -28,7 +28,7 @@ class Domain implements Schema
      *
      * @psalm-external-mutation-free
      */
-    public function required(bool $required = true): Domain
+    public function required(bool $required = true): self
     {
         $this->required = $required;
 
@@ -42,7 +42,7 @@ class Domain implements Schema
      *
      * @psalm-external-mutation-free
      */
-    public function wildcard(bool $wildcard = true): Domain
+    public function wildcard(bool $wildcard = true): self
     {
         $this->wildcard = $wildcard;
 

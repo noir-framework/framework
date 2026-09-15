@@ -70,7 +70,7 @@ class GoogleProvider extends OAuthProvider
     }
 
     /**
-     * @return string[] 
+     * @return string[]
      *
      * @psalm-pure
      */
@@ -114,11 +114,11 @@ class GoogleProvider extends OAuthProvider
         }
 
         return new OAuthResult(
-            provider:       $this->getName(),
+            provider: $this->getName(),
             providerUserId: (string) $data['id'],
-            email:          strtolower(trim($data['email'])),
-            name:           $data['name'] ?? null,
-            avatarUrl:      $data['picture'] ?? null,
+            email: strtolower(trim($data['email'])),
+            name: $data['name'] ?? null,
+            avatarUrl: $data['picture'] ?? null,
         );
     }
 }
