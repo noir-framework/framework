@@ -124,6 +124,43 @@ class Response
     }
 
     /**
+     * If $body stringifies or JSON-serializes itself directly, returns that
+     * string. Otherwise normalizes $this->body to an array (mutating it) and
+     * returns null so getBody() continues with array-based serialization.
+     *
+     * @param object $body
+     * @return string|null
+     */
+    private function objectBodyToString(object $body): ?string
+    {
+        if (method_exists($body, '__toString')) {
+            return $body->__toString();
+        }
+
+        if (method_exists($body, 'toJson')) {
+            return $body->toJson();
+        }
+
+        $this->body = method_exists($body, 'toArray') ? $body->toArray() : $this->object2array($body);
+
+        return null;
+    }
+
+    /**
+     * @return string
+     * @throws Exception
+     * @noinspection PhpUndefinedClassInspection
+     */
+    private function xmlBody(): string
+    {
+        if (class_exists(Array2XML::class)) {
+            return Array2XML::createXML($this->xml_root, $this->body)->saveXML();
+        }
+
+        return $this->array2xml($this->body)->saveXML();
+    }
+
+    /**
      * @return string
      * @throws JsonException
      * @throws RuntimeException
@@ -137,18 +174,9 @@ class Response
         }
 
         if (is_object($this->body)) {
-            if (method_exists($this->body, '__toString')) {
-                return $this->body->__toString();
-            }
-
-            if (method_exists($this->body, 'toJson')) {
-                return $this->body->toJson();
-            }
-
-            if (method_exists($this->body, 'toArray')) {
-                $this->body = $this->body->toArray();
-            } else {
-                $this->body = $this->object2array($this->body);
+            $asString = $this->objectBodyToString($this->body);
+            if ($asString !== null) {
+                return $asString;
             }
         }
 
@@ -161,11 +189,7 @@ class Response
         }
 
         if ($this->contentType === self::TYPE_XML) {
-            if (class_exists(Array2XML::class)) {
-                return Array2XML::createXML($this->xml_root, $this->body)->saveXML();
-            }
-
-            return $this->array2xml($this->body)->saveXML();
+            return $this->xmlBody();
         }
 
         if ($this->contentType === self::TYPE_CSV) {

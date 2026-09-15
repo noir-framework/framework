@@ -18,7 +18,7 @@ trait SmartObject
 
     // We must use static objects to avoid messing with Model queries
     /** @var string[] */
-    private static array $__smartObjectAttributeClasses; // phpcs:ignore
+    private static array $attrClasses; // phpcs:ignore
     /** @var ReflectionProperty [] */
     private static array $__properties; // phpcs:ignore
 
@@ -41,21 +41,21 @@ trait SmartObject
                  * @noinspection PhpUndefinedMethodInspection
                  * @psalm-suppress UnusedForeachValue
                  */
-                foreach ($className::getLoader()->getClassMap() as $class => $path) {
+                foreach (array_keys($className::getLoader()->getClassMap()) as $class) {
                     if (str_starts_with($class, 'Noirapi\Lib\Attributes')) {
-                        self::$__smartObjectAttributeClasses[] = $class;
+                        self::$attrClasses[] = $class;
                     } elseif (str_starts_with($class, 'App\Lib\Attributes')) {
-                        self::$__smartObjectAttributeClasses[] = $class;
+                        self::$attrClasses[] = $class;
                     }
                 }
             }
         }
 
         foreach ($reflection->getProperties() as $property) {
-            if (count(self::$__smartObjectAttributeClasses) > 0) {
+            if (count(self::$attrClasses) > 0) {
                 foreach ($property->getAttributes() as $attribute) {
                     $name = $attribute->getName();
-                    if (in_array($name, self::$__smartObjectAttributeClasses, true)) {
+                    if (in_array($name, self::$attrClasses, true)) {
                         $name = $property->getName();
                         /** @phpstan-ignore property.dynamicName */
                         unset($this->$name);
@@ -76,7 +76,7 @@ trait SmartObject
     {
         /** @psalm-suppress UndefinedMethod */
         if (isset(self::$__properties[$name])) {
-            foreach (self::$__smartObjectAttributeClasses as $attributeClass) {
+            foreach (self::$attrClasses as $attributeClass) {
                 if (self::$__properties[$name]->getAttributes($attributeClass) !== null) {
                     $instance = self::$__properties[$name]->getAttributes($attributeClass)[0]->newInstance();
                     $args = [];

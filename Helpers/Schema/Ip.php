@@ -130,48 +130,8 @@ class Ip implements Schema
             return null;
         }
 
-        switch ($this->from) {
-            case 'string':
-                $from = $value;
-
-                break;
-
-            case 'long':
-                if (! ctype_digit($value)) {
-                    /** @noinspection UnusedFunctionResultInspection */
-                    $context->addError('The option %path% is not valid integer.', Message::TypeMismatch);
-
-                    return null;
-                }
-
-                $value = (int) $value;
-                $from = long2ip($value);
-                if ($value !== ip2long($from)) {
-                    /** @noinspection UnusedFunctionResultInspection */
-                    $context->addError('The option %path% is not valid (long) ipv4 address.', Message::TypeMismatch);
-
-                    return null;
-                }
-
-                break;
-
-            case 'bin':
-                $from = inet_ntop($value);
-                if ($value !== inet_pton($from)) {
-                    /** @noinspection UnusedFunctionResultInspection */
-                    $context->addError('The option %path% is not valid (binary) ip address.', Message::TypeMismatch);
-
-                    return null;
-                }
-
-                break;
-        }
-
-        if (empty($from)) {
-            /** @noinspection UnusedFunctionResultInspection */
-            /** @noinspection PhpUndefinedVariableInspection */
-            $context->addError("The option %path% expects valid ip address. ('$from') given", Message::TypeMismatch);
-
+        $from = $this->resolveFrom($value, $context);
+        if ($from === null) {
             return null;
         }
 
@@ -182,6 +142,90 @@ class Ip implements Schema
             return null;
         }
 
+        return $this->resolveTo($from, $context);
+    }
+
+    /**
+     * Normalizes $value from $this->from's format into a plain ip-address
+     * string, adding a Context error and returning null on any failure.
+     *
+     * @param mixed $value
+     * @param Context $context
+     * @return string|null
+     */
+    private function resolveFrom(mixed $value, Context $context): ?string
+    {
+        $from = match ($this->from) {
+            'string' => $value,
+            'long' => $this->resolveFromLong($value, $context),
+            'bin' => $this->resolveFromBin($value, $context),
+            default => null,
+        };
+
+        if (empty($from)) {
+            /** @noinspection UnusedFunctionResultInspection */
+            $context->addError("The option %path% expects valid ip address. ('$from') given", Message::TypeMismatch);
+
+            return null;
+        }
+
+        return $from;
+    }
+
+    /**
+     * @param mixed $value
+     * @param Context $context
+     * @return string|null
+     */
+    private function resolveFromLong(mixed $value, Context $context): ?string
+    {
+        if (! ctype_digit($value)) {
+            /** @noinspection UnusedFunctionResultInspection */
+            $context->addError('The option %path% is not valid integer.', Message::TypeMismatch);
+
+            return null;
+        }
+
+        $value = (int) $value;
+        $from = long2ip($value);
+        if ($value !== ip2long($from)) {
+            /** @noinspection UnusedFunctionResultInspection */
+            $context->addError('The option %path% is not valid (long) ipv4 address.', Message::TypeMismatch);
+
+            return null;
+        }
+
+        return $from;
+    }
+
+    /**
+     * @param mixed $value
+     * @param Context $context
+     * @return string|null
+     */
+    private function resolveFromBin(mixed $value, Context $context): ?string
+    {
+        $from = inet_ntop($value);
+        if ($from === false || $value !== inet_pton($from)) {
+            /** @noinspection UnusedFunctionResultInspection */
+            $context->addError('The option %path% is not valid (binary) ip address.', Message::TypeMismatch);
+
+            return null;
+        }
+
+        return $from;
+    }
+
+    /**
+     * Converts the normalized $from ip-address string into $this->to's target
+     * format, adding a Context error and returning null on any failure.
+     *
+     * @param string $from
+     * @param Context $context
+     * @return int|string|null
+     */
+    private function resolveTo(string $from, Context $context)
+    {
         switch ($this->to) {
             case 'string':
                 $to = $from;

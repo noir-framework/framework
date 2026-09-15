@@ -86,6 +86,35 @@ class TemplateChecker
         $declaredVars = $this->extractVarTypeDeclarations($source);
 
         // --- Step 2: compile template, capture syntax/semantic errors ---
+        if (! $this->compileAndReportWarnings($source, $file, $result)) {
+            return $result; // syntax error — skip var checks
+        }
+
+        // --- Step 3: variable usage check ---
+        $this->checkUndeclaredVars($file, $isPartial, $parentVars, $declaredVars, $result);
+
+        // --- Step 4: unused variable check ---
+        // A partial forwards all its declared vars to nested includes without necessarily
+        // referencing them itself, so skip this check there to avoid false positives.
+        if (! $isPartial) {
+            $this->checkUnusedVars($source, $file, $declaredVars, $result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Compiles $source, feeding syntax errors and semantic warnings into
+     * $result. Returns false if compilation failed with a syntax error (the
+     * caller must skip the remaining var checks in that case).
+     *
+     * @param string $source
+     * @param string $file
+     * @param CheckResult $result
+     * @return bool
+     */
+    private function compileAndReportWarnings(string $source, string $file, CheckResult $result): bool
+    {
         $this->collector->reset();
 
         $warnings = [];
@@ -104,9 +133,8 @@ class TemplateChecker
         } catch (CompileException $e) {
             $line = $e->position?->line ?? 0;
             $result->error($file, $line, $e->getMessage());
-            restore_error_handler();
 
-            return $result; // syntax error — skip var checks
+            return false;
         } finally {
             restore_error_handler();
         }
@@ -124,17 +152,27 @@ class TemplateChecker
             }
         }
 
-        // --- Step 3: variable usage check ---
+        return true;
+    }
+
+    /**
+     * @param string $file
+     * @param bool $isPartial
+     * @param string[] $parentVars
+     * @param array<string, string> $declaredVars
+     * @param CheckResult $result
+     * @return void
+     *
+     * @psalm-external-mutation-free
+     */
+    private function checkUndeclaredVars(string $file, bool $isPartial, array $parentVars, array $declaredVars, CheckResult $result): void
+    {
         $systemVars = array_flip([...self::SYSTEM_VARS, ...$this->globalVars]);
         $declaredKeys = array_flip(array_keys($declaredVars));
         $localKeys = array_flip(array_keys($this->collector->localVars));
         $parentKeys = array_flip($parentVars);
 
         foreach ($this->collector->usedVars as $name => $line) {
-            if (isset($declaredKeys[$name], $systemVars[$name], $localKeys[$name], $parentKeys[$name])) {
-                continue;
-            }
-            // Any of the four sets covers this var → not undeclared
             if (
                 isset($declaredKeys[$name]) || isset($systemVars[$name])
                 || isset($localKeys[$name]) || isset($parentKeys[$name])
@@ -148,23 +186,31 @@ class TemplateChecker
                 $result->warning($file, $line, "Variable \$$name used but not declared with {varType}");
             }
         }
+    }
 
-        // --- Step 4: unused variable check ---
-        // A partial forwards all its declared vars to nested includes without necessarily
-        // referencing them itself, so skip this check there to avoid false positives.
-        if (! $isPartial) {
-            $declaredLines = $this->extractVarTypeLines($source);
-            $implicitlyUsed = $this->extractImplicitTagVarUsage($source);
-            foreach (array_keys($declaredVars) as $name) {
-                if (isset($this->collector->usedVars[$name]) || isset($implicitlyUsed[$name])) {
-                    continue;
-                }
-                $line = $declaredLines[$name] ?? 0;
-                $result->warning($file, $line, "Variable \$$name declared with {varType} but never used in template");
+    /**
+     * @param string $source
+     * @param string $file
+     * @param array<string, string> $declaredVars
+     * @param CheckResult $result
+     * @return void
+     *
+     * @psalm-external-mutation-free
+     * @psalm-suppress ImpureMethodCall extractVarTypeLines()/extractImplicitTagVarUsage()
+     * are intentionally left without a purity annotation - see the @psalm-suppress
+     * note on their declarations.
+     */
+    private function checkUnusedVars(string $source, string $file, array $declaredVars, CheckResult $result): void
+    {
+        $declaredLines = $this->extractVarTypeLines($source);
+        $implicitlyUsed = $this->extractImplicitTagVarUsage($source);
+        foreach (array_keys($declaredVars) as $name) {
+            if (isset($this->collector->usedVars[$name]) || isset($implicitlyUsed[$name])) {
+                continue;
             }
+            $line = $declaredLines[$name] ?? 0;
+            $result->warning($file, $line, "Variable \$$name declared with {varType} but never used in template");
         }
-
-        return $result;
     }
 
     /**

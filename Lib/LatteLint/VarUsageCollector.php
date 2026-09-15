@@ -65,68 +65,100 @@ class VarUsageCollector extends Extension
      */
     private function enter(Node $node): void
     {
-        if ($node instanceof ForeachNode) {
-            // Declare loop variables BEFORE their VariableNode children are traversed
-            if ($node->key instanceof VariableNode && is_string($node->key->name)) {
-                $this->declareLocal($node->key->name, $node->position?->line ?? 0);
-            }
-            if ($node->value instanceof VariableNode && is_string($node->value->name)) {
-                $this->declareLocal($node->value->name, $node->position?->line ?? 0);
-            }
+        match (true) {
+            $node instanceof ForeachNode => $this->enterForeach($node),
+            $node instanceof VarNode => $this->enterVar($node),
+            $node instanceof ParametersNode => $this->enterParameters($node),
+            $node instanceof ForNode => $this->enterFor($node),
+            $node instanceof CaptureNode => $this->enterCapture($node),
+            $node instanceof VariableNode => $this->enterVariable($node),
+            default => null,
+        };
+    }
 
-            return;
+    /**
+     * @psalm-external-mutation-free
+     */
+    private function enterForeach(ForeachNode $node): void
+    {
+        // Declare loop variables BEFORE their VariableNode children are traversed
+        if ($node->key instanceof VariableNode && is_string($node->key->name)) {
+            $this->declareLocal($node->key->name, $node->position?->line ?? 0);
         }
-
-        if ($node instanceof VarNode) {
-            foreach ($node->assignments as $assign) {
-                if ($assign->var instanceof VariableNode && is_string($assign->var->name)) {
-                    $this->declareLocal($assign->var->name, $node->position?->line ?? 0);
-                }
-            }
-
-            return;
+        if ($node->value instanceof VariableNode && is_string($node->value->name)) {
+            $this->declareLocal($node->value->name, $node->position?->line ?? 0);
         }
+    }
 
-        if ($node instanceof ParametersNode) {
-            foreach ($node->parameters as $param) {
-                if (is_string($param->var->name)) {
-                    $this->declareLocal($param->var->name, $node->position?->line ?? 0);
-                }
+    /**
+     * @psalm-external-mutation-free
+     */
+    private function enterVar(VarNode $node): void
+    {
+        foreach ($node->assignments as $assign) {
+            if ($assign->var instanceof VariableNode && is_string($assign->var->name)) {
+                $this->declareLocal($assign->var->name, $node->position?->line ?? 0);
             }
-
-            return;
         }
+    }
 
-        if ($node instanceof ForNode) {
-            // {for $i = 0; $i < 10; $i++} — declare vars from init expressions
-            foreach ($node->init as $init) {
-                if (
-                    $init instanceof AssignNode
-                    && $init->var instanceof VariableNode
-                    && is_string($init->var->name)
-                ) {
-                    $this->declareLocal($init->var->name, $node->position?->line ?? 0);
-                }
+    /**
+     * @psalm-external-mutation-free
+     */
+    private function enterParameters(ParametersNode $node): void
+    {
+        foreach ($node->parameters as $param) {
+            if (is_string($param->var->name)) {
+                $this->declareLocal($param->var->name, $node->position?->line ?? 0);
             }
-
-            return;
         }
+    }
 
-        if ($node instanceof CaptureNode && $node->variable instanceof VariableNode && is_string($node->variable->name)) {
+    /**
+     * {for $i = 0; $i < 10; $i++} — declare vars from init expressions.
+     *
+     * @psalm-external-mutation-free
+     */
+    private function enterFor(ForNode $node): void
+    {
+        foreach ($node->init as $init) {
+            if (
+                $init instanceof AssignNode
+                && $init->var instanceof VariableNode
+                && is_string($init->var->name)
+            ) {
+                $this->declareLocal($init->var->name, $node->position?->line ?? 0);
+            }
+        }
+    }
+
+    /**
+     * @psalm-external-mutation-free
+     */
+    private function enterCapture(CaptureNode $node): void
+    {
+        if ($node->variable instanceof VariableNode && is_string($node->variable->name)) {
             $this->declareLocal($node->variable->name, $node->position?->line ?? 0);
+        }
+    }
 
+    /**
+     * @psalm-external-mutation-free
+     */
+    private function enterVariable(VariableNode $node): void
+    {
+        if (! is_string($node->name)) {
             return;
         }
 
-        if ($node instanceof VariableNode && is_string($node->name)) {
-            $name = $node->name;
-            // Skip Latte-internal variables (prefixed with Unicode ʟ)
-            if ($name === 'this' || str_starts_with($name, 'ʟ')) {
-                return;
-            }
-            if (! isset($this->localVarSet[$name]) && ! isset($this->usedVars[$name])) {
-                $this->usedVars[$name] = $node->position?->line ?? 0;
-            }
+        $name = $node->name;
+        // Skip Latte-internal variables (prefixed with Unicode ʟ)
+        if ($name === 'this' || str_starts_with($name, 'ʟ')) {
+            return;
+        }
+
+        if (! isset($this->localVarSet[$name]) && ! isset($this->usedVars[$name])) {
+            $this->usedVars[$name] = $node->position?->line ?? 0;
         }
     }
 

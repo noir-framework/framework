@@ -139,20 +139,7 @@ class DateTime implements Schema
     public function normalize(mixed $value, Context $context): string|null|\DateTime
     {
 
-        if ($this->nullable && empty($value)) {
-            return null;
-        }
-
-        if (! is_string($value) && empty($value)) {
-            $type = gettype($value);
-            $context->addError("The option %path% expects $this->name($this->format), $type($value) given.", Message::PatternMismatch); //phpcs:ignore
-
-            return null;
-        }
-
-        if (! $this->nullable && $value === '') {
-            $context->addError("The option %path% expects not-nullable $this->name, nothing given.", Message::PatternMismatch); //phpcs:ignore
-
+        if ($this->rejectEmptyValue($value, $context)) {
             return null;
         }
 
@@ -162,21 +149,8 @@ class DateTime implements Schema
             $normalized = \DateTime::createFromFormat($this->format, $value, $this->timeZone);
         }
 
-        if (! empty($this->date)) {
-            if (! empty($normalized)) {
-                $normalized->setDate((int)$this->date->format('Y'), (int)$this->date->format('m'), (int)$this->date->format('d')); //phpcs:ignore
-            } else {
-                $normalized = $this->date;
-            }
-        }
-
-        if (isset($this->time)) {
-            if (! empty($normalized)) {
-                $normalized->setTime((int)$this->time->format('H'), (int)$this->time->format('i'), (int)$this->time->format('s')); //phpcs:ignore
-            } else {
-                $normalized = $this->time;
-            }
-        }
+        $normalized = $this->applyFixedDate($normalized);
+        $normalized = $this->applyFixedTime($normalized);
 
         if (empty($normalized)) {
             $context->addError("The option %path% expects $this->name to match pattern '$this->format', '$value' given.", Message::PatternMismatch); //phpcs:ignore
@@ -189,6 +163,81 @@ class DateTime implements Schema
         }
 
         return $normalized;
+    }
+
+    /**
+     * Checks the early-exit conditions for an empty/missing $value, adding a
+     * Context error for the invalid cases. Returns true if normalize() should
+     * return null without going any further.
+     *
+     * @param mixed $value
+     * @param Context $context
+     * @return bool
+     */
+    private function rejectEmptyValue(mixed $value, Context $context): bool
+    {
+        if ($this->nullable && empty($value)) {
+            return true;
+        }
+
+        if (! is_string($value) && empty($value)) {
+            $type = gettype($value);
+            $context->addError("The option %path% expects $this->name($this->format), $type($value) given.", Message::PatternMismatch); //phpcs:ignore
+
+            return true;
+        }
+
+        if (! $this->nullable && $value === '') {
+            $context->addError("The option %path% expects not-nullable $this->name, nothing given.", Message::PatternMismatch); //phpcs:ignore
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Overlays $this->date onto $normalized if a fixed date was configured
+     * via date(), or falls back to it entirely if $normalized is empty.
+     *
+     * @param \DateTime|false|null $normalized
+     * @return \DateTime|false|null
+     */
+    private function applyFixedDate(\DateTime|false|null $normalized): \DateTime|false|null
+    {
+        if (empty($this->date)) {
+            return $normalized;
+        }
+
+        if (! empty($normalized)) {
+            $normalized->setDate((int)$this->date->format('Y'), (int)$this->date->format('m'), (int)$this->date->format('d')); //phpcs:ignore
+
+            return $normalized;
+        }
+
+        return $this->date;
+    }
+
+    /**
+     * Overlays $this->time onto $normalized if a fixed time was configured
+     * via time(), or falls back to it entirely if $normalized is empty.
+     *
+     * @param \DateTime|false|null $normalized
+     * @return \DateTime|false|null
+     */
+    private function applyFixedTime(\DateTime|false|null $normalized): \DateTime|false|null
+    {
+        if (! isset($this->time)) {
+            return $normalized;
+        }
+
+        if (! empty($normalized)) {
+            $normalized->setTime((int)$this->time->format('H'), (int)$this->time->format('i'), (int)$this->time->format('s')); //phpcs:ignore
+
+            return $normalized;
+        }
+
+        return $this->time;
     }
 
     /**

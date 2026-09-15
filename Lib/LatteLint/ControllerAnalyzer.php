@@ -128,19 +128,28 @@ class ControllerAnalyzer
                 continue;
             }
 
-            $methodName = $method->name->toString();
-            $calls = $this->findDisplayCalls($method);
+            $result = $this->mergeMethodDisplayCalls($method, $result);
+        }
 
-            foreach ($calls as [$templateName, $varNames]) {
-                // If template is explicitly set via setTemplate(), use that; otherwise use method name
-                $tpl = $templateName ?? $methodName;
-                // Multiple display() calls in one method → merge keys (e.g., early-return patterns)
-                if (! isset($result[$tpl])) {
-                    $result[$tpl] = $varNames;
-                } else {
-                    $result[$tpl] = array_values(array_unique([...$result[$tpl], ...$varNames]));
-                }
-            }
+        return $result;
+    }
+
+    /**
+     * @param ClassMethod $method
+     * @param array<string, string[]> $result
+     * @return array<string, string[]>
+     */
+    private function mergeMethodDisplayCalls(ClassMethod $method, array $result): array
+    {
+        $methodName = $method->name->toString();
+
+        foreach ($this->findDisplayCalls($method) as [$templateName, $varNames]) {
+            // If template is explicitly set via setTemplate(), use that; otherwise use method name
+            $tpl = $templateName ?? $methodName;
+            // Multiple display() calls in one method → merge keys (e.g., early-return patterns)
+            $result[$tpl] = isset($result[$tpl])
+                ? array_values(array_unique([...$result[$tpl], ...$varNames]))
+                : $varNames;
         }
 
         return $result;

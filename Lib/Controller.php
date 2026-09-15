@@ -103,6 +103,9 @@ class Controller
      * @param bool $skip_lang
      * @return Response
      * @throws UnableToForwardException
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of Response method calls; leaving unannotated satisfies both.
      */
     public function forward(?string $location = null, int $status = 302, bool $skip_lang = false): Response
     {
@@ -217,69 +220,104 @@ class Controller
      * @param bool $same_domain
      * @return string
      * @noinspection PhpUnused
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of Config::get(); leaving unannotated satisfies both.
      */
     public function referer(bool $same_domain = true): string
     {
-        if (isset($this->server['HTTP_REFERER'])) {
-            $url = str_replace('@', '', (string)($this->server['HTTP_REFERER'] ?? ''));
-            if (empty($url)) {
-                return '/';
-            }
-
-            $clean = preg_replace('/[\x00-\x1F\x7F\s]/', '', $url) ?? '';
-            if ($clean === '') {
-                return '/';
-            }
-
-            $parsed = parse_url($clean);
-            if ($parsed === false) {
-                return '/';
-            }
-
-            if (! isset($parsed['host'])) {
-                return $clean;
-            }
-
-            if ($parsed['host'] === $this->server['HTTP_HOST']) {
-                $parsed['path'] = $parsed['path'] ?? '/';
-
-                foreach (Config::get('languages') ?? [] as $code => $_) {
-                    // Condition like /en
-                    if ($parsed['path'] === '/' . $code) {
-                        return '/' . $code;
-                    }
-                    // Condition like /en/
-                    if (str_starts_with($parsed['path'], '/' . $code . '/')) {
-                        $path = substr($parsed['path'], strlen($code) + 1);
-
-                        return $path . (! isset($parsed['query']) ? '' : '?' . ($parsed['query']));
-                    }
-                }
-
-                return ($this->request->language === null ? '' : '/' . $this->request->language) . $parsed['path'] . (! isset($parsed['query']) ? '' : '?' . ($parsed['query'])); //phpcs:ignore
-            }
-
-            if ($same_domain) {
-                return '/';
-            }
-
-            if (isset($parsed['scheme']) && ($parsed['scheme'] === 'http' || $parsed['scheme'] === 'https')) {
-                $parsed['path'] = $parsed['path'] ?? '/';
-
-                /** @noinspection BypassedUrlValidationInspection */
-                if (filter_var($parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'] . '?' . ($parsed['query'] ?? ''), FILTER_VALIDATE_URL)) { //phpcs:ignore
-                    if (isset($parsed['query'])) {
-                        return $parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'] . '?' . $parsed['query'];
-                    }
-
-                    return $parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'];
-                }
-            }
-
+        if (! isset($this->server['HTTP_REFERER'])) {
             return '/';
         }
 
-        return '/';
+        $url = str_replace('@', '', (string)($this->server['HTTP_REFERER'] ?? ''));
+        if (empty($url)) {
+            return '/';
+        }
+
+        $clean = preg_replace('/[\x00-\x1F\x7F\s]/', '', $url) ?? '';
+        if ($clean === '') {
+            return '/';
+        }
+
+        $parsed = parse_url($clean);
+        if ($parsed === false) {
+            return '/';
+        }
+
+        if (! isset($parsed['host'])) {
+            return $clean;
+        }
+
+        if ($parsed['host'] === $this->server['HTTP_HOST']) {
+            return $this->refererSameDomainPath($parsed);
+        }
+
+        if ($same_domain) {
+            return '/';
+        }
+
+        return $this->refererCrossDomainUrl($parsed);
+    }
+
+    /**
+     * The referer's host matches ours - strip/rewrite the language prefix and
+     * return a same-origin path.
+     *
+     * @param array $parsed
+     * @return string
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of Config::get(); leaving unannotated satisfies both.
+     */
+    private function refererSameDomainPath(array $parsed): string
+    {
+        $parsed['path'] = $parsed['path'] ?? '/';
+
+        foreach (array_keys(Config::get('languages') ?? []) as $code) {
+            // Condition like /en
+            if ($parsed['path'] === '/' . $code) {
+                return '/' . $code;
+            }
+            // Condition like /en/
+            if (str_starts_with($parsed['path'], '/' . $code . '/')) {
+                $path = substr($parsed['path'], strlen($code) + 1);
+
+                return $path . (! isset($parsed['query']) ? '' : '?' . ($parsed['query']));
+            }
+        }
+
+        return ($this->request->language === null ? '' : '/' . $this->request->language) . $parsed['path'] . (! isset($parsed['query']) ? '' : '?' . ($parsed['query'])); //phpcs:ignore
+    }
+
+    /**
+     * The referer is on a different host - validate it and return it as an
+     * absolute URL, or '/' if it doesn't look like a real URL.
+     *
+     * @param array $parsed
+     * @return string
+     *
+     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
+     * of filter_var(); leaving unannotated satisfies both.
+     */
+    private function refererCrossDomainUrl(array $parsed): string
+    {
+        if (! isset($parsed['scheme']) || ($parsed['scheme'] !== 'http' && $parsed['scheme'] !== 'https')) {
+            return '/';
+        }
+
+        $parsed['path'] = $parsed['path'] ?? '/';
+
+        /** @noinspection BypassedUrlValidationInspection */
+        if (! filter_var($parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'] . '?' . ($parsed['query'] ?? ''), FILTER_VALIDATE_URL)) { //phpcs:ignore
+            return '/';
+        }
+
+        if (isset($parsed['query'])) {
+            return $parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'] . '?' . $parsed['query'];
+        }
+
+        return $parsed['scheme'] . '://' . $parsed['host'] . $parsed['path'];
     }
 
     /**

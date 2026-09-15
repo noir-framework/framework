@@ -43,6 +43,7 @@ class Macros extends Extension
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function title(Tag $tag): Node
     {
@@ -61,6 +62,7 @@ class Macros extends Extension
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function pager(Tag $tag): Node
     {
@@ -105,6 +107,7 @@ class Macros extends Extension
      * @return Node
      * @noinspection PhpUnusedParameterInspection
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function breadcrumb(Tag $tag): Node
     {
@@ -130,6 +133,7 @@ class Macros extends Extension
      * @noinspection PhpUnusedParameterInspection
      * @noinspection HtmlUnknownTarget
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function topCss(Tag $tag): Node
     {
@@ -148,6 +152,7 @@ class Macros extends Extension
      * @noinspection PhpUnusedParameterInspection
      * @noinspection HtmlUnknownTarget
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function bottomCss(Tag $tag): Node
     {
@@ -167,6 +172,7 @@ class Macros extends Extension
      * @noinspection HtmlUnknownTarget
      * @noinspection JSUnresolvedVariable
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function topJs(Tag $tag): Node
     {
@@ -190,6 +196,7 @@ class Macros extends Extension
      * @noinspection HtmlUnknownTarget
      * @noinspection JSUnresolvedVariable
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function bottomJs(Tag $tag): Node
     {
@@ -211,6 +218,7 @@ class Macros extends Extension
      * @return Node
      * @throws CompileException
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function active(Tag $tag): Node
     {
@@ -242,6 +250,7 @@ class Macros extends Extension
      * @return AuxiliaryNode
      * @noinspection PhpUnusedParameterInspection
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function message(Tag $tag): AuxiliaryNode
     {
@@ -268,6 +277,7 @@ class Macros extends Extension
      * @return AuxiliaryNode
      * @noinspection PhpUnusedParameterInspection
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function nonce(Tag $tag): AuxiliaryNode
     {
@@ -286,6 +296,7 @@ class Macros extends Extension
      * @noinspection HtmlUnknownTarget
      * @noinspection JSUnresolvedVariable
      * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
      */
     public function head(Tag $tag): Node
     {

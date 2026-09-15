@@ -95,41 +95,83 @@ class BaseVarAnalyzer
             return $this->cache[$className] = [];
         }
 
-        $vars = [];
+        $vars = [
+            ...$this->findAddParamVars($stmts),
+            ...$this->findMergeParamsVars($stmts),
+        ];
 
+        return $this->cache[$className] = array_values(array_unique($vars));
+    }
+
+    /**
+     * @param Node[] $stmts
+     * @return string[]
+     */
+    private function findAddParamVars(array $stmts): array
+    {
         /** @var MethodCall[] $addParamCalls */
         $addParamCalls = $this->finder->find($stmts, function (Node $node): bool {
             return $node instanceof MethodCall
                 && $node->name instanceof Node\Identifier
                 && $node->name->toString() === 'addParam';
         });
+
+        $vars = [];
         foreach ($addParamCalls as $call) {
             if (isset($call->args[0]) && $call->args[0] instanceof Node\Arg && $call->args[0]->value instanceof String_) {
                 $vars[] = $call->args[0]->value->value;
             }
         }
 
+        return $vars;
+    }
+
+    /**
+     * mergeParams([...]) with no namespace arg exposes each array key as a top-level var;
+     * mergeParams([...], 'ns') exposes only the namespace itself (already a known system var).
+     *
+     * @param Node[] $stmts
+     * @return string[]
+     */
+    private function findMergeParamsVars(array $stmts): array
+    {
         /** @var MethodCall[] $mergeParamsCalls */
         $mergeParamsCalls = $this->finder->find($stmts, function (Node $node): bool {
             return $node instanceof MethodCall
                 && $node->name instanceof Node\Identifier
                 && $node->name->toString() === 'mergeParams';
         });
+
+        $vars = [];
         foreach ($mergeParamsCalls as $call) {
-            // mergeParams([...]) with no namespace arg exposes each array key as a top-level var;
-            // mergeParams([...], 'ns') exposes only the namespace itself (already a known system var).
-            if (
-                isset($call->args[0]) && $call->args[0] instanceof Node\Arg
-                && $call->args[0]->value instanceof Array_ && ! isset($call->args[1])
-            ) {
-                foreach ($call->args[0]->value->items as $item) {
-                    if ($item !== null && $item->key instanceof String_) {
-                        $vars[] = $item->key->value;
-                    }
-                }
+            $vars = [...$vars, ...$this->mergeParamsArrayKeys($call)];
+        }
+
+        return $vars;
+    }
+
+    /**
+     * @param MethodCall $call
+     * @return string[]
+     *
+     * @psalm-mutation-free
+     */
+    private function mergeParamsArrayKeys(MethodCall $call): array
+    {
+        if (
+            ! isset($call->args[0]) || ! $call->args[0] instanceof Node\Arg
+            || ! $call->args[0]->value instanceof Array_ || isset($call->args[1])
+        ) {
+            return [];
+        }
+
+        $vars = [];
+        foreach ($call->args[0]->value->items as $item) {
+            if ($item !== null && $item->key instanceof String_) {
+                $vars[] = $item->key->value;
             }
         }
 
-        return $this->cache[$className] = array_values(array_unique($vars));
+        return $vars;
     }
 }

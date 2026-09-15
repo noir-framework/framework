@@ -72,39 +72,68 @@ class EasyTranslator implements Translator
         $args = array_map(fn ($arg) => $this->urlTranslate($arg), $args);
 
         if ($key !== null) {
-            if (str_contains($key, '.')) {
-                $check = $translations;
-                foreach (explode('.', $key) as $k) {
-                    if (isset($check[$k])) {
-                        $check = $check[$k];
-                    }
-                }
-
-                if (is_string($check)) {
-                    return str_contains($message, '%s') ? sprintf($check, ...$args) : $check;
-                }
-            }
-
-            if (isset($translations[$this->controller][$this->function][$key])) {
-                return str_contains($message, '%s') ? sprintf($translations[$this->controller][$this->function][$key], ...$args) : $translations[$this->controller][$this->function][$key]; //phpcs:ignore
-            }
-
-            if (isset($translations[$this->controller][$key])) {
-                return str_contains($message, '%s') ? sprintf($translations[$this->controller][$key], ...$args) : $translations[$this->controller][$key]; //phpcs:ignore
-            }
-
-            if (isset($translations[$key])) {
-                return str_contains($message, '%s') ? sprintf($translations[$key], ...$args) : $translations[$key];
+            $byKey = $this->lookupByKey($translations, $key);
+            if ($byKey !== null) {
+                return $this->formatResult($message, $byKey, $args);
             }
         }
 
         $lookup = strtolower($message);
-
         if (! empty($translations['strings'][$lookup])) {
-            return str_contains($message, '%s') ? sprintf($translations['strings'][$lookup], ...$args) : $translations['strings'][$lookup]; //phpcs:ignore
+            return $this->formatResult($message, $translations['strings'][$lookup], $args);
         }
 
-        return str_contains($message, '%s') ? sprintf($message, ...$args) : $message;
+        return $this->formatResult($message, $message, $args);
+    }
+
+    /**
+     * Resolves $key against $translations, trying (in order) a dotted path,
+     * then [controller][function][key], [controller][key], and [key]. Returns
+     * null if none matched.
+     *
+     * @param array $translations
+     * @param string $key
+     * @return string|null
+     *
+     * @psalm-mutation-free
+     */
+    private function lookupByKey(array $translations, string $key): ?string
+    {
+        if (str_contains($key, '.')) {
+            $check = $translations;
+            foreach (explode('.', $key) as $k) {
+                if (isset($check[$k])) {
+                    $check = $check[$k];
+                }
+            }
+
+            if (is_string($check)) {
+                return $check;
+            }
+        }
+
+        if (isset($translations[$this->controller][$this->function][$key])) {
+            return $translations[$this->controller][$this->function][$key];
+        }
+
+        if (isset($translations[$this->controller][$key])) {
+            return $translations[$this->controller][$key];
+        }
+
+        return $translations[$key] ?? null;
+    }
+
+    /**
+     * @param string $message
+     * @param string $value
+     * @param array $args
+     * @return string
+     *
+     * @psalm-pure
+     */
+    private function formatResult(string $message, string $value, array $args): string
+    {
+        return str_contains($message, '%s') ? sprintf($value, ...$args) : $value;
     }
 
     /**
