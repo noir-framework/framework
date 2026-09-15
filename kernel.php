@@ -17,7 +17,7 @@ include(__DIR__ . '/include.php');
 // If the request is for the index.php, use the router
 /**
  * @psalm-suppress RedundantCondition Psalm infers PHP_SELF as always '/index.php'
- * from the literal assignment in bin/router.php (dev server only); the real
+ * from the literal assignment in noirapi/bin/router.php (dev server only); the real
  * value at runtime depends on the web server config, so the check is live.
  */
 if (isset($_SERVER['PHP_SELF']) && $_SERVER['PHP_SELF'] === '/index.php') {

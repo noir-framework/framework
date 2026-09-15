@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+#
+# Starts/stops PHP's built-in dev server in the background for a NoirAPI
+# app, routed through noirapi/bin/router.php so static assets under
+# htdocs/ (CSS/JS/images) are served directly instead of falling through
+# to the app router and coming back as HTML.
+#
+# Usage: noirapi/bin/dev-server [start|stop|restart|status] [--port N] [--host H] [--config NAME]
+#
+# Project root is assumed to be two levels above this script (<root>/noirapi/bin/).
+# PID/log files live at <root>/.dev-server.pid and <root>/.dev-server.log.
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+PID_FILE="$ROOT/.dev-server.pid"
+LOG_FILE="$ROOT/.dev-server.log"
+
+HOST="localhost"
+PORT="8000"
+CONFIG_NAME="${CONFIG:-default}"
+ACTION="start"
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        start|stop|restart|status) ACTION="$1"; shift ;;
+        --port) PORT="$2"; shift 2 ;;
+        --host) HOST="$2"; shift 2 ;;
+        --config) CONFIG_NAME="$2"; shift 2 ;;
+        *) echo "Unknown argument: $1" >&2; exit 1 ;;
+    esac
+done
+
+is_running() {
+    [[ -f "$PID_FILE" ]] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null
+}
+
+start_server() {
+    if is_running; then
+        echo "Dev server already running (pid $(cat "$PID_FILE")) at http://$HOST:$PORT"
+        return 0
+    fi
+    cd "$ROOT"
+    CONFIG="$CONFIG_NAME" nohup php -S "$HOST:$PORT" -t htdocs noirapi/bin/router.php \
+        > "$LOG_FILE" 2>&1 &
+    disown
+    echo $! > "$PID_FILE"
+    sleep 0.3
+    if is_running; then
+        echo "Dev server started at http://$HOST:$PORT (pid $(cat "$PID_FILE"), log: $LOG_FILE, CONFIG=$CONFIG_NAME)"
+    else
+        echo "Dev server failed to start - check $LOG_FILE" >&2
+        exit 1
+    fi
+}
+
+stop_server() {
+    if is_running; then
+        local pid
+        pid="$(cat "$PID_FILE")"
+        kill "$pid"
+        rm -f "$PID_FILE"
+        echo "Stopped dev server (was pid $pid)."
+    else
+        echo "Dev server is not running."
+        rm -f "$PID_FILE"
+    fi
+}
+
+status_server() {
+    if is_running; then
+        echo "Dev server running (pid $(cat "$PID_FILE")) at http://$HOST:$PORT"
+    else
+        echo "Dev server is not running."
+    fi
+}
+
+case "$ACTION" in
+    start) start_server ;;
+    stop) stop_server ;;
+    restart) stop_server; start_server ;;
+    status) status_server ;;
+esac
