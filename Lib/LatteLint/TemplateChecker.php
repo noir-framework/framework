@@ -112,6 +112,7 @@ class TemplateChecker
      * @param string $file
      * @param CheckResult $result
      * @return bool
+     * @throws SecurityViolationException
      */
     private function compileAndReportWarnings(string $source, string $file, CheckResult $result): bool
     {
