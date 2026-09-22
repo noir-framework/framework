@@ -8,13 +8,21 @@
 # Usage: noirapi/bin/dev-server [start|stop|restart|status] [--port N] [--host H] [--config NAME]
 #
 # Project root is assumed to be two levels above this script (<root>/noirapi/bin/).
-# PID/log files live at <root>/.dev-server.pid and <root>/.dev-server.log.
+# Pid file lives at <root>/temp/dev-server.pid, log at <root>/logs/dev-server.log
+# (alongside Tracy's own logs, both dirs already gitignored wholesale).
+#
+# PHP_CLI_SERVER_WORKERS spawns multiple worker processes so the built-in dev
+# server can handle concurrent requests — without it, a single long-poll (e.g.
+# an OCR worker container's GET /api/v1/ocr/worker/next) blocks every other
+# request until it resolves, making the whole site feel hung.
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-PID_FILE="$ROOT/.dev-server.pid"
-LOG_FILE="$ROOT/.dev-server.log"
+mkdir -p "$ROOT/temp" "$ROOT/logs"
+PID_FILE="$ROOT/temp/dev-server.pid"
+LOG_FILE="$ROOT/logs/dev-server.log"
+SERVER_WORKERS="${PHP_CLI_SERVER_WORKERS:-4}"
 
 HOST="localhost"
 PORT="8000"
@@ -41,7 +49,8 @@ start_server() {
         return 0
     fi
     cd "$ROOT"
-    CONFIG="$CONFIG_NAME" nohup php -S "$HOST:$PORT" -t htdocs noirapi/bin/router.php \
+    CONFIG="$CONFIG_NAME" PHP_CLI_SERVER_WORKERS="$SERVER_WORKERS" \
+        nohup php -S "$HOST:$PORT" -t htdocs noirapi/bin/router.php \
         > "$LOG_FILE" 2>&1 &
     disown
     echo $! > "$PID_FILE"
