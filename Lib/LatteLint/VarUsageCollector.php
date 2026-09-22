@@ -15,7 +15,6 @@ use Latte\Essential\Nodes\ForNode;
 use Latte\Essential\Nodes\ParametersNode;
 use Latte\Essential\Nodes\VarNode;
 use Latte\Extension;
-
 use Override;
 use stdClass;
 use function is_string;

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\LatteLint;
 
-use function array_flip;
-use const E_USER_DEPRECATED;
-use const E_USER_NOTICE;
-
-use const E_USER_WARNING;
-use function file_get_contents;
 use Latte\CompileException;
 use Latte\Engine;
 use Latte\SecurityViolationException;
-use function preg_match_all;
 
+use function array_flip;
+use function file_get_contents;
+use function preg_match_all;
 use function restore_error_handler;
 use function set_error_handler;
 use function substr_count;
+
+use const E_USER_DEPRECATED;
+use const E_USER_NOTICE;
+use const E_USER_WARNING;
 
 /**
  * Checks a single Latte template file for:
