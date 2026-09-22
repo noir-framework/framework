@@ -16,6 +16,15 @@
  * empty response for every route except the bare "/". Real deployments
  * front this with nginx/PHP-FPM instead of this script.
  *
+ * Before that fallback, it also replicates nginx's SPA `try_files` rule for
+ * any built single-page app under htdocs/<dir>/ (e.g. htdocs/admin/ built
+ * from a Vite/Vue/React project): if the first path segment names such a
+ * directory (it has its own index.html) and the exact requested file isn't
+ * a real static asset, serve that directory's index.html instead of falling
+ * through to the app router - otherwise a hard refresh on any client-side
+ * route (e.g. /admin/companies) 404s, since that path has no PHP route and
+ * isn't a real file either.
+ *
  * Prefer `noirapi/bin/dev-server` over calling this directly - it also
  * backgrounds the process, avoids double-starts, and sets CONFIG.
  */
@@ -30,6 +39,15 @@ $file = $root . '/htdocs' . $path;
 
 if ($path !== '/' && is_file($file)) {
     return false;
+}
+
+if (preg_match('#^/([^/]+)/#', $path, $matches) === 1) {
+    $spaIndex = $root . '/htdocs/' . $matches[1] . '/index.html';
+    if (is_file($spaIndex)) {
+        header('Content-Type: text/html; charset=UTF-8');
+        readfile($spaIndex);
+        return true;
+    }
 }
 
 $_SERVER['SCRIPT_NAME'] = '/index.php';
