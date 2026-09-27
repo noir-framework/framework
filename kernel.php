@@ -55,7 +55,12 @@ if (isset($_SERVER['PHP_SELF']) && $_SERVER['PHP_SELF'] === '/index.php') {
         header(ucfirst($key) . ': ' . $value);
     }
 
-    echo $response->getBody();
+    $bodyFile = $response->getBodyFile();
+    if ($bodyFile !== null) {
+        readfile($bodyFile);
+    } else {
+        echo $response->getBody();
+    }
 
     //Force calling destructors
     unset($response);

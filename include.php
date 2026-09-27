@@ -39,6 +39,20 @@ if (empty($config)) {
 /** @noinspection PhpUnhandledExceptionInspection */
 Config::init($config);
 
+// PHP's timezone must match the database's (NOW(), CURRENT_TIMESTAMP), or timestamps written by
+// PHP and by MariaDB disagree. Config `timezone` wins; otherwise use the system zone
+// (/etc/localtime), as the apps previously did in their Site controllers.
+$_timezone = Config::get('timezone');
+if (! is_string($_timezone) && is_link('/etc/localtime')) {
+    $_link = (string) readlink('/etc/localtime');
+    $_pos = strpos($_link, 'zoneinfo/');
+    $_timezone = $_pos === false ? null : substr($_link, $_pos + 9);
+}
+if (is_string($_timezone) && in_array($_timezone, timezone_identifiers_list(), true)) {
+    date_default_timezone_set($_timezone);
+}
+unset($_timezone, $_link, $_pos);
+
 $_sessionCfg = Config::get('session');
 if (is_array($_sessionCfg) && isset($_sessionCfg['driver'])) {
     $handler = SessionHandlerFactory::create($_sessionCfg);

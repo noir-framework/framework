@@ -50,6 +50,7 @@ class Response
     private array $cookies = [];
     private array $headerCallback = [];
     private bool $csv_header = true;
+    private ?string $bodyFile = null;
 
     public const string TYPE_JSON = 'application/json';
     public const string TYPE_XML = 'text/xml';
@@ -355,6 +356,38 @@ class Response
         }
 
         return $headers;
+    }
+
+    /**
+     * Sends a file from disk as the body, streamed by the server entry point (kernel.php:
+     * readfile(); swoole.php: sendfile()) instead of being loaded into memory. Use for large
+     * files; the Content-Type stays whatever setContentType() set.
+     *
+     * @return $this
+     */
+    public function sendFile(string $path): self
+    {
+        if (! is_file($path) || ! is_readable($path)) {
+            throw new RuntimeException('File not readable: ' . $path);
+        }
+
+        $this->bodyFile = $path;
+        $size = filesize($path);
+        if ($size !== false) {
+            $this->addHeader('Content-Length', (string) $size);
+        }
+
+        return $this;
+    }
+
+    /**
+     * The file set with sendFile(), or null for a normal body.
+     *
+     * @psalm-mutation-free
+     */
+    public function getBodyFile(): ?string
+    {
+        return $this->bodyFile;
     }
 
     /**

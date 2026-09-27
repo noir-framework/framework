@@ -75,7 +75,12 @@ $server->on('request', function (Swoole\Http\Request $request, Swoole\Http\Respo
 
     }
 
-    $response->end($app->getBody());
+    $bodyFile = $app->getBodyFile();
+    if ($bodyFile !== null) {
+        $response->sendfile($bodyFile);
+    } else {
+        $response->end($app->getBody());
+    }
 
 });
 
