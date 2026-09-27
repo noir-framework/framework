@@ -218,8 +218,25 @@ class Request
      */
     public function getHeader(string $name): ?string
     {
-        $name = str_replace('-', '_', strtoupper($name));
-        return $this->headers[$name] ?? null;
+        // Headers are keyed "Content-Type" when built from $_SERVER and "CONTENT_TYPE" when
+        // built from Swoole; compare in one normalised form so both work.
+        $wanted = self::normalizeHeaderName($name);
+
+        foreach ($this->headers as $key => $value) {
+            if (self::normalizeHeaderName((string) $key) === $wanted) {
+                return is_string($value) ? $value : null;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    private static function normalizeHeaderName(string $name): string
+    {
+        return str_replace('-', '_', strtoupper($name));
     }
 
     /**

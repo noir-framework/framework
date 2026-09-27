@@ -354,13 +354,14 @@ class Controller
     /**
      * @param Acl $acl
      * @param string $return_path
-     * @param int $status_code
+     * @param int $status_code 302 by default: a 301 is cached by browsers, which would keep
+     *                         redirecting the page even after the user has logged in.
      * @return void
      * @throws LoginException
      * @throws MessageException
      * @noinspection PhpUnused
      */
-    public function hasResource(Acl $acl, string $return_path = '/', int $status_code = 301): void
+    public function hasResource(Acl $acl, string $return_path = '/', int $status_code = 302): void
     {
         if (! $acl->hasResource(static::class)) {
             if ($this->request->ajax) {
@@ -376,13 +377,14 @@ class Controller
     /**
      * @param Acl $acl
      * @param string $return_path
-     * @param int $status_code
+     * @param int $status_code 302 by default: a 301 is cached by browsers, which would keep
+     *                         redirecting the page even after the user has logged in.
      * @return void
      * @throws LoginException
      * @throws MessageException
      * @noinspection PhpUnused
      */
-    public function isAllowed(Acl $acl, string $return_path = '/', int $status_code = 301): void
+    public function isAllowed(Acl $acl, string $return_path = '/', int $status_code = 302): void
     {
         if (! $acl->isAllowed($this->request->role, static::class)) {
             if ($this->request->ajax) {

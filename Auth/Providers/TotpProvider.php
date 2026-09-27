@@ -6,11 +6,13 @@ namespace Noirapi\Auth\Providers;
 
 use Noirapi\Auth\Contracts\AuthProviderInterface;
 use Override;
+use RobThree\Auth\Providers\Qr\BaconQrCodeProvider;
 use RobThree\Auth\TwoFactorAuth;
 use RobThree\Auth\TwoFactorAuthException;
 
 /**
- * TOTP (Time-based One-Time Password) provider wrapping RobThree\Auth.
+ * TOTP (Time-based One-Time Password) provider wrapping RobThree\Auth (robthree/twofactorauth ^3,
+ * with bacon/bacon-qr-code for QR codes).
  *
  * Usage:
  *   $totp = $authManager->getTotpProvider();
@@ -34,12 +36,15 @@ class TotpProvider implements AuthProviderInterface
     private TwoFactorAuth $tfa;
 
     /**
+     * QR codes are rendered locally as SVG (bacon). Never use an HTTP QR provider: it would send
+     * the TOTP secret to a third-party service.
+     *
      * @param string $issuer
      * @throws TwoFactorAuthException
      */
     public function __construct(string $issuer)
     {
-        $this->tfa = new TwoFactorAuth($issuer);
+        $this->tfa = new TwoFactorAuth(new BaconQrCodeProvider(format: 'svg'), $issuer);
     }
 
     /* ── AuthProviderInterface ───────────────────────────────── */
@@ -85,7 +90,7 @@ class TotpProvider implements AuthProviderInterface
     }
 
     /**
-     * Build a QR code data URI for display in a browser <img> tag.
+     * Build a QR code data URI (SVG, rendered locally) for display in a browser <img> tag.
      *
      * @param string $accountName  Typically the user's email address.
      * @param string $secret       The secret returned by createSecret().
