@@ -166,10 +166,12 @@ final class Expect2
         }
 
         if (is_string($callable) && class_exists($callable)) {
-            $instance = new $callable($params);
+            $instance = new $callable(...$params);
             if (! $instance instanceof Schema) {
-                throw new RuntimeException($callable . ' does not implements Schema interface');
+                throw new RuntimeException($callable . ' does not implement the Schema interface');
             }
+
+            return $instance;
         }
 
         if ($callable instanceof Schema) {

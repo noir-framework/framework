@@ -82,6 +82,9 @@
 - **Fix:** `Controller::restMessage()` always threw (it passed `ok:` to `RestMessage::new()`,
   whose parameter is `success`). OAuth results are immutable: tokens are set with
   `OAuthResult::withTokens()`.
+- **Fix:** `Expect2::custom(SomeSchema::class)` always threw; it now returns the instance.
+- Docs: configuration reference, validation, Swoole, routing, CLI, security and authentication
+  guides; `UPGRADE.md` has a 2.0 checklist.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 

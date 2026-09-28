@@ -8,6 +8,7 @@ use Nette\Schema\Expect;
 use Nette\Schema\Processor;
 use Nette\Schema\Schema;
 use Nette\Schema\ValidationException;
+use Noirapi\Helpers\Expect2;
 use Noirapi\Helpers\Schema\Cidr;
 use Noirapi\Helpers\Schema\Domain;
 use Noirapi\Helpers\Schema\Numeric;
@@ -104,5 +105,12 @@ final class SchemaTest extends TestCase
         } finally {
             SchemaHelper::set([]);
         }
+    }
+
+    public function testExpect2Factories(): void
+    {
+        self::assertSame(8080, self::process(Expect2::custom(Port::class)->min(1), '8080'));
+        self::assertSame(3, self::process(Expect2::Numeric()->max(5), '3'));
+        self::assertSame(['10.0.0.0/8'], self::process(Expect2::Cidr(true), '10.0.0.0/8'));
     }
 }

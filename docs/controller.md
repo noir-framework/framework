@@ -69,40 +69,61 @@ $tags->allForArticle($articleId);
 
 | Property | Type | Description |
 |---|---|---|
-| `method` | `string` | HTTP verb: `GET`, `POST`, `PUT`, `DELETE`, … |
-| `uri` | `string` | Full request URI including query string |
+| `method` | `string` | HTTP verb, upper case: `GET`, `POST`, `PUT`, `DELETE`, … |
+| `uri` | `string` | Request URI as sent, query string included (not URL-decoded) |
+| `url_no_lang` | `string` | Decoded path without the language prefix |
 | `get` | `array` | Query string parameters (`$_GET`) |
-| `post` | `array` | Posted body parameters (`$_POST`) |
+| `post` | `array` | Posted body parameters (`$_POST`); the CSRF field is removed after the check |
 | `files` | `array` | Uploaded files (`$_FILES`) |
 | `cookies` | `array` | Cookies (`$_COOKIE`) |
-| `headers` | `array` | Normalised HTTP request headers |
+| `headers` | `array` | Request headers, `Content-Type` style keys |
 | `controller` | `string` | Resolved controller class name |
 | `function` | `string` | Resolved action method name |
-| `route` | `array` | Named route parameters from the URL pattern |
-| `role` | `string` | Current user's ACL role |
-| `ajax` | `bool` | `true` for XHR / PJAX requests |
-| `https` | `bool` | `true` when the connection is HTTPS |
-| `hostname` | `string` | `HTTP_HOST` value |
+| `route` | `array` | The FastRoute dispatch result |
+| `role` | `string` | Current user's ACL role (set by the app) |
+| `ajax` | `bool` | `true` for XHR / PJAX / fetch requests |
+| `https` | `bool` | `true` when the client used HTTPS (behind a proxy: see `trusted_proxies`) |
+| `hostname` | `string` | The host the client asked for |
+| `clientIp` | `string` | The client's address (behind a proxy: see `trusted_proxies`) |
 | `language` | `?string` | Active language code, or `null` |
 
+Route parameters arrive as the action's arguments, by name (`/articles/{id}` → `show(string $id)`).
+
+### Reading input
+
+`input()` and the typed getters look in the JSON body (for JSON requests), then POST, then the
+query string. A typed getter returns the default (`null` unless given) when the value is
+missing or doesn't convert cleanly, so `int('page')` on `?page=abc` is `null`, not `0`.
+
 ```php
-// Reading a route parameter  (/articles/{id})
-$id = (int) $this->request->route['id'];
+$page   = $this->request->int('page', 1);                 // ?page=3 -> 3
+$title  = $this->request->string('title', '');
+$price  = $this->request->float('price');
+$active = $this->request->bool('active', false);          // 1/true/on/yes, 0/false/off/no
+$status = $this->request->enum('status', Status::class);  // backed enum, by value
+$tags   = $this->request->array('tags');                  // [] when missing
+$raw    = $this->request->input('anything');              // mixed
+$has    = $this->request->has('q');
 
-// Reading a query parameter  (?page=3)
-$page = (int) ($this->request->get['page'] ?? 1);
+$page   = $this->request->query('page');                  // query string only
+$data   = $this->request->json();                         // decoded JSON body (array)
+$body   = $this->request->body();                         // raw body
+```
 
-// Reading a posted field
-$title = $this->request->post['title'] ?? '';
+An invalid JSON body makes `json()` / `input()` throw a `RestException` (400).
 
-// Checking the method
-if ($this->request->method === 'POST') { ... }
+### Other helpers
 
-// Reading an arbitrary header
-$token = $this->request->getHeader('Authorization');
-
-// Reading a cookie
-$pref = $this->request->getCookie('theme');
+```php
+$this->request->isMethod('POST');
+$this->request->isSecure();
+$this->request->isJson();                    // Content-Type is JSON
+$this->request->wantsJson();                 // Accept lists application/json
+$this->request->accepts('text/csv');
+$this->request->header('Authorization');     // or getHeader(), case-insensitive
+$this->request->header('X-Page', '1');       // with a default
+$this->request->getCookie('theme');
+$this->request->baseUrl();                   // https://app.example.com
 ```
 
 ---
@@ -339,6 +360,7 @@ Every action method must return a `Response`. Returning nothing, or returning a 
 | Method | Returns | Description |
 |---|---|---|
 | `forward(?string $url, int $code, bool $skip_lang)` | `Response` | Redirect; `null` redirects back to referer |
+| `forwardTo(string $name, array $params, array $query, int $code)` | `Response` | Redirect to a [named route](routing.md#named-routes-and-url-generation) |
 | `ok()` | `Response` | 200 status |
 | `notFound()` | `Response` | 404 status |
 | `internalServerError()` | `Response` | 500 status |
