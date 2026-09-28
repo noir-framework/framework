@@ -3,8 +3,8 @@
 
 declare(strict_types=1);
 
-// Project root is two levels above noirapi/bin/
-$root = dirname(__DIR__, 2);
+// Project root: NOIRAPI_ROOT (set by bin/noirapi for Composer installs), else two levels above noirapi/bin/
+$root = getenv('NOIRAPI_ROOT') ?: dirname(__DIR__, 2);
 
 if (! is_file($autoload = $root . '/vendor/autoload.php')) {
     fwrite(STDERR, "Cannot find vendor/autoload.php. Run 'composer install' first.\n");
@@ -48,6 +48,8 @@ Exit codes:
 HELP;
     exit(0);
 }
+
+Config::setRoot($root);
 
 $viewsDir = isset($opts['views-dir']) ? $root . '/' . $opts['views-dir'] : Config::getViews();
 $layoutsDir = isset($opts['layouts-dir']) ? $root . '/' . $opts['layouts-dir'] : Config::getLayouts();

@@ -3,7 +3,8 @@
 
 declare(strict_types=1);
 
-$root = dirname(__DIR__, 2);
+// Project root: NOIRAPI_ROOT (set by bin/noirapi for Composer installs), else two levels above noirapi/bin/
+$root = getenv('NOIRAPI_ROOT') ?: dirname(__DIR__, 2);
 
 if (! is_file($autoload = $root . '/vendor/autoload.php')) {
     fwrite(STDERR, "Cannot find vendor/autoload.php. Run 'composer install' first.\n");

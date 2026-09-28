@@ -1,0 +1,23 @@
+<?php
+
+use Opis\Database\{Database, Connection};
+use Opis\Database\SQL\Expression as Expr;
+use Other\Database\Thing;
+
+function make(\PDO $pdo): \Opis\Database\Database
+{
+    /** @var Expr $x */
+    return new \Opis\Database\Database(Connection::fromPDO($pdo));
+}
+-----
+<?php
+
+use Noirapi\Database\{Database, Connection};
+use Noirapi\Database\SQL\Expression as Expr;
+use Other\Database\Thing;
+
+function make(\PDO $pdo): \Noirapi\Database\Database
+{
+    /** @var Expr $x */
+    return new \Noirapi\Database\Database(Connection::fromPDO($pdo));
+}

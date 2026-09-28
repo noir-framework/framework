@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi;
 
+use Composer\InstalledVersions;
 use function is_array;
 use JsonException;
 use Nette\Neon\Exception;
@@ -17,6 +18,7 @@ use Tracy\Debugger;
 class Config
 {
     private static array $options;
+    private static ?string $root = null;
     public static string $config;
 
     /**
@@ -180,17 +182,74 @@ class Config
     }
 
     /**
+     * Pins the application root (the directory holding app/, htdocs/, temp/, logs/).
+     * Called by Kernel::boot(); an explicit root always wins over detection.
+     *
+     * @param string $root
+     * @return void
+     */
+    public static function setRoot(string $root): void
+    {
+        $real = realpath($root);
+        self::$root = rtrim($real !== false ? $real : $root, '/');
+    }
+
+    /**
      * @return string
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function getRoot(): string
     {
-        static $root = null;
+        return self::$root ??= self::detectRoot();
+    }
 
-        return $root ??= dirname(__FILE__, 2);
+    /**
+     * Works out the application root when nobody pinned it:
+     *  1. NOIRAPI_ROOT environment variable (set by bin/noirapi and bin/dev-server)
+     *  2. submodule layout - the framework lives in <root>/noirapi/ next to <root>/app/
+     *  3. Composer layout - the framework lives in <root>/vendor/noirapi/framework/
+     *
+     * @return string
+     */
+    public static function detectRoot(): string
+    {
+        $env = getenv('NOIRAPI_ROOT');
+        if (is_string($env) && $env !== '' && is_dir($env)) {
+            return rtrim($env, '/');
+        }
+
+        $parent = dirname(__DIR__);
+        if (is_dir($parent . '/app')) {
+            return $parent;
+        }
+
+        // Not getRootPackage(): with several Composer installs loaded (e.g. Rector's
+        // bundled vendor) that is whichever registered first, not necessarily the app.
+        if (class_exists(InstalledVersions::class)) {
+            foreach (InstalledVersions::getAllRawData() as $installed) {
+                if (isset($installed['versions']['noirapi/framework'])) {
+                    $installPath = realpath($installed['root']['install_path']);
+                    if ($installPath !== false) {
+                        return $installPath;
+                    }
+                }
+            }
+        }
+
+        return $parent;
+    }
+
+    /**
+     * Directory of the framework itself (bundled templates, bin scripts), in either layout.
+     *
+     * @return string
+     *
+     * @psalm-pure
+     */
+    public static function getFrameworkDir(): string
+    {
+        return __DIR__;
     }
 
     /**

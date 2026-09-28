@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+# Single Composer entry point for the framework's tools:
+#   vendor/bin/noirapi dev-server [start|stop|restart|status] [--port N] [--host H] [--config NAME]
+#   vendor/bin/noirapi latte-lint <path> [<path>...] [--debug]
+#   vendor/bin/noirapi latte-check [--strict] [--no-controller-check] ...
+#
+# It only works out the project root and exports it as NOIRAPI_ROOT; the tools
+# themselves are the same scripts submodule apps call as noirapi/bin/<tool>.
+# Root: NOIRAPI_ROOT if already set, else the parent of Composer's vendor dir
+# (COMPOSER_RUNTIME_BIN_DIR is <root>/vendor/bin), else the current directory.
+
+set -euo pipefail
+
+BIN_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+
+if [[ -z "${NOIRAPI_ROOT:-}" ]]; then
+    if [[ -n "${COMPOSER_RUNTIME_BIN_DIR:-}" ]]; then
+        NOIRAPI_ROOT="$(cd "$COMPOSER_RUNTIME_BIN_DIR/../.." && pwd)"
+    else
+        NOIRAPI_ROOT="$(pwd)"
+    fi
+fi
+export NOIRAPI_ROOT
+
+usage() {
+    echo "Usage: noirapi <dev-server|latte-lint|latte-check> [args...]" >&2
+    exit 1
+}
+
+[[ $# -gt 0 ]] || usage
+command="$1"
+shift
+
+case "$command" in
+    dev-server) exec "$BIN_DIR/dev-server" "$@" ;;
+    latte-lint) exec php "$BIN_DIR/latte-lint" "$@" ;;
+    latte-check) exec php "$BIN_DIR/latte-check.php" "$@" ;;
+    *) usage ;;
+esac

@@ -75,7 +75,7 @@ class Macros extends Extension
         $file = Config::getLayouts() . '/pager.latte';
 
         if (! is_readable($file)) {
-            $file = Config::getRoot() . '/noirapi/Templates/pager.latte';
+            $file = Config::getFrameworkDir() . '/Templates/pager.latte';
         }
 
         return new AuxiliaryNode(
@@ -120,7 +120,7 @@ class Macros extends Extension
         $file = Config::getLayouts() . '/BreadCrumbs.latte';
 
         if (! is_readable($file)) {
-            $file = Config::getRoot() . '/noirapi/Templates/BreadCrumbs.latte';
+            $file = Config::getFrameworkDir() . '/Templates/BreadCrumbs.latte';
         }
 
         return new AuxiliaryNode(
@@ -263,7 +263,7 @@ class Macros extends Extension
         $file = Config::getLayouts() . '/message.latte';
 
         if (! is_readable($file)) {
-            $file = Config::getRoot() . '/noirapi/Templates/message.latte';
+            $file = Config::getFrameworkDir() . '/Templates/message.latte';
         }
 
         return new AuxiliaryNode(
