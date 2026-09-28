@@ -79,17 +79,9 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.1.x-dev"
+            "dev-master": "2.0.x-dev"
         }
     },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/noir-framework/database"
-        }
-    ],
-    "minimum-stability": "beta",
-    "prefer-stable": true,
     "config": {
         "sort-packages": true
     }

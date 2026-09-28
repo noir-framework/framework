@@ -17,14 +17,6 @@ There are two supported layouts, and they run the same code (`Noirapi\Lib\Kernel
 composer require noirapi/framework
 ```
 
-> **Stability:** `noirapi/framework` depends on `noirapi/database ^5.0`, which is in beta until
-> 5.0.0 is tagged. Until then the project's `composer.json` needs:
->
-> ```json
-> "minimum-stability": "beta",
-> "prefer-stable": true
-> ```
-
 Project layout. Every path is relative to the project root, which the kernel is given:
 
 ```

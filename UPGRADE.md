@@ -35,20 +35,14 @@ It keeps the git-submodule layout working and adds a Composer layout; both run t
    ```json
    "require": {
        "noirapi/database": "^5.0"
-   },
-   "minimum-stability": "beta",
-   "prefer-stable": true
+   }
    ```
 
    Remove `opis/database` (and any `repositories` entry for the old fork). They must not be
    installed together: with the real Opis classes present, app type hints such as
    `Opis\Database\Database` stop resolving to the aliases and reject `Model::$db`
-   (a `Noirapi\Database\Database`). Until
-   `noirapi/database` is on Packagist, also add:
-
-   ```json
-   "repositories": [{"type": "vcs", "url": "https://github.com/noir-framework/database"}]
-   ```
+   (a `Noirapi\Database\Database`). `noirapi/database` 5.0.0 is on Packagist, so no
+   `minimum-stability` or `repositories` entry is needed.
 
 3. `composer update noirapi/database opis/database && composer dump-autoload`
 
@@ -76,7 +70,7 @@ It keeps the git-submodule layout working and adds a Composer layout; both run t
 
 Do part A first. Then:
 
-1. **Require the framework** (the stability settings from A.2 still apply):
+1. **Require the framework:**
 
    ```bash
    composer require noirapi/framework
