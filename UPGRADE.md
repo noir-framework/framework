@@ -103,7 +103,9 @@ Do part A first. Then:
    \Noirapi\Lib\Kernel::run(<root>);
    ```
 
-   and `.../noirapi/include.php` to `Kernel::boot(<root>)`, including forms such as
+   Run it with `--clear-cache`: a stale Rector cache can silently skip files.
+
+   It also rewrites `.../noirapi/include.php` to `Kernel::boot(<root>)`, including forms such as
    `__DIR__ . '/../../noirapi/kernel.php'`. `Kernel::run()` keeps the old behaviour: CLI
    scripts that included `kernel.php` still only boot.
 
@@ -127,7 +129,7 @@ Do part A first. Then:
    | | `noirapi/bin/latte-lint app/views` | `vendor/bin/noirapi latte-lint app/views` |
    | | `php noirapi/bin/latte-check.php` | `vendor/bin/noirapi latte-check` |
    | `phpstan.neon` | `scanDirectories: [noirapi]` | remove (vendor is already scanned) |
-   | `psalm.xml` | `<directory name="noirapi" />` in `ignoreFiles` | remove |
+   | `psalm.xml` | `<directory name="noirapi" />` in `ignoreFiles` and `extraFiles` | remove |
    | `composer.json` phpmd script | `app,noirapi` plus `*noirapi/...` excludes | `app` |
    | app code | `Config::getRoot() . '/noirapi/Templates'` | `Config::getFrameworkDir() . '/Templates'` |
 
