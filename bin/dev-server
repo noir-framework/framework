@@ -6,8 +6,10 @@
 # to the app router and coming back as HTML.
 #
 # Usage: noirapi/bin/dev-server [start|stop|restart|status] [--port N] [--host H] [--config NAME]
+#        vendor/bin/noirapi dev-server ...   (Composer installs)
 #
-# Project root is assumed to be two levels above this script (<root>/noirapi/bin/).
+# Project root is NOIRAPI_ROOT when set (bin/noirapi sets it), otherwise two
+# levels above this script (<root>/noirapi/bin/).
 # Pid file lives at <root>/temp/dev-server.pid, log at <root>/logs/dev-server.log
 # (alongside Tracy's own logs, both dirs already gitignored wholesale).
 #
@@ -22,7 +24,8 @@
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+BIN_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+ROOT="${NOIRAPI_ROOT:-$(cd "$BIN_DIR/../.." && pwd)}"
 mkdir -p "$ROOT/temp" "$ROOT/logs"
 PID_FILE="$ROOT/temp/dev-server.pid"
 LOG_FILE="$ROOT/logs/dev-server.log"
@@ -61,8 +64,8 @@ start_server() {
             [[ -n "$line" ]] && ini_opts+=(-d "$line")
         done < "$ROOT/dev-server.ini"
     fi
-    CONFIG="$CONFIG_NAME" PHP_CLI_SERVER_WORKERS="$SERVER_WORKERS" \
-        nohup php "${ini_opts[@]}" -S "$HOST:$PORT" -t htdocs noirapi/bin/router.php \
+    CONFIG="$CONFIG_NAME" PHP_CLI_SERVER_WORKERS="$SERVER_WORKERS" NOIRAPI_ROOT="$ROOT" \
+        nohup php "${ini_opts[@]}" -S "$HOST:$PORT" -t htdocs "$BIN_DIR/router.php" \
         > "$LOG_FILE" 2>&1 &
     disown
     echo $! > "$PID_FILE"

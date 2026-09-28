@@ -31,8 +31,8 @@
 
 declare(strict_types=1);
 
-// Project root is two levels above noirapi/bin/
-$root = dirname(__DIR__, 2);
+// Project root: NOIRAPI_ROOT (set by bin/noirapi for Composer installs), else two levels above noirapi/bin/
+$root = getenv('NOIRAPI_ROOT') ?: dirname(__DIR__, 2);
 
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?? '/';
 $file = $root . '/htdocs' . $path;

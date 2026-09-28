@@ -6,9 +6,9 @@ namespace Noirapi\Lib;
 
 use Nette\Utils\Paginator;
 use Noirapi\Config;
+use Noirapi\Database\Connection;
+use Noirapi\Database\Database;
 use Noirapi\Lib\PDO\PDO;
-use Opis\Database\Connection;
-use Opis\Database\Database;
 use RuntimeException;
 
 /**

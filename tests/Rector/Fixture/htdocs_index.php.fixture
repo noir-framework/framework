@@ -1,0 +1,12 @@
+<?php
+
+declare(strict_types=1);
+
+require dirname(__DIR__) . '/noirapi/kernel.php';
+-----
+<?php
+
+declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+\Noirapi\Lib\Kernel::run(dirname(__DIR__));

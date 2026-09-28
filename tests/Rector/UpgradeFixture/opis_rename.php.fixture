@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Models;
+
+use Opis\Database\Database;
+use Opis\Database\SQL\Expression;
+
+final class Articles
+{
+    public function __construct(private Database $db)
+    {
+    }
+
+    public function byIp(string $ip): array
+    {
+        return $this->db->from('hits')
+            ->where('ip')->is(fn (Expression $e) => $e->op('INET6_ATON(')->value($ip)->op(')'))
+            ->select()->all();
+    }
+}
+-----
+<?php
+
+namespace App\Models;
+
+use Noirapi\Database\Database;
+use Noirapi\Database\SQL\Expression;
+
+final class Articles
+{
+    public function __construct(private Database $db)
+    {
+    }
+
+    public function byIp(string $ip): array
+    {
+        return $this->db->from('hits')
+            ->where('ip')->is(fn (Expression $e) => $e->inet6Aton($ip))
+            ->select()->all();
+    }
+}

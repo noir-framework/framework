@@ -1,6 +1,6 @@
 # Database
 
-noirapi uses [opis/database](https://opis.io/database) as a fluent query builder on top of PDO. The `Model` base class manages connection pooling and exposes `$this->db` to all model classes.
+noirapi uses [noirapi/database](https://github.com/noir-framework/database) (a maintained fork of opis/database) as a fluent query builder on top of PDO. The `Model` base class manages connection pooling and exposes `$this->db` to all model classes.
 
 ---
 
@@ -68,7 +68,7 @@ db:
 
 ## Model Class
 
-All application models extend `Noirapi\Lib\Model`. On construction the model connects to the configured database and exposes `$this->db` (an `Opis\Database\Database` instance).
+All application models extend `Noirapi\Lib\Model`. On construction the model connects to the configured database and exposes `$this->db` (a `Noirapi\Database\Database` instance).
 
 ```php
 namespace App\Models;

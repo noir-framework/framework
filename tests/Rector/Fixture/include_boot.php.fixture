@@ -1,0 +1,8 @@
+<?php
+
+include_once dirname(__DIR__, 2) . '/noirapi/include.php';
+-----
+<?php
+
+require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+\Noirapi\Lib\Kernel::boot(dirname(__DIR__, 2));
