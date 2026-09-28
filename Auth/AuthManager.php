@@ -175,7 +175,9 @@ class AuthManager
      *       client_secret: 'yyy'
      *       redirect_uri:  'https://app.com/auth/oauth/github/callback'
      *     magic_link:
-     *       enabled: true    # also requires mail.dsn to be set
+     *       enabled: true    # also requires mail.dsn and app_secret_key
+     *       ttl: 900         # link lifetime in seconds
+     *       path: '/auth/magic-link'   # the sign-in route; links are <appUrl><path>/<token>
      *
      * @param array<string,mixed> $config Contents of Config::get('auth') ?? []
      * @param array<string,mixed> $mailConfig Contents of Config::get('mail')  ?? []
@@ -214,10 +216,13 @@ class AuthManager
         /* Magic link — only enabled when mail.dsn is configured */
         $mailDsn = $mailConfig['dsn'] ?? null;
         if (! empty($config['magic_link']['enabled']) && $mailDsn !== null) {
+            $ttl = $config['magic_link']['ttl'] ?? null;
             $manager->setMagicLinkProvider(new MagicLinkProvider(
                 mailDsn:  (string) $mailDsn,
                 mailFrom: (string) ($mailConfig['from'] ?? 'no-reply@' . parse_url($appUrl, PHP_URL_HOST)),
                 appUrl:   $appUrl,
+                ttl:      is_int($ttl) && $ttl > 0 ? $ttl : MagicLinkProvider::DEFAULT_TTL,
+                path:     (string) ($config['magic_link']['path'] ?? '/auth/magic-link'),
             ));
         }
 
