@@ -22,6 +22,8 @@ final class MemcachedBackend implements Backend
 
     /**
      * @param string $server host:port
+     *
+     * @psalm-mutation-free
      */
     public function __construct(private readonly string $server, private readonly string $prefix)
     {
@@ -33,18 +35,27 @@ final class MemcachedBackend implements Backend
         return new MemcachedRateLimiter($rate, $this->memcached(), $this->prefix);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     #[Override]
     public function blocks(): BlockStore
     {
         return new MemcachedBlockStore($this->memcached(), $this->prefix);
     }
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function clock(): ?Closure
     {
         return null;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     private function memcached(): Memcached
     {
         if ($this->memcached === null) {

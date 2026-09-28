@@ -17,6 +17,9 @@ class SQLiteSessionHandler extends AbstractSessionHandler
     }
     //phpcs:enable
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(private readonly string $path)
     {
     }

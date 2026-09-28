@@ -266,7 +266,7 @@ class Ip implements Schema
             return null;
         }
 
-        return is_string($converted) || is_int($converted) ? $converted : null;
+        return $converted;
     }
 
     /**

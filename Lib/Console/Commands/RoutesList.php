@@ -20,12 +20,18 @@ use function is_string;
  */
 final class RoutesList implements Command
 {
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function name(): string
     {
         return 'routes:list';
     }
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function description(): string
     {
@@ -64,6 +70,9 @@ final class RoutesList implements Command
         return 0;
     }
 
+    /**
+     * @psalm-pure
+     */
     private static function handler(mixed $handler): string
     {
         if (is_array($handler) && is_string($handler[0] ?? null) && is_string($handler[1] ?? null)) {

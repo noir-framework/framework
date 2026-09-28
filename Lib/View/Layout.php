@@ -11,8 +11,6 @@ use function is_string;
 /**
  * @psalm-api
  *
- * @psalm-external-mutation-free
- *
  * @SuppressWarnings("PHPMD.TooManyPublicMethods") one public fluent setter per
  * layout concern (title, css, js, breadcrumbs, etc.) is the intended API shape.
  */
@@ -87,8 +85,6 @@ class Layout
      * @noinspection PhpUnused
      *
      * @psalm-suppress PossiblyUnusedMethod
-     *
-     * @psalm-external-mutation-free
      */
     public function setTitle(?string $title): static
     {
@@ -108,8 +104,6 @@ class Layout
      * @noinspection PhpUnused
      *
      * @psalm-suppress PossiblyUnusedMethod
-     *
-     * @psalm-external-mutation-free
      */
     public function appendTitle(string $title): static
     {
@@ -128,8 +122,6 @@ class Layout
      * @noinspection PhpUnused
      *
      * @psalm-suppress PossiblyUnusedMethod
-     *
-     * @psalm-external-mutation-free
      */
     public function addBreadCrumb(int|string $name, ?string $url = null, ?bool $active = null): void
     {
@@ -150,8 +142,6 @@ class Layout
      * @return void
      *
      * @psalm-suppress PossiblyUnusedMethod
-     *
-     * @psalm-external-mutation-free
      */
     public function add(string $key, mixed $value): void
     {
@@ -165,8 +155,6 @@ class Layout
      * @return void
      *
      * @psalm-suppress PossiblyUnusedMethod
-     *
-     * @psalm-external-mutation-free
      */
     public function set(string $key, mixed $value): void
     {

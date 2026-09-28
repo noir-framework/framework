@@ -15,12 +15,18 @@ use Override;
  */
 final class KeyGenerate implements Command
 {
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function name(): string
     {
         return 'key:generate';
     }
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function description(): string
     {

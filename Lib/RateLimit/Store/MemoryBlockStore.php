@@ -16,12 +16,18 @@ final class MemoryBlockStore implements BlockStore
     /** @var array<string, int> */
     private array $blocks = [];
 
+    /**
+     * @psalm-mutation-free
+     */
     #[Override]
     public function blockedUntil(string $key): ?int
     {
         return $this->blocks[$key] ?? null;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     #[Override]
     public function block(string $key, int $until): void
     {

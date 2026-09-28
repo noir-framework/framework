@@ -8,10 +8,12 @@ namespace Noirapi\Lib\RateLimit;
  * The outcome of one rate-limited attempt.
  *
  * @psalm-api
- * @psalm-immutable
  */
 final readonly class Result
 {
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(
         public string $limiter,
         public string $key,
@@ -25,8 +27,6 @@ final readonly class Result
 
     /**
      * Seconds until another attempt can succeed (0 when allowed).
-     *
-     * @psalm-mutation-free
      */
     public function retryAfter(?int $now = null): int
     {
@@ -37,8 +37,6 @@ final readonly class Result
      * X-RateLimit-Limit / -Remaining / -Reset, plus Retry-After when refused.
      *
      * @return array<string, string>
-     *
-     * @psalm-mutation-free
      */
     public function headers(?int $now = null): array
     {

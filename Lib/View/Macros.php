@@ -48,8 +48,6 @@ class Macros extends Extension
 
     /**
      * url('user.show', id: 5) and absoluteUrl(...): see Noirapi\Lib\Routing\Url.
-     *
-     * @psalm-mutation-free
      */
     #[Override]
     public function getFunctions(): array

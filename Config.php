@@ -162,7 +162,10 @@ class Config
      * `dev_ips` (addresses or CIDR ranges). Anything else, including `dev: false`, is off.
      *
      * @param string|null $clientIp the resolved client address (Request::$clientIp)
+     *
      * @return bool
+     *
+     * @psalm-external-mutation-free
      */
     public static function isDev(?string $clientIp = null): bool
     {
@@ -213,6 +216,8 @@ class Config
      * @noinspection PhpUnused
      *
      * @psalm-external-mutation-free
+     * @psalm-suppress ImpureMethodCall detection runs once and is memoised; apps call getRoot()
+     * from mutation-free methods, so it must stay mutation-free.
      */
     public static function getRoot(): string
     {

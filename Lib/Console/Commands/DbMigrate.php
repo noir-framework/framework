@@ -17,12 +17,18 @@ use Override;
  */
 final class DbMigrate implements Command
 {
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function name(): string
     {
         return 'db:migrate';
     }
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function description(): string
     {

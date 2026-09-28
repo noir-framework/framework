@@ -132,7 +132,7 @@ class TemplateChecker
         try {
             $this->engine->compile($source);
         } catch (CompileException $e) {
-            $line = $e->position?->line ?? 0;
+            $line = $e->position->line ?? 0;
             $result->error($file, $line, $e->getMessage());
 
             return false;
@@ -162,6 +162,7 @@ class TemplateChecker
      * @param string[] $parentVars
      * @param array<string, string> $declaredVars
      * @param CheckResult $result
+     *
      * @return void
      *
      * @psalm-external-mutation-free
@@ -221,6 +222,8 @@ class TemplateChecker
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of preg_match_all(); leaving unannotated satisfies both.
+     *
+     * @psalm-pure
      */
     public function extractVarTypeDeclarations(string $source): array
     {
@@ -241,6 +244,8 @@ class TemplateChecker
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of preg_match_all(); leaving unannotated satisfies both.
+     *
+     * @psalm-pure
      */
     private function extractVarTypeLines(string $source): array
     {
@@ -264,6 +269,8 @@ class TemplateChecker
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of preg_match(); leaving unannotated satisfies both.
+     *
+     * @psalm-pure
      */
     private function extractImplicitTagVarUsage(string $source): array
     {

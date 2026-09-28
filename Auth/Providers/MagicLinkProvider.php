@@ -197,6 +197,8 @@ readonly class MagicLinkProvider implements AuthProviderInterface
 
     /**
      * @throws ConfigException
+     *
+     * @psalm-external-mutation-free
      */
     private function signer(): Signer
     {

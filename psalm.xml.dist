@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="4"
+    phpVersion="8.4"
+    findUnusedBaselineEntry="true"
+    findUnusedCode="false"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="Auth"/>
+        <directory name="Exceptions"/>
+        <directory name="Helpers"/>
+        <directory name="Interfaces"/>
+        <directory name="Lib"/>
+        <file name="Config.php"/>
+        <file name="include.php"/>
+        <file name="kernel.php"/>
+        <file name="script.php"/>
+        <ignoreFiles>
+            <!-- Swoole isn't installed in CI -->
+            <file name="Lib/Tasks.php"/>
+            <directory name="vendor"/>
+        </ignoreFiles>
+    </projectFiles>
+    <issueHandlers>
+        <UndefinedClass>
+            <errorLevel type="suppress">
+                <!-- ext-memcached is optional (rate_limiter.storage: memcached, session.driver: memcached) -->
+                <referencedClass name="Memcached"/>
+            </errorLevel>
+        </UndefinedClass>
+    </issueHandlers>
+    <stubs>
+        <!-- The optional App\* classes the framework calls behind class_exists() guards -->
+        <file name="tests/stubs/app.stub" preloadClasses="true"/>
+    </stubs>
+</psalm>

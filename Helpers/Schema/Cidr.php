@@ -73,7 +73,7 @@ class Cidr implements Schema
 
         if (! is_string($value) || ! $this->validateCidr(trim($value))) {
             /** @noinspection UnusedFunctionResultInspection */
-            $context->addError('Value: (' . (is_scalar($value) ? $value : get_debug_type($value)) . ') is not valid ipv4 or ipv6 cidr', Message::TypeMismatch); //phpcs:ignore
+            $context->addError('Value: (' . (is_scalar($value) ? (string) $value : get_debug_type($value)) . ') is not valid ipv4 or ipv6 cidr', Message::TypeMismatch); //phpcs:ignore
 
             return null;
         }

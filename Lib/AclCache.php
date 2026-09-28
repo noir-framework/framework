@@ -66,6 +66,9 @@ final class AclCache
         return $stamp;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     private static function file(string $key): string
     {
         return Config::getTemp() . '/acl-cache/' . preg_replace('/[^A-Za-z0-9_-]/', '_', $key) . '.cache';
@@ -116,7 +119,7 @@ final class AclCache
         ]);
 
         // Write then rename, so concurrent requests never read a half-written file
-        $tmp = $file . '.' . getmypid() . '.tmp';
+        $tmp = $file . '.' . (int) getmypid() . '.tmp';
         if (file_put_contents($tmp, $payload) !== false) {
             rename($tmp, $file);
         }

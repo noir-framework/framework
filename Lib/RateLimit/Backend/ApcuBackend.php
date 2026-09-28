@@ -17,6 +17,9 @@ use RateLimit\SilentRateLimiter;
  */
 final readonly class ApcuBackend implements Backend
 {
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(private string $prefix)
     {
     }
@@ -27,12 +30,18 @@ final readonly class ApcuBackend implements Backend
         return new ApcuRateLimiter($rate, $this->prefix);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     #[Override]
     public function blocks(): BlockStore
     {
         return new ApcuBlockStore($this->prefix);
     }
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function clock(): ?Closure
     {

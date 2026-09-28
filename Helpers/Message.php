@@ -32,6 +32,8 @@ class Message
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of the Message constructor call; leaving unannotated satisfies both.
+     *
+     * @psalm-pure
      */
     public static function new(string $message, string|MessageType|null $type = null): self
     {

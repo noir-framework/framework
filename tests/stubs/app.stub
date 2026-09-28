@@ -1,0 +1,60 @@
+<?php
+
+// Declarations of the optional App\* classes the framework calls behind class_exists()
+// guards, for PHPStan and Psalm only. Not a .php file on purpose: the apps' Composer
+// classmaps scan noirapi/ and must never see a second App\Route.
+
+namespace App {
+    final class Route
+    {
+        /** @return array{0: int, 1?: mixed, 2?: array<string, string>} */
+        public function process(string $method, string $uri): array
+        {
+        }
+    }
+
+    final class App
+    {
+        public function run(): void
+        {
+        }
+    }
+}
+
+namespace App\Lib {
+    final class Config
+    {
+        /** @param mixed $config */
+        public static function validate($config): void
+        {
+        }
+    }
+
+    final class Macros extends \Latte\Extension
+    {
+    }
+
+    final class ErrorHandler
+    {
+        public static function handle(int $status, string $text, \Noirapi\Lib\Route $route): \Noirapi\Lib\Response
+        {
+        }
+    }
+}
+
+namespace App\Controllers {
+    final class Errors extends \Noirapi\Lib\Controller
+    {
+        public function e404(): \Noirapi\Lib\Response
+        {
+        }
+
+        public function e405(): \Noirapi\Lib\Response
+        {
+        }
+
+        public function e500(): \Noirapi\Lib\Response
+        {
+        }
+    }
+}

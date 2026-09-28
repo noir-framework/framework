@@ -17,6 +17,8 @@ final class Output
     /**
      * @param resource|null $out defaults to STDOUT
      * @param resource|null $err defaults to STDERR
+     *
+     * @psalm-mutation-free
      */
     public function __construct($out = null, $err = null)
     {
@@ -43,14 +45,14 @@ final class Output
     {
         $widths = [];
         foreach ($rows as $row) {
-            foreach (array_values($row) as $index => $cell) {
+            foreach ($row as $index => $cell) {
                 $widths[$index] = max($widths[$index] ?? 0, mb_strlen($cell));
             }
         }
 
         foreach ($rows as $row) {
             $cells = [];
-            foreach (array_values($row) as $index => $cell) {
+            foreach ($row as $index => $cell) {
                 $cells[] = $cell . str_repeat(' ', $widths[$index] - mb_strlen($cell));
             }
             $this->line(rtrim(implode('  ', $cells)));

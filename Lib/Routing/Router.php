@@ -45,6 +45,9 @@ final class Router
     private string $prefix = '';
     private string $namePrefix = '';
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(private readonly RouteCollector $collector)
     {
     }
@@ -191,7 +194,7 @@ final class Router
         }
 
         // Write then rename, so concurrent requests never include a half-written file
-        $tmp = $file . '.' . getmypid() . '.tmp';
+        $tmp = $file . '.' . (int) getmypid() . '.tmp';
         if (file_put_contents($tmp, '<?php return ' . var_export($payload, true) . ';' . PHP_EOL) !== false) {
             rename($tmp, $file);
             if (function_exists('opcache_invalidate')) {

@@ -14,6 +14,9 @@ use Noirapi\Lib\RateLimit\Result;
  */
 class TooManyRequestsException extends Exception
 {
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(public readonly Result $result, string $message = 'Too many requests')
     {
         parent::__construct($message, 429);

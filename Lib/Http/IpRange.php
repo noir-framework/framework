@@ -12,6 +12,7 @@ use function strlen;
  * IPv4 / IPv6 address and CIDR matching. A range without a prefix length matches one address.
  *
  * @psalm-api
+ * @psalm-pure
  */
 final class IpRange
 {
@@ -71,11 +72,11 @@ final class IpRange
     }
 
     /**
-     * @param iterable<mixed> $ranges
+     * @param array<array-key, mixed> $ranges
      *
      * @psalm-pure
      */
-    public static function matchesAny(string $address, iterable $ranges): bool
+    public static function matchesAny(string $address, array $ranges): bool
     {
         foreach ($ranges as $range) {
             if (is_string($range) && self::contains($address, $range)) {

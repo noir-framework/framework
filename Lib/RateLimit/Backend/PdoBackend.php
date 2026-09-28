@@ -17,6 +17,9 @@ use RateLimit\SilentRateLimiter;
  */
 final readonly class PdoBackend implements Backend
 {
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(private PdoRateLimitStore $store, private string $prefix)
     {
     }
@@ -33,8 +36,11 @@ final readonly class PdoBackend implements Backend
         return $this->store;
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     #[Override]
-    public function clock(): ?Closure
+    public function clock(): Closure
     {
         return $this->store->now(...);
     }

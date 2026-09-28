@@ -25,12 +25,18 @@ use function is_string;
  */
 final class ConfigCheck implements Command
 {
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function name(): string
     {
         return 'config:check';
     }
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function description(): string
     {
@@ -91,6 +97,9 @@ final class ConfigCheck implements Command
         return self::ranges($list, 'trusted_proxies');
     }
 
+    /**
+     * @psalm-pure
+     */
     private static function ranges(mixed $list, string $key): ?string
     {
         if ($list === null) {
@@ -111,6 +120,9 @@ final class ConfigCheck implements Command
         return null;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     private static function secret(): ?string
     {
         $needed = Config::get('auth.magic_link.enabled') === true;
@@ -127,6 +139,9 @@ final class ConfigCheck implements Command
         return null;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     private static function rateLimiter(): ?string
     {
         $storage = Config::get('rate_limiter.storage');

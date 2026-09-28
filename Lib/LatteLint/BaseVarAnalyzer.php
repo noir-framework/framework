@@ -167,7 +167,7 @@ class BaseVarAnalyzer
 
         $vars = [];
         foreach ($call->args[0]->value->items as $item) {
-            if ($item !== null && $item->key instanceof String_) {
+            if ($item->key instanceof String_) {
                 $vars[] = $item->key->value;
             }
         }

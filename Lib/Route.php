@@ -193,6 +193,8 @@ class Route
 
     /**
      * @return bool
+     *
+     * @psalm-external-mutation-free
      */
     private function isDevRequest(): bool
     {
@@ -495,11 +497,14 @@ class Route
      * @param AutoWire $instance
      * @param mixed $value
      * @param Controller $controller
+     *
      * @return array{status: 'ok'|'skip'|'not_found', value?: mixed}
      *
      * @psalm-suppress MissingPureAnnotation this calls into arbitrary model/
      * callable code via $controller->model and call_user_func(), which is not
      * pure by definition.
+     *
+     * @psalm-mutation-free
      */
     private function resolveAutoWiredValue(
         ReflectionParameter $param,

@@ -26,6 +26,8 @@ final class Limiter
 
     /**
      * @param (Closure(): int)|null $clock the current unix time, when the storage has its own
+     *
+     * @psalm-mutation-free
      */
     public function __construct(
         public readonly string $name,
@@ -87,6 +89,9 @@ final class Limiter
         return $result;
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     private function record(Result $result): Result
     {
         self::$recent[] = $result;

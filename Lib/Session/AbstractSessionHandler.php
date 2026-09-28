@@ -53,18 +53,12 @@ abstract class AbstractSessionHandler implements SessionHandlerInterface
         return $data ?? '';
     }
 
-    /**
-     * @psalm-mutation-free
-     */
     #[Override]
     public function write(string $id, string $data): bool
     {
         return $this->doWrite($id, $data);
     }
 
-    /**
-     * @psalm-mutation-free
-     */
     #[Override]
     public function destroy(string $id): bool
     {
@@ -72,8 +66,6 @@ abstract class AbstractSessionHandler implements SessionHandlerInterface
     }
 
     /**
-     * @psalm-mutation-free
-     *
      * @SuppressWarnings("PHPMD.ShortMethodName") name fixed by SessionHandlerInterface.
      */
     #[Override]
@@ -82,15 +74,15 @@ abstract class AbstractSessionHandler implements SessionHandlerInterface
         return $this->doGc($max_lifetime);
     }
 
-    /** @psalm-mutation-free */
+    /** @psalm-impure */
     abstract protected function doRead(string $id): ?string;
 
-    /** @psalm-mutation-free */
+    /** @psalm-impure */
     abstract protected function doWrite(string $id, string $data): bool;
 
-    /** @psalm-mutation-free */
+    /** @psalm-impure */
     abstract protected function doDestroy(string $id): bool;
 
-    /** @psalm-mutation-free */
+    /** @psalm-impure */
     abstract protected function doGc(int $maxLifetime): int|false;
 }

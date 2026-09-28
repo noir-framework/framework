@@ -145,6 +145,8 @@ final class Expect2
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of the Cidr() constructor call; leaving unannotated satisfies both.
+     *
+     * @psalm-pure
      */
     public static function Cidr(bool $multiple = false): Cidr // phpcs:ignore
     {

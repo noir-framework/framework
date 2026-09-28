@@ -19,12 +19,18 @@ final class CacheClear implements Command
 {
     public const array DIRECTORIES = ['config-cache', 'acl-cache', 'route-cache'];
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function name(): string
     {
         return 'cache:clear';
     }
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function description(): string
     {

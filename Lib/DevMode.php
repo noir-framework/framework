@@ -12,6 +12,7 @@ use Noirapi\Lib\Http\IpRange;
  * (addresses or CIDR ranges). Anything else is off. Use Config::isDev().
  *
  * @psalm-api
+ * @psalm-external-mutation-free
  */
 final class DevMode
 {

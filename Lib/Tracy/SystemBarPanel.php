@@ -50,7 +50,7 @@ class SystemBarPanel implements IBarPanel
         $called = $this->view->request->controller . '::' . $this->view->request->function;
         if (isset($this->view->getResponse()->initiator_line)) {
             // phpcs:ignore
-            $called .= '::<strong>' . (is_int($this->view->getResponse()->initiator_line) ? (string)$this->view->getResponse()->initiator_line : '(none)') . '</strong>';
+            $called .= '::<strong>' . (string) $this->view->getResponse()->initiator_line . '</strong>';
         }
         // phpcs:ignore
         $html .= $this->view->request->method . '[' . $called . '][' . basename($this->view->getLayout() ?? 'None') . '][' . $template . ']';

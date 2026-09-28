@@ -102,7 +102,12 @@ The framework's own files (bundled templates, bin scripts) are found with `Confi
 
 ```bash
 composer install
-composer test        # PHPUnit: root detection + Rector rule fixtures
+composer test        # PHPUnit
+composer phpstan     # PHPStan (level 5)
+composer psalm       # Psalm 7 (level 4, purity annotations required)
+composer phpmd       # PHPMD 3
+composer phpcs       # PSR-12
+composer coverage    # coverage summary (needs pcov or Xdebug)
 ```
 
 Releases are tagged `vX.Y.Z` on `master`. CI (`.github/workflows/ci.yml`) runs the tests and

@@ -237,9 +237,6 @@ class ControllerAnalyzer
 
         $keys = [];
         foreach ($arg->value->items as $item) {
-            if ($item === null) {
-                continue;
-            }
             if ($item->key instanceof String_) {
                 $keys[] = $item->key->value;
             }

@@ -10,6 +10,7 @@ namespace Noirapi\Lib\Http;
  * in one normalised form.
  *
  * @psalm-api
+ * @psalm-pure
  */
 final class Headers
 {
@@ -19,8 +20,6 @@ final class Headers
      *
      * @param array<array-key, mixed> $server
      * @return array<string, string>
-     *
-     * @psalm-pure
      */
     public static function fromServer(array $server): array
     {
@@ -45,8 +44,6 @@ final class Headers
 
     /**
      * @param array<array-key, mixed> $headers
-     *
-     * @psalm-pure
      */
     public static function find(array $headers, string $name): ?string
     {
@@ -61,9 +58,6 @@ final class Headers
         return null;
     }
 
-    /**
-     * @psalm-pure
-     */
     public static function normalize(string $name): string
     {
         return str_replace('-', '_', strtoupper($name));

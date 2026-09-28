@@ -9,7 +9,7 @@ namespace Noirapi\Auth\Contracts;
  * Implemented by OAuthProvider, MagicLinkProvider, EmailPasswordProvider, etc.
  *
  * @psalm-api
- * @psalm-external-mutation-free
+ * @psalm-mutable
  */
 interface AuthProviderInterface
 {
