@@ -19,6 +19,7 @@
     },
     "require": {
         "php": "^8.4",
+        "ext-fileinfo": "*",
         "ext-json": "*",
         "ext-mbstring": "*",
         "ext-pdo": "*",

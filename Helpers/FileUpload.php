@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Helpers;
 
+use finfo;
 use Noirapi\Exceptions\FileUploadValidation;
 
 /**
@@ -21,6 +22,7 @@ class FileUpload
     private ?int $maxHeight = null;
     private ?int $minWidth = null;
     private ?int $minHeight = null;
+    private ?string $detectedType = null;
 
     private array $image_types = [
         'image/jpeg',
@@ -138,17 +140,13 @@ class FileUpload
      * @return true
      *
      * @throws FileUploadValidation
-     *
-     * @psalm-mutation-free
      */
     public function process(): true
     {
         $this->validateBasics();
+        $this->validateContentType();
 
-        if (
-            ($this->minWidth !== null || $this->minHeight !== null || $this->maxWidth !== null || $this->maxHeight !== null)
-            && in_array($this->file['type'], $this->image_types, true)
-        ) {
+        if (array_filter([$this->minWidth, $this->minHeight, $this->maxWidth, $this->maxHeight], is_int(...)) !== []) {
             $this->validateImageDimensions();
         }
 
@@ -163,33 +161,51 @@ class FileUpload
      */
     private function validateBasics(): void
     {
-        if ($this->file['error'] !== UPLOAD_ERR_OK) {
+        if (($this->file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
             throw new FileUploadValidation('File Upload error');
         }
 
-        if ($this->min !== null && $this->file['size'] < $this->min) {
+        if (self::below((int) $this->file['size'], $this->min)) {
             throw new FileUploadValidation('File is too small');
         }
 
-        /** @noinspection InsufficientTypesControlInspection */
-        if ($this->max !== null && $this->file['size'] > $this->max) {
+        if (self::above((int) $this->file['size'], $this->max)) {
             throw new FileUploadValidation('File is too large');
         }
 
-        if (! empty($this->contentTypes) && ! in_array($this->file['type'], $this->contentTypes, true)) {
-            throw new FileUploadValidation('Invalid mime type');
-        }
-
-        if ($this->extension !== null && pathinfo($this->file['name'], PATHINFO_EXTENSION) !== $this->extension) {
+        if ($this->extension !== null && $this->getExtension() !== strtolower($this->extension)) {
             throw new FileUploadValidation('Invalid file extension');
         }
     }
 
     /**
+     * Allowed types are checked against the file's content (finfo), never against the
+     * Content-Type the browser sent. "image/*" style wildcards are accepted.
+     *
      * @return void
      * @throws FileUploadValidation
-     *
-     * @psalm-mutation-free
+     */
+    private function validateContentType(): void
+    {
+        if (empty($this->contentTypes)) {
+            return;
+        }
+
+        $detected = $this->getContentType();
+
+        foreach ($this->contentTypes as $allowed) {
+            $allowed = strtolower($allowed);
+            if ($allowed === $detected || (str_ends_with($allowed, '/*') && str_starts_with($detected, substr($allowed, 0, -1)))) { //phpcs:ignore
+                return;
+            }
+        }
+
+        throw new FileUploadValidation('Invalid mime type');
+    }
+
+    /**
+     * @return void
+     * @throws FileUploadValidation
      */
     private function validateImageDimensions(): void
     {
@@ -197,24 +213,36 @@ class FileUpload
             throw new FileUploadValidation('File is not an image');
         }
 
-        /** @noinspection InsufficientTypesControlInspection */
         $image = getimagesize($this->file['tmp_name']);
-
-        if ($this->minWidth !== null && $image[0] < $this->minWidth) {
-            throw new FileUploadValidation('Image width too small');
+        if ($image === false) {
+            throw new FileUploadValidation('File is not an image');
         }
 
-        if ($this->minHeight !== null && $image[1] < $this->minHeight) {
-            throw new FileUploadValidation('Image height too small');
+        [$width, $height] = $image;
+
+        if (self::below($width, $this->minWidth) || self::below($height, $this->minHeight)) {
+            throw new FileUploadValidation('Image dimensions too small');
         }
 
-        if ($this->maxWidth !== null && $image[0] > $this->maxWidth) {
-            throw new FileUploadValidation('Image width too big');
+        if (self::above($width, $this->maxWidth) || self::above($height, $this->maxHeight)) {
+            throw new FileUploadValidation('Image dimensions too big');
         }
+    }
 
-        if ($this->maxHeight !== null && $image[1] > $this->maxHeight) {
-            throw new FileUploadValidation('Image height too big');
-        }
+    /**
+     * @psalm-pure
+     */
+    private static function below(int $value, ?int $limit): bool
+    {
+        return $limit !== null && $value < $limit;
+    }
+
+    /**
+     * @psalm-pure
+     */
+    private static function above(int $value, ?int $limit): bool
+    {
+        return $limit !== null && $value > $limit;
     }
 
     /**
@@ -250,16 +278,36 @@ class FileUpload
     }
 
     /**
+     * The MIME type detected from the file's content (finfo). "application/octet-stream" when
+     * it can't be read.
+     *
      * @return string
      *
      * @noinspection PhpUnused
      * @noinspection GetSetMethodCorrectnessInspection
-     *
-     * @psalm-mutation-free
      */
     public function getContentType(): string
     {
-        return $this->file['type'];
+        if ($this->detectedType !== null) {
+            return $this->detectedType;
+        }
+
+        $path = (string) ($this->file['tmp_name'] ?? '');
+        $type = $path !== '' && is_file($path) ? new finfo(FILEINFO_MIME_TYPE)->file($path) : false;
+
+        return $this->detectedType = is_string($type) && $type !== '' ? strtolower($type) : 'application/octet-stream';
+    }
+
+    /**
+     * The Content-Type the browser claimed. Client-controlled: never use it for decisions.
+     *
+     * @return string
+     *
+     * @psalm-mutation-free
+     */
+    public function getClientContentType(): string
+    {
+        return (string) ($this->file['type'] ?? '');
     }
 
     /**
@@ -311,11 +359,9 @@ class FileUpload
 
     /**
      * @return bool
-     *
-     * @psalm-mutation-free
      */
     private function isImage(): bool
     {
-        return in_array($this->file['type'], $this->image_types, true);
+        return in_array($this->getContentType(), $this->image_types, true);
     }
 }
