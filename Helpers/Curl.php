@@ -35,6 +35,7 @@ class Curl extends \Curl\Curl
     /**
      * @param mixed $handle
      * @return mixed
+     * @psalm-suppress ParamNameMismatch the parent calls it $ch, too short for the PHPMD naming rules
      */
     #[Override]
     public function exec($handle = null): mixed

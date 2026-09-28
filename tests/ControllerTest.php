@@ -108,4 +108,14 @@ final class ControllerTest extends TestCase
         self::assertSame(404, self::controller()->notFound()->getStatus());
         self::assertSame(500, self::controller()->internalServerError()->getStatus());
     }
+
+    public function testRestMessage(): void
+    {
+        $response = self::controller()->restMessage(true, 'Done', '/next', 'saved');
+
+        self::assertSame(
+            ['ok' => true, 'next' => '/next', 'message_tag' => 'saved', 'message' => 'Done'],
+            $response->getRestMessage()->toArray(),
+        );
+    }
 }

@@ -33,6 +33,8 @@ final class PdoRateLimitStore implements BlockStore
     /**
      * @param Closure(): PDO $pdo opened on first use
      * @param (Closure(): int)|null $clock the current unix time (tests)
+     *
+     * @psalm-mutation-free
      */
     public function __construct(
         private readonly Closure $pdo,

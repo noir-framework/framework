@@ -85,10 +85,10 @@ class VarUsageCollector extends Extension
     {
         // Declare loop variables BEFORE their VariableNode children are traversed
         if ($node->key instanceof VariableNode && is_string($node->key->name)) {
-            $this->declareLocal($node->key->name, $node->position?->line ?? 0);
+            $this->declareLocal($node->key->name, $node->position->line ?? 0);
         }
         if ($node->value instanceof VariableNode && is_string($node->value->name)) {
-            $this->declareLocal($node->value->name, $node->position?->line ?? 0);
+            $this->declareLocal($node->value->name, $node->position->line ?? 0);
         }
     }
 
@@ -99,7 +99,7 @@ class VarUsageCollector extends Extension
     {
         foreach ($node->assignments as $assign) {
             if ($assign->var instanceof VariableNode && is_string($assign->var->name)) {
-                $this->declareLocal($assign->var->name, $node->position?->line ?? 0);
+                $this->declareLocal($assign->var->name, $node->position->line ?? 0);
             }
         }
     }
@@ -111,7 +111,7 @@ class VarUsageCollector extends Extension
     {
         foreach ($node->parameters as $param) {
             if (is_string($param->var->name)) {
-                $this->declareLocal($param->var->name, $node->position?->line ?? 0);
+                $this->declareLocal($param->var->name, $node->position->line ?? 0);
             }
         }
     }
@@ -129,7 +129,7 @@ class VarUsageCollector extends Extension
                 && $init->var instanceof VariableNode
                 && is_string($init->var->name)
             ) {
-                $this->declareLocal($init->var->name, $node->position?->line ?? 0);
+                $this->declareLocal($init->var->name, $node->position->line ?? 0);
             }
         }
     }
@@ -140,7 +140,7 @@ class VarUsageCollector extends Extension
     private function enterCapture(CaptureNode $node): void
     {
         if ($node->variable instanceof VariableNode && is_string($node->variable->name)) {
-            $this->declareLocal($node->variable->name, $node->position?->line ?? 0);
+            $this->declareLocal($node->variable->name, $node->position->line ?? 0);
         }
     }
 
@@ -160,7 +160,7 @@ class VarUsageCollector extends Extension
         }
 
         if (! isset($this->localVarSet[$name]) && ! isset($this->usedVars[$name])) {
-            $this->usedVars[$name] = $node->position?->line ?? 0;
+            $this->usedVars[$name] = $node->position->line ?? 0;
         }
     }
 

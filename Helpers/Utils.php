@@ -189,6 +189,8 @@ final class Utils
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of defined(); leaving unannotated satisfies both.
+     *
+     * @psalm-pure
      */
     public static function is_tty(): bool // phpcs:ignore
     {
@@ -265,6 +267,8 @@ final class Utils
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of instantiating ReflectionClass; leaving unannotated satisfies both.
+     *
+     * @psalm-pure
      */
     public static function getClassProperties(mixed $class, bool $public_only = true): array
     {
@@ -362,7 +366,10 @@ final class Utils
 
     /**
      * @param string $remote_address
+     *
      * @return bool
+     *
+     * @psalm-pure
      */
     public static function isCloudFlare(string $remote_address): bool
     {

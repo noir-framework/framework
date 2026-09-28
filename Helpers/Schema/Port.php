@@ -143,7 +143,6 @@ class Port implements Schema
 
     /**
      * @inheritDoc
-     *
      */
     #[Override]
     public function completeDefault(Context $context)

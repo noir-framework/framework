@@ -55,7 +55,7 @@ abstract class OAuthProvider implements AuthProviderInterface
     /**
      * Exchange an access token for a normalised OAuthResult.
      *
-     * @psalm-external-mutation-free
+     * @psalm-impure
      */
     abstract public function fetchUser(string $accessToken): OAuthResult;
 
@@ -90,7 +90,7 @@ abstract class OAuthProvider implements AuthProviderInterface
     /**
      * Validate the callback, exchange the code, and return an OAuthResult.
      *
-     * @param array<string,string> $queryParams  Contents of $_GET from the callback URL
+     * @param array<string,mixed> $queryParams  Contents of $_GET from the callback URL
      * @return array{result: OAuthResult, action: string}
      * @throws RuntimeException  on state mismatch, provider error, or token failure
      */
@@ -126,13 +126,11 @@ abstract class OAuthProvider implements AuthProviderInterface
             throw new RuntimeException('No access token in provider response.');
         }
 
-        $result = $this->fetchUser($accessToken);
-        $result->accessToken = $accessToken;
-        $result->refreshToken = $tokenData['refresh_token'] ?? null;
-
-        if (isset($tokenData['expires_in'])) {
-            $result->tokenExpiresAt = time() + (int) $tokenData['expires_in'];
-        }
+        $result = $this->fetchUser($accessToken)->withTokens(
+            $accessToken,
+            $tokenData['refresh_token'] ?? null,
+            isset($tokenData['expires_in']) ? time() + (int) $tokenData['expires_in'] : null,
+        );
 
         return ['result' => $result, 'action' => $action];
     }
@@ -171,15 +169,11 @@ abstract class OAuthProvider implements AuthProviderInterface
             throw new RuntimeException('No access token in refresh response.');
         }
 
-        $result = $this->fetchUser($accessToken);
-        $result->accessToken = $accessToken;
-        $result->refreshToken = $data['refresh_token'] ?? $refreshToken;
-
-        if (isset($data['expires_in'])) {
-            $result->tokenExpiresAt = time() + (int) $data['expires_in'];
-        }
-
-        return $result;
+        return $this->fetchUser($accessToken)->withTokens(
+            $accessToken,
+            $data['refresh_token'] ?? $refreshToken,
+            isset($data['expires_in']) ? time() + (int) $data['expires_in'] : null,
+        );
     }
 
     /* ── Protected helpers ───────────────────────────────────── */

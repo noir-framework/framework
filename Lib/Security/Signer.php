@@ -19,9 +19,13 @@ use function strlen;
  * signed URL.
  *
  * @psalm-api
+ * @psalm-external-mutation-free
  */
 final readonly class Signer
 {
+    /**
+     * @psalm-mutation-free
+     */
     private function __construct(private string $key)
     {
     }
@@ -36,6 +40,8 @@ final readonly class Signer
 
     /**
      * @throws ConfigException when $secret is not a string of at least 32 bytes (decoded)
+     *
+     * @psalm-pure
      */
     public static function fromSecret(mixed $secret): self
     {

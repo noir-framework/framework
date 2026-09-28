@@ -41,6 +41,8 @@ final class Csrf
 
     /**
      * Whether Route enforces the check: `csrf: true`, or a `csrf:` block without `enabled: false`.
+     *
+     * @psalm-external-mutation-free
      */
     public static function enabled(): bool
     {
@@ -99,6 +101,8 @@ final class Csrf
      * Origin (when sent) must be this host or an allowed origin; without Origin, a
      * Sec-Fetch-Site of cross-site / same-site is rejected. Requests with neither header
      * (old browsers, non-browser clients) rely on the token alone.
+     *
+     * @psalm-external-mutation-free
      */
     public static function isSameOrigin(Request $request): bool
     {

@@ -13,10 +13,16 @@ use function is_int;
  */
 final readonly class ApcuBlockStore implements BlockStore
 {
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(private string $prefix = '')
     {
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     #[Override]
     public function blockedUntil(string $key): ?int
     {

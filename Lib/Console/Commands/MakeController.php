@@ -17,12 +17,18 @@ use Override;
  */
 final class MakeController implements Command
 {
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function name(): string
     {
         return 'make:controller';
     }
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function description(): string
     {

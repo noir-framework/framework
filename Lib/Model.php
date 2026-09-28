@@ -39,6 +39,8 @@ class Model
     /**
      * @param string|null $driver
      * @param array $params
+     *
+     * @psalm-mutation-free
      */
     public function __construct(?string $driver = null, array $params = [])
     {
@@ -65,7 +67,10 @@ class Model
 
     /**
      * @return static
+     *
      * @noinspection PhpUnused
+     *
+     * @psalm-pure
      */
     public static function getCachedInstance(): static
     {

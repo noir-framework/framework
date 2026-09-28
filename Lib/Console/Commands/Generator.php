@@ -61,6 +61,8 @@ final class Generator
 
     /**
      * @return array{string, string} namespace suffix ("" or "\Sub"), short class name
+     *
+     * @psalm-pure
      */
     public static function split(string $name): array
     {

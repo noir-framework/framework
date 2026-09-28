@@ -27,12 +27,18 @@ final class MemoryBackend implements Backend
         return new InMemoryRateLimiter($rate);
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     #[Override]
     public function blocks(): BlockStore
     {
         return $this->blocks ??= new MemoryBlockStore();
     }
 
+    /**
+     * @psalm-pure
+     */
     #[Override]
     public function clock(): ?Closure
     {

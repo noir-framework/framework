@@ -42,6 +42,8 @@ final class Url
 
     /**
      * @param list<array{methods: list<string>, pattern: string, handler: mixed, name: ?string}> $routes
+     *
+     * @psalm-external-mutation-free
      */
     public static function load(array $routes): void
     {
@@ -57,6 +59,8 @@ final class Url
 
     /**
      * The current request's language and scheme://host. Route sets it for every request.
+     *
+     * @psalm-external-mutation-free
      */
     public static function setContext(?string $language, string $baseUrl): void
     {
@@ -64,6 +68,9 @@ final class Url
         self::$baseUrl = rtrim($baseUrl, '/');
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public static function has(string $name): bool
     {
         return isset(self::$names[$name]);
@@ -73,6 +80,8 @@ final class Url
      * Every route Router registered, named or not (routes:list).
      *
      * @return list<array{methods: list<string>, pattern: string, handler: mixed, name: ?string}>
+     *
+     * @psalm-external-mutation-free
      */
     public static function routes(): array
     {
@@ -115,6 +124,9 @@ final class Url
         return self::$baseUrl . self::to($name, $params, $query, $language);
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public static function reset(): void
     {
         self::$names = [];
@@ -160,6 +172,8 @@ final class Url
 
     /**
      * @throws InvalidArgumentException
+     *
+     * @psalm-pure
      */
     private static function segment(string $name, string $variable, string $regex, mixed $value): string
     {

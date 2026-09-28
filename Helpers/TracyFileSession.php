@@ -20,7 +20,7 @@ class TracyFileSession implements SessionStorage
     public float $gcProbability = 0.03;
     private string $dir;
 
-    /** @var resource */
+    /** @var resource|null */
     private $file;
     /** @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection */
     private array $data = [];

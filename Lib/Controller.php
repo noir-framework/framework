@@ -125,11 +125,15 @@ class Controller
      * @param string|null $location
      * @param int $status
      * @param bool $skip_lang
+     *
      * @return Response
+     *
      * @throws UnableToForwardException
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of Response method calls; leaving unannotated satisfies both.
+     *
+     * @psalm-external-mutation-free
      */
     public function forward(?string $location = null, int $status = 302, bool $skip_lang = false): Response
     {
@@ -178,9 +182,9 @@ class Controller
      *
      * @psalm-suppress PossiblyUnusedMethod
      *
-     * @psalm-external-mutation-free
-     *
      * @SuppressWarnings("PHPMD.ShortMethodName") public API the apps call as $this->ok().
+     *
+     * @psalm-external-mutation-free
      */
     public function ok(): Response
     {
@@ -260,11 +264,15 @@ class Controller
 
     /**
      * @param bool $same_domain
+     *
      * @return string
+     *
      * @noinspection PhpUnused
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of Config::get(); leaving unannotated satisfies both.
+     *
+     * @psalm-mutation-free
      */
     public function referer(bool $same_domain = true): string
     {
@@ -272,7 +280,7 @@ class Controller
             return '/';
         }
 
-        $url = str_replace('@', '', (string)($this->server['HTTP_REFERER'] ?? ''));
+        $url = str_replace('@', '', (string) $this->server['HTTP_REFERER']);
         if (empty($url)) {
             return '/';
         }
@@ -307,10 +315,13 @@ class Controller
      * return a same-origin path.
      *
      * @param array $parsed
+     *
      * @return string
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of Config::get(); leaving unannotated satisfies both.
+     *
+     * @psalm-external-mutation-free
      */
     private function refererSameDomainPath(array $parsed): string
     {
@@ -337,11 +348,15 @@ class Controller
      * absolute URL, or '/' if it doesn't look like a real URL.
      *
      * @param array $parsed
+     *
      * @return string
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of filter_var(); leaving unannotated satisfies both.
+     *
      * @noinspection UnknownInspectionInspection
+     *
+     * @psalm-pure
      */
     private function refererCrossDomainUrl(array $parsed): string
     {
@@ -375,7 +390,7 @@ class Controller
     {
         return $this->response->setBody(
             RestMessage::new(
-                ok: $status,
+                success: $status,
                 message: $message instanceof Message ? $message->message : $message,
                 next: $next,
                 message_tag: $message_tag

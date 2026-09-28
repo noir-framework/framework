@@ -162,11 +162,11 @@ class Response
      */
     private function xmlBody(): string
     {
-        if (class_exists(Array2XML::class)) {
-            return Array2XML::createXML($this->xml_root, $this->body)->saveXML();
-        }
+        $xml = class_exists(Array2XML::class)
+            ? Array2XML::createXML($this->xml_root, $this->body)->saveXML()
+            : $this->array2xml($this->body)->asXML();
 
-        return $this->array2xml($this->body)->saveXML();
+        return is_string($xml) ? $xml : throw new RuntimeException('Unable to build the XML body');
     }
 
     /**
@@ -397,7 +397,7 @@ class Response
      *
      * @psalm-suppress PossiblyUnusedMethod
      *
-     * @psalm-mutation-free
+     * @psalm-external-mutation-free
      */
     public function downloadFile(string $filename): self
     {
@@ -413,7 +413,7 @@ class Response
      *
      * @psalm-suppress PossiblyUnusedMethod
      *
-     * @psalm-mutation-free
+     * @psalm-external-mutation-free
      */
     public function inlineFile(string $filename): self
     {
@@ -607,9 +607,9 @@ class Response
     }
 
     /**
-     * At last this will return an array
-     * @param object|array $object
-     * @return array
+     * Objects and arrays to nested arrays; scalars and null are returned as they are.
+     * @param mixed $object
+     * @return mixed
      */
     private function object2array(mixed $object): mixed
     {

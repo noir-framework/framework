@@ -24,6 +24,9 @@ composer install
 composer test                                        # PHPUnit: Config root detection, lazy DB connections, Rector fixtures
 composer phpmd                                       # PHPMD 3 with phpmd.xml (CI gate)
 composer phpcs                                       # PSR-12, phpcs 4 (CI gate)
+composer phpstan                                     # PHPStan level 5, phpstan.neon.dist (CI gate)
+composer psalm                                       # Psalm 7 beta, psalm.xml.dist, level 4 (CI gate)
+composer coverage                                    # coverage summary, needs pcov/Xdebug
 vendor/bin/phpunit --filter LegacyEntryPointRectorTest
 ```
 
@@ -40,7 +43,7 @@ php noirapi/bin/latte-check.php [--strict] [--no-controller-check]
 
 `bin/noirapi` runs `bin/console.php` (`Lib/Console`: cache:clear, config:check, routes:list, make:*, key:generate, db:migrate, and `App\Commands\*` from `app/commands/`) for anything but the three shell tools. It only sets `NOIRAPI_ROOT` (from `COMPOSER_RUNTIME_BIN_DIR` or the cwd) and execs the per-tool scripts, which fall back to `dirname(__DIR__, 2)` for the submodule layout. The dev server writes its pid to `temp/` and logs to `logs/`, and reads optional `<root>/dev-server.ini` settings. `PHP_CLI_SERVER_WORKERS` defaults to 4.
 
-`phpmd.xml` mirrors the shared ruleset in `../phpmd-ruleset` (`noirapi/phpmd-ruleset`); keep the two in sync. PHPMD reads `pdepend.yml.dist` from the working directory, which switches pdepend to its memory cache: the default `~/.pdepend` file cache can report findings from a file's old content. No phpstan/psalm config lives here yet. The app gates (e.g. `../qb`: `composer lint`) use `php ../qb/tools/phpmd.phar <files> text ../qb/phpmd.xml` (PHPMD 2.15) and `../qb/vendor/bin/phpcs --standard=../qb/phpcs.xml <files>`. qb's phpstan autoloads qb's own (older) `noirapi/` submodule, so it reports false "undefined method" errors for new framework APIs.
+`phpmd.xml` mirrors the shared ruleset in `../phpmd-ruleset` (`noirapi/phpmd-ruleset`); keep the two in sync. PHPMD reads `pdepend.yml.dist` from the working directory, which switches pdepend to its memory cache: the default `~/.pdepend` file cache can report findings from a file's old content. PHPStan and Psalm run here with `tests/stubs/app.stub` declaring the optional `App\\*` classes (a `.stub`, not `.php`, so the apps' classmaps never see a second `App\\Route`; the test suite aliases `App\\Route` to `tests/Support/FakeAppRoute` in `tests/bootstrap.php` for the same reason). Psalm 7 requires a purity annotation on every method and interface (`@psalm-pure`, `-mutation-free`, `-external-mutation-free`, `@psalm-impure`/`@psalm-mutable`); `vendor/bin/psalm --alter --issues=MissingPureAnnotation` adds them. PHPStan's own purity checks are ignored in `phpstan.neon.dist` because the two tools disagree. Psalm's `--alter` writes `@SuppressWarnings ("...")` with a space, which PHPMD then ignores: remove the space. The app gates (e.g. `../qb`: `composer lint`) use `php ../qb/tools/phpmd.phar <files> text ../qb/phpmd.xml` (PHPMD 2.15) and `../qb/vendor/bin/phpcs --standard=../qb/phpcs.xml <files>`. qb's phpstan autoloads qb's own (older) `noirapi/` submodule, so it reports false "undefined method" errors for new framework APIs.
 
 ## Request lifecycle
 
@@ -75,7 +78,7 @@ The non-PHP migration steps (composer.json, submodule removal, tool configs) are
 
 ## Releases
 
-`master` plus `vX.Y.Z` tags. `.github/workflows/ci.yml` runs `composer validate`, `php -l` and PHPUnit on PHP 8.4 and 8.5. On a push to `master` or a `v*` tag it then calls Packagist's update-package API, using the `PACKAGIST_USERNAME` / `PACKAGIST_TOKEN` repository secrets (it skips with a warning if they're unset). The `.gitattributes` `export-ignore` rules keep `tests/`, `.github/` and this file out of the dist archive.
+`master` plus `vX.Y.Z` tags. `.github/workflows/ci.yml` runs `composer validate`, `php -l`, PHPMD, PHPCS, PHPStan, Psalm and PHPUnit on PHP 8.4 and 8.5, plus a coverage summary job (pcov, not enforced). On a push to `master` or a `v*` tag it then calls Packagist's update-package API, using the `PACKAGIST_USERNAME` / `PACKAGIST_TOKEN` repository secrets (it skips with a warning if they're unset). The `.gitattributes` `export-ignore` rules keep `tests/`, `.github/` and this file out of the dist archive.
 
 ## Docs
 

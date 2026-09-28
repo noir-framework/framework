@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Interfaces;
 
 /**
- * @psalm-external-mutation-free
+ * @psalm-mutable
  */
 interface Translator
 {
@@ -15,7 +15,7 @@ interface Translator
      * @param mixed ...$args
      * @return string
      *
-     * @psalm-mutation-free
+     * @psalm-impure
      */
     public function translate(string $message, ?string $key = null, mixed ...$args): string;
 }

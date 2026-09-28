@@ -1,0 +1,37 @@
+parameters:
+    level: 5
+    phpVersion: 80400
+    paths:
+        - Auth
+        - Exceptions
+        - Helpers
+        - Interfaces
+        - Lib
+        - Rector
+        - Config.php
+        - include.php
+        - kernel.php
+        - script.php
+    excludePaths:
+        # Swoole isn't installed in CI
+        - Lib/Tasks.php
+    # The optional App\* classes the framework calls behind class_exists() guards.
+    scanFiles:
+        - tests/stubs/app.stub
+    ignoreErrors:
+        # A trait for apps to use; nothing in the framework uses it.
+        -
+            identifier: trait.unused
+            path: Lib/Traits/SmartObject.php
+        # Purity is Psalm 7's job (it requires the @psalm-pure / -mutation-free annotations);
+        # PHPStan's own purity model disagrees with it on preg_*, date(), new, and more.
+        - identifier: possiblyImpure.functionCall
+        - identifier: possiblyImpure.methodCall
+        - identifier: possiblyImpure.new
+        - identifier: impure.functionCall
+        # The stubs declare App\* for analysis, but at runtime these guards are what make them optional.
+        -
+            identifier: function.alreadyNarrowedType
+            paths:
+                - Config.php
+                - script.php

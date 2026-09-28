@@ -25,6 +25,9 @@ final class Application
     /** @var array<string, Command> */
     private array $commands = [];
 
+    /**
+     * @psalm-mutation-free
+     */
     public function __construct(private readonly Output $output = new Output())
     {
         $builtIn = [
@@ -42,6 +45,9 @@ final class Application
         }
     }
 
+    /**
+     * @psalm-external-mutation-free
+     */
     public function add(Command $command): void
     {
         $this->commands[$command->name()] = $command;

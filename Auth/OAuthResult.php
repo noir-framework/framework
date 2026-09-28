@@ -9,6 +9,7 @@ namespace Noirapi\Auth;
  * Extends the generic AuthResult with provider identity and token fields.
  *
  * @psalm-api
+ * @psalm-immutable
  */
 class OAuthResult extends AuthResult
 {
@@ -30,6 +31,25 @@ class OAuthResult extends AuthResult
             email: $email,
             name: $name,
             avatarUrl: $avatarUrl,
+        );
+    }
+
+    /**
+     * A copy with the tokens set: results are immutable.
+     *
+     * @psalm-mutation-free
+     */
+    public function withTokens(string $accessToken, ?string $refreshToken, ?int $tokenExpiresAt): self
+    {
+        return new self(
+            $this->provider,
+            $this->providerUserId,
+            $accessToken,
+            $refreshToken,
+            $tokenExpiresAt,
+            $this->email,
+            $this->name,
+            $this->avatarUrl,
         );
     }
 }

@@ -18,6 +18,7 @@ use Noirapi\Config;
  * Without the setting nothing is trusted and REMOTE_ADDR is the client.
  *
  * @psalm-api
+ * @psalm-external-mutation-free
  */
 final readonly class TrustedProxies
 {
