@@ -35,7 +35,6 @@ use Tracy\Debugger;
 use Tracy\ILogger;
 use ReflectionNamedType;
 
-use function in_array;
 use function strlen;
 
 /**
@@ -121,15 +120,16 @@ class Route
         $route = new AppRoute();
 
         $pos = strpos($this->request->uri, '?');
-        $uri = $pos !== false ? substr($this->request->uri, 0, $pos) : $this->request->uri;
-        $uri = rawurldecode($uri);
+        $rawPath = $pos !== false ? substr($this->request->uri, 0, $pos) : $this->request->uri;
+        // The only place the path is decoded: Request::$uri stays as sent.
+        $uri = preg_replace('/[\x00-\x1F\x7F]/', '', rawurldecode($rawPath)) ?? '';
 
         $languages = Config::get('languages') ?? [];
         $uri = $this->stripLanguageFromUri($uri, $languages);
 
         /** @psalm-suppress RedundantCondition */
         if ($this->request->language === null && ! empty($languages)) {
-            $this->redirectToDetectedLanguage($uri, $languages, $dev);
+            $this->redirectToDetectedLanguage($rawPath, $languages, $dev);
 
             return $this->response;
         }
@@ -165,21 +165,10 @@ class Route
 
     /**
      * @return bool
-     *
-     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
-     * of Config::get(); leaving unannotated satisfies both.
      */
     private function isDevRequest(): bool
     {
-        if (Config::get('dev') !== null) {
-            return (bool)Config::get('dev');
-        }
-
-        if (Config::get('dev_ips') !== null) {
-            return in_array($this->server['REMOTE_ADDR'], Config::get('dev_ips'), true);
-        }
-
-        return false;
+        return Config::isDev($this->request->clientIp);
     }
 
     /**
@@ -215,7 +204,7 @@ class Route
      * Detects the visitor's preferred language and redirects to the
      * language-prefixed uri, mutating $this->response.
      *
-     * @param string $uri
+     * @param string $uri the path as sent (still URL-encoded)
      * @param array $languages
      * @param bool $dev
      * @return void
@@ -225,9 +214,7 @@ class Route
         $detected = null;
         $detector = Config::get('language_detector');
         if ($detector !== null && class_exists($detector)) {
-            $address = $this->server['HTTP_X_FORWARDED_FOR'] ?? $this->server['REMOTE_ADDR'] ?? '';
-            $address = explode(',', $address)[0];
-            $detected = new $detector()->detect(trim($address));
+            $detected = new $detector()->detect($this->request->clientIp);
             if (! isset($languages[$detected])) {
                 $detected = null;
             }

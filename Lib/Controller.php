@@ -64,8 +64,7 @@ class Controller
         $this->server = $server;
 
         if ($this->dev === null) {
-            $this->dev = is_bool(Config::get('dev')) || (Config::get('dev_ips') !== null
-                    && in_array($this->server[ 'REMOTE_ADDR' ], Config::get('dev_ips'), true));
+            $this->dev = Config::isDev($this->request->clientIp);
         }
 
         // We need this when we are moving across domains

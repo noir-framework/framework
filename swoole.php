@@ -46,6 +46,7 @@ $server->on('request', function (Swoole\Http\Request $request, Swoole\Http\Respo
     $request->server['headers'] = $request->header;
     $route = Route::fromSwoole($request->server, $request->get ?? [], $request->post ?? [], $request->files ?? [], $request->cookie ?? []);
     $route->setSwoole($server);
+    $route->getRequest()->rawBody = (string) $request->rawContent();
 
     //TODO set http hostname, https and cooke_domain like kernel.php
 
