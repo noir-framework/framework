@@ -38,7 +38,7 @@ noirapi/bin/latte-lint app/views
 php noirapi/bin/latte-check.php [--strict] [--no-controller-check]
 ```
 
-`bin/noirapi` only sets `NOIRAPI_ROOT` (from `COMPOSER_RUNTIME_BIN_DIR` or the cwd) and execs the per-tool scripts, which fall back to `dirname(__DIR__, 2)` for the submodule layout. The dev server writes its pid to `temp/` and logs to `logs/`, and reads optional `<root>/dev-server.ini` settings. `PHP_CLI_SERVER_WORKERS` defaults to 4.
+`bin/noirapi` runs `bin/console.php` (`Lib/Console`: cache:clear, config:check, routes:list, make:*, key:generate, db:migrate, and `App\Commands\*` from `app/commands/`) for anything but the three shell tools. It only sets `NOIRAPI_ROOT` (from `COMPOSER_RUNTIME_BIN_DIR` or the cwd) and execs the per-tool scripts, which fall back to `dirname(__DIR__, 2)` for the submodule layout. The dev server writes its pid to `temp/` and logs to `logs/`, and reads optional `<root>/dev-server.ini` settings. `PHP_CLI_SERVER_WORKERS` defaults to 4.
 
 `phpmd.xml` mirrors the shared ruleset in `../phpmd-ruleset` (`noirapi/phpmd-ruleset`); keep the two in sync. PHPMD reads `pdepend.yml.dist` from the working directory, which switches pdepend to its memory cache: the default `~/.pdepend` file cache can report findings from a file's old content. No phpstan/psalm config lives here yet. The app gates (e.g. `../myapp`: `composer lint`) use `php ../myapp/tools/phpmd.phar <files> text ../myapp/phpmd.xml` (PHPMD 2.15) and `../myapp/vendor/bin/phpcs --standard=../myapp/phpcs.xml <files>`. an app's phpstan autoloads an app's own (older) `noirapi/` submodule, so it reports false "undefined method" errors for new framework APIs.
 

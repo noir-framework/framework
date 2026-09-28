@@ -59,6 +59,10 @@
   prefix, extra parameters as the query string), the `{link}` Latte tag, the `url()` /
   `absoluteUrl()` Latte functions and `Controller::forwardTo()`. Opt-in: plain FastRoute
   `App\Route` classes keep working. See `docs/routing.md`.
+- **CLI commands** through `vendor/bin/noirapi` (or `php noirapi/bin/console.php`):
+  `cache:clear`, `config:check`, `routes:list`, `make:controller`, `make:model`, `key:generate`,
+  `db:migrate`, plus app commands in `app/commands/` (`Noirapi\Lib\Console\Command`). See
+  `docs/cli.md`.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 

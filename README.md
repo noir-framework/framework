@@ -51,13 +51,15 @@ require __DIR__ . '/../../vendor/autoload.php';
 Noirapi\Lib\Kernel::boot(__DIR__ . '/../..');
 ```
 
-Tools are exposed as one Composer binary:
+Tools are exposed as one Composer binary (see [docs/cli.md](docs/cli.md)):
 
 ```bash
 vendor/bin/noirapi dev-server start [--port 8000] [--host localhost] [--config NAME]
 vendor/bin/noirapi dev-server stop|restart|status
 vendor/bin/noirapi latte-lint app/views
 vendor/bin/noirapi latte-check [--strict] [--no-controller-check]
+vendor/bin/noirapi cache:clear | config:check | routes:list | key:generate
+vendor/bin/noirapi make:controller Name | make:model Name | db:migrate
 ```
 
 ### git submodule (existing projects)
@@ -94,7 +96,7 @@ The framework's own files (bundled templates, bin scripts) are found with `Confi
 
 - [Routing](docs/routing.md), [Controllers](docs/controller.md), [Views](docs/view.md), [Layouts](docs/layouts.md)
 - [Database](docs/db.md), [Sessions](docs/sessions.md), [Mail](docs/mail.md)
-- [Security](docs/security.md) (trusted proxies, CSRF, headers/CSP, rate limits), [Authentication](docs/auth.md)
+- [Command line](docs/cli.md), [Security](docs/security.md) (trusted proxies, CSRF, headers/CSP, rate limits), [Authentication](docs/auth.md)
 
 ## Development
 
