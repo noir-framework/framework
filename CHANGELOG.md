@@ -20,6 +20,12 @@
   are now in `$request->headers`.
 - `Request::fromSwoole()` works again (it read upper-case keys from Swoole's lower-case server
   array); `swoole.php` passes the raw body.
+- **`FileUpload` checks the real content.** `allowedContentType()` and the image checks use the
+  MIME type `finfo` detects, not the browser's `Content-Type` (which `getClientContentType()` still
+  returns). `getContentType()` now returns the detected type. Wildcards such as `image/*` work,
+  extensions compare case-insensitively, and a file `getimagesize()` can't read is rejected
+  instead of raising a warning. Requires `ext-fileinfo`. **Breaking:** uploads whose content
+  doesn't match the allowed types are now rejected.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 
