@@ -4,6 +4,7 @@
 #   vendor/bin/noirapi dev-server [start|stop|restart|status] [--port N] [--host H] [--config NAME]
 #   vendor/bin/noirapi latte-lint <path> [<path>...] [--debug]
 #   vendor/bin/noirapi latte-check [--strict] [--no-controller-check] ...
+#   vendor/bin/noirapi <command> [args...]   cache:clear, routes:list, config:check, make:*, ... (bin/console.php)
 #
 # It only works out the project root and exports it as NOIRAPI_ROOT; the tools
 # themselves are the same scripts submodule apps call as noirapi/bin/<tool>.
@@ -23,18 +24,12 @@ if [[ -z "${NOIRAPI_ROOT:-}" ]]; then
 fi
 export NOIRAPI_ROOT
 
-usage() {
-    echo "Usage: noirapi <dev-server|latte-lint|latte-check> [args...]" >&2
-    exit 1
-}
-
-[[ $# -gt 0 ]] || usage
+[[ $# -gt 0 ]] || exec php "$BIN_DIR/console.php" list
 command="$1"
-shift
 
 case "$command" in
-    dev-server) exec "$BIN_DIR/dev-server" "$@" ;;
-    latte-lint) exec php "$BIN_DIR/latte-lint" "$@" ;;
-    latte-check) exec php "$BIN_DIR/latte-check.php" "$@" ;;
-    *) usage ;;
+    dev-server) shift; exec "$BIN_DIR/dev-server" "$@" ;;
+    latte-lint) shift; exec php "$BIN_DIR/latte-lint" "$@" ;;
+    latte-check) shift; exec php "$BIN_DIR/latte-check.php" "$@" ;;
+    *) exec php "$BIN_DIR/console.php" "$@" ;;
 esac
