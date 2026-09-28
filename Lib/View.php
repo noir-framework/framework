@@ -19,6 +19,7 @@ use Noirapi\Interfaces\Translator;
 use Noirapi\Lib\View\FilterExtension;
 use Noirapi\Lib\View\LatteLoader;
 use Noirapi\Lib\View\Layout;
+use Noirapi\Lib\Security\SecurityHeaders;
 use Noirapi\Lib\View\Macros;
 use RuntimeException;
 use stdClass;
@@ -168,6 +169,7 @@ class View
         ]);
 
         $this->mergeParams($this->layout, 'layout');
+        $this->addNonce();
 
         $html = $this->latte->renderToString($layout, $this->params);
 
@@ -203,6 +205,7 @@ class View
         $this->setTemplate($view);
         $params['template'] = $this->template;
         $this->mergeParams($params);
+        $this->addNonce();
 
         if ($layout !== null) {
             $this->setLayout($layout);
@@ -405,6 +408,19 @@ class View
             throw new RuntimeException("Duplicate key in view params: $namespace");
         } else {
             $this->params->$namespace = $params;
+        }
+    }
+
+    /**
+     * With a nonce-based CSP configured, views get the request's nonce as $nonce (for the
+     * {nonce} tag), unless the app passed its own.
+     *
+     * @return void
+     */
+    private function addNonce(): void
+    {
+        if (! isset($this->params->nonce) && SecurityHeaders::enabled() && SecurityHeaders::usesNonce()) {
+            $this->params->nonce = SecurityHeaders::nonce();
         }
     }
 

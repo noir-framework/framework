@@ -27,6 +27,7 @@ use Noirapi\Lib\Attributes\AutoWire;
 use Noirapi\Lib\Attributes\NotFound;
 use Noirapi\Lib\Attributes\SkipCsrf;
 use Noirapi\Lib\Security\Csrf;
+use Noirapi\Lib\Security\SecurityHeaders;
 use Noirapi\Lib\Tracy\GenericPanel;
 use ReflectionClass;
 use ReflectionException;
@@ -119,6 +120,26 @@ class Route
         $dev = $this->isDevRequest();
 
         $this->response = new Response();
+        SecurityHeaders::reset();
+
+        $this->dispatch($dev);
+
+        if (SecurityHeaders::enabled()) {
+            SecurityHeaders::apply($this->response, $this->request->https);
+        }
+
+        return $this->response;
+    }
+
+    /**
+     * Strips the language prefix and dispatches the request, setting $this->response.
+     *
+     * @param bool $dev
+     * @return void
+     * @throws Throwable
+     */
+    private function dispatch(bool $dev): void
+    {
 
         $route = new AppRoute();
 
@@ -134,7 +155,7 @@ class Route
         if ($this->request->language === null && ! empty($languages)) {
             $this->redirectToDetectedLanguage($rawPath, $languages, $dev);
 
-            return $this->response;
+            return;
         }
 
         $this->request->url_no_lang = $uri;
@@ -162,8 +183,6 @@ class Route
             default:
                 $this->response = self::handleErrors(500, 'Internal server error', $this);
         }
-
-        return $this->response;
     }
 
     /**

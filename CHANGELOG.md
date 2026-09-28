@@ -36,6 +36,9 @@
 - **CSRF protection** (opt-in, `csrf: true`): `Noirapi\Lib\Security\Csrf`, the `{csrf}` and
   `{csrfToken}` Latte tags, the `X-CSRF-Token` header for AJAX, an Origin / Sec-Fetch-Site check,
   and `#[SkipCsrf]` for webhooks and token APIs. See `docs/security.md`.
+- **Security headers** (opt-in, `security_headers:`): nosniff, frame options, Referrer-Policy,
+  Permissions-Policy, COOP and HSTS (HTTPS only) on every response, each overridable, plus an
+  optional Content-Security-Policy with a per-request nonce that views receive as `$nonce`.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 

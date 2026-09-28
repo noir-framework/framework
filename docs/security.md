@@ -90,3 +90,67 @@ final class StripeWebhook extends Site { ... }
 
 `Session::regenerate()` (call it on login) replaces the token. In PHP code:
 `Csrf::token()`, `Csrf::isValid($value)`, `Csrf::check($request)`.
+
+## Security headers and CSP
+
+```neon
+security_headers: true      # the defaults below
+```
+
+| Key | Header | Default |
+|---|---|---|
+| `content_type_options` | `X-Content-Type-Options` | `nosniff` |
+| `frame_options` | `X-Frame-Options` | `SAMEORIGIN` |
+| `referrer_policy` | `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `permissions_policy` | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), payment=()` |
+| `cross_origin_opener_policy` | `Cross-Origin-Opener-Policy` | `same-origin` |
+| `hsts` | `Strict-Transport-Security` (HTTPS responses only) | `max-age=31536000; includeSubDomains` |
+
+Set a key to override it, or to `false` to drop the header. `headers:` adds any others:
+
+```neon
+security_headers:
+    frame_options: DENY
+    hsts: 'max-age=63072000; includeSubDomains; preload'
+    headers:
+        X-Robots-Tag: noindex
+```
+
+The headers go on every response Route produces, error pages and redirects included. A header
+the app set itself (`$response->addHeader()`) is never overwritten.
+
+### Content-Security-Policy
+
+Only sent when `csp` is set. `csp: default` is a strict, nonce-based policy:
+
+```
+default-src 'self'; script-src 'self' 'nonce-…'; style-src 'self' 'nonce-…'; img-src 'self' data:;
+font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';
+frame-ancestors 'self'
+```
+
+Or list the directives yourself. `nonce` stands for the request's nonce, and CSP keywords
+(`self`, `none`, `unsafe-inline`, `strict-dynamic`, …) may be written without their quotes:
+
+```neon
+security_headers:
+    csp:
+        default-src: [self]
+        script-src: [self, nonce, https://cdn.jsdelivr.net]
+        style-src: [self, nonce, https://fonts.googleapis.com]
+        font-src: [self, https://fonts.gstatic.com]
+        img-src: [self, 'data:']
+        upgrade-insecure-requests: []
+    csp_report_only: true   # try it out first: violations are reported, nothing is blocked
+```
+
+With a nonce in the policy, views get `$nonce` automatically (unless the app passes its own),
+and inline scripts and styles need the `{nonce}` tag:
+
+```latte
+<script{nonce}>initPage();</script>
+<style{nonce}>.x { color: red }</style>
+```
+
+`{topJs}`, `{bottomJs}`, `{topCss}` and `{bottomCss}` add the nonce themselves. Tracy's bar
+picks the nonce up from the sent header. In PHP code: `SecurityHeaders::nonce()`.
