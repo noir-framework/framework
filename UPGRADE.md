@@ -35,6 +35,16 @@ commands and many fixes. Most apps update without code changes; check each item 
 7. `Utils::isDev()` and `Utils::getRealIp()` are deprecated: use `Config::isDev($request->clientIp)`
    and `$request->clientIp`.
 
+8. **Submodule apps: new dependency.** The framework now requires `nikolaposa/rate-limit`
+   (rate limiting, `verifyThrottled()`, magic-link `send()`) and `ext-fileinfo`. Composer
+   installs a submodule's dependencies from the app's own `composer.json`, so add it there, then
+   refresh the classmap for the new framework classes:
+
+   ```bash
+   composer require nikolaposa/rate-limit:^3.3
+   composer dump-autoload
+   ```
+
 ## Recommended
 
 - Start sessions with `Session::start()` instead of `session_start()`, and call
