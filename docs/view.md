@@ -132,6 +132,7 @@ The following variables are always present in every template without any explici
 | `$template` | `string` | Absolute path of the resolved template file |
 | `$message` | `Message\|null` | Flash message from the previous request, if any |
 | `$languages` | `array` | All configured language codes (empty if i18n is off) |
+| `$nonce` | `string` | The CSP nonce, when `security_headers.csp` uses one (or the app passes its own) |
 
 ---
 
@@ -161,6 +162,24 @@ Generate a URL that adds or replaces a single query parameter on the current pag
 use Noirapi\Lib\View;
 
 $nextUrl = View::addUrlVar('sort', 'created_at');
+```
+
+---
+
+## Links, forms and inline scripts
+
+```latte
+{* URLs of named routes (see routing.md), escaped for the context *}
+<a href="{link article.show, id: $article->id}">{$article->title}</a>
+<a href="{url('articles', page: 2)}">Next</a>
+<meta property="og:url" content="{absoluteUrl('article.show', id: $article->id)}">
+
+{* CSRF (see security.md) *}
+<form method="post">{csrf} ...</form>
+<meta name="csrf-token" content="{csrfToken}">
+
+{* CSP nonce, when security_headers.csp uses one *}
+<script {nonce}>init();</script>
 ```
 
 ---

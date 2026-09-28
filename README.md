@@ -97,6 +97,7 @@ The framework's own files (bundled templates, bin scripts) are found with `Confi
 - [Routing](docs/routing.md), [Controllers](docs/controller.md), [Views](docs/view.md), [Layouts](docs/layouts.md)
 - [Database](docs/db.md), [Sessions](docs/sessions.md), [Mail](docs/mail.md)
 - [Command line](docs/cli.md), [Security](docs/security.md) (trusted proxies, CSRF, headers/CSP, rate limits), [Authentication](docs/auth.md)
+- [Configuration reference](docs/config.md), [Validation](docs/validation.md), [Swoole](docs/swoole.md)
 
 ## Development
 
