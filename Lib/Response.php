@@ -401,7 +401,7 @@ class Response
      */
     public function downloadFile(string $filename): self
     {
-        $this->addHeader('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        $this->addHeader('Content-Disposition', self::contentDisposition('attachment', $filename));
 
         return $this;
     }
@@ -417,7 +417,7 @@ class Response
      */
     public function inlineFile(string $filename): self
     {
-        $this->addHeader('Content-Disposition', 'inline; filename="' . $filename . '"');
+        $this->addHeader('Content-Disposition', self::contentDisposition('inline', $filename));
         $this->addHeader('Content-Transfer-Encoding', 'binary');
 
         return $this;
@@ -527,19 +527,11 @@ class Response
     {
         $object = new stdClass();
 
-        foreach ($class1 as $key => $value) {
-            if (is_object($value)) {
-                $object->$key = $this->objectMerge($object->$key, $value);
-            } else {
-                $object->$key = $value;
-            }
-        }
-
-        foreach ($class2 as $key => $value) {
-            if (is_object($value)) {
-                $object->$key = $this->objectMerge($object->$key, $value);
-            } else {
-                $object->$key = $value;
+        foreach ([$class1, $class2] as $source) {
+            foreach ($source as $key => $value) {
+                $object->$key = is_object($value) && isset($object->$key) && is_object($object->$key)
+                    ? $this->objectMerge($object->$key, $value)
+                    : $value;
             }
         }
 
@@ -625,5 +617,18 @@ class Response
         return (is_scalar($object) || is_null($object))
             ? $object
             : array_map([$this, 'object2array'], (array)$object);
+    }
+
+    /**
+     * RFC 6266: an ASCII fallback in filename="..." (quotes, backslashes and control characters
+     * replaced) plus the exact name, UTF-8 and percent-encoded, in filename*.
+     *
+     * @psalm-pure
+     */
+    private static function contentDisposition(string $type, string $filename): string
+    {
+        $fallback = (string) preg_replace('/[^\x20-\x7E]|["\\\\]/', '_', $filename);
+
+        return $type . '; filename="' . $fallback . '"; filename*=UTF-8\'\'' . rawurlencode($filename);
     }
 }

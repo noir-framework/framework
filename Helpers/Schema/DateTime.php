@@ -146,7 +146,12 @@ class DateTime implements Schema
         $normalized = null;
 
         if ($value !== '') {
-            $normalized = \DateTime::createFromFormat($this->format, $value, $this->timeZone);
+            $normalized = is_string($value) ? \DateTime::createFromFormat($this->format, $value, $this->timeZone) : false;
+            // createFromFormat() rolls impossible dates over (2024-02-31 -> 2024-03-02): reject them.
+            $errors = \DateTime::getLastErrors();
+            if ($errors !== false && $errors['warning_count'] > 0) {
+                $normalized = false;
+            }
         }
 
         $normalized = $this->applyFixedDate($normalized);

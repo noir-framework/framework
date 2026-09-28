@@ -63,6 +63,19 @@
   `cache:clear`, `config:check`, `routes:list`, `make:controller`, `make:model`, `key:generate`,
   `db:migrate`, plus app commands in `app/commands/` (`Noirapi\Lib\Console\Command`). See
   `docs/cli.md`.
+- Fixes found by the new tests:
+  - `Schema\Cidr` (single value) rejected valid CIDRs and accepted invalid ones; a CIDR without
+    `/` raised a warning. Values are trimmed.
+  - `Schema\Numeric` and `Schema\Port` accepted strings like `12abc` or `abc1` (the digit check
+    wasn't anchored).
+  - `Schema\Domain` ignored `required()` and failed on empty input.
+  - `Schema\DateTime` / `Date` / `Time` accepted impossible dates (`2023-02-29` rolled over to
+    March 1).
+  - `Response::appendBody()` failed merging nested objects; `downloadFile()` / `inlineFile()`
+    now send an RFC 6266 `Content-Disposition` (ASCII fallback plus `filename*`), so quotes and
+    non-ASCII names no longer break the header.
+  - **Breaking:** `{nonce}` prints `nonce="…"` (escaped) without a leading space, and is written
+    `<script {nonce}>`; Latte 3 rejects `<script{nonce}>`.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 

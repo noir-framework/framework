@@ -306,8 +306,9 @@ class Macros extends Extension
     {
         return new AuxiliaryNode(
             fn (PrintContext $context) => $context->format('
-                $nonce_inline = !empty($nonce) ? " nonce=\"$nonce\"" : "";
-                echo $nonce_inline;
+                if (!empty($nonce)) {
+                    echo \'nonce="\' . \htmlspecialchars((string) $nonce, ENT_QUOTES) . \'"\';
+                }
             ')
         );
     }

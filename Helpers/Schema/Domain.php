@@ -58,8 +58,16 @@ class Domain implements Schema
     #[Override]
     public function normalize($value, Context $context): mixed
     {
+        $value = is_string($value) ? trim($value) : '';
 
-        $value = trim($value);
+        if ($value === '') {
+            if ($this->required) {
+                /** @noinspection UnusedFunctionResultInspection */
+                $context->addError('The mandatory option %path% is empty.', Message::MissingItem);
+            }
+
+            return null;
+        }
 
         if ($this->wildcard && $value[0] === '.') {
             $res = filter_var(substr($value, 1), FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME);
