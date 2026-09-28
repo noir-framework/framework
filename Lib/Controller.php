@@ -19,6 +19,8 @@ use Noirapi\Helpers\Message;
 use Noirapi\Helpers\MessageType;
 use Noirapi\Helpers\RestMessage;
 use Noirapi\Helpers\Utils;
+use Noirapi\Lib\RateLimit\Limiter;
+use Noirapi\Lib\Tracy\GenericPanel;
 use Noirapi\Lib\Tracy\PDOBarPanel;
 use Throwable;
 use Tracy\Debugger;
@@ -104,6 +106,17 @@ class Controller
                 Debugger::getBar()->addPanel($panel);
             }
             Route::handleRouteUrlDebugBar($this->request, $this->response, $this->server);
+
+            if (Limiter::$recent !== []) {
+                $limits = [];
+                foreach (Limiter::$recent as $index => $result) {
+                    $limits[$index . ' ' . $result->limiter . ' ' . $result->key] = $result->blocked
+                        ? 'blocked for ' . $result->retryAfter() . 's'
+                        : $result->remaining . '/' . $result->limit . ($result->allowed ? '' : ' (refused)');
+                }
+                Debugger::getBar()->addPanel(new GenericPanel('rate limits', $limits));
+                Limiter::$recent = [];
+            }
         }
     }
 

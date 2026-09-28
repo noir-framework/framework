@@ -16,16 +16,20 @@ use App\Route as AppRoute;
 use BackedEnum;
 use FastRoute\Dispatcher;
 use Noirapi\Config;
+use Noirapi\Exceptions\ConfigException;
 use Noirapi\Exceptions\InternalServerError;
 use Noirapi\Exceptions\LoginException;
 use Noirapi\Exceptions\MessageException;
 use Noirapi\Exceptions\NotFoundException;
 use Noirapi\Exceptions\RestException;
+use Noirapi\Exceptions\TooManyRequestsException;
 use Noirapi\Helpers\MessageType;
 use Noirapi\Helpers\Utils;
 use Noirapi\Lib\Attributes\AutoWire;
 use Noirapi\Lib\Attributes\NotFound;
+use Noirapi\Lib\Attributes\RateLimited;
 use Noirapi\Lib\Attributes\SkipCsrf;
+use Noirapi\Lib\RateLimit\RateLimit;
 use Noirapi\Lib\Security\Csrf;
 use Noirapi\Lib\Security\SecurityHeaders;
 use Noirapi\Lib\Tracy\GenericPanel;
@@ -268,6 +272,7 @@ class Route
             $reflection = new ReflectionMethod($controller, $method);
 
             $this->verifyCsrf($controller, $reflection);
+            $this->applyRateLimits($reflection);
 
             $realArgs = [];
             if (count($reflection->getAttributes()) > 0) {
@@ -278,7 +283,20 @@ class Route
             }
 
             $controller->$method(...array_merge($args, $realArgs));
-        } catch (LoginException $exception) {
+        } catch (Throwable $exception) {
+            $this->handleException($exception);
+        }
+    }
+
+    /**
+     * Maps what a controller threw to the response.
+     *
+     * @param Throwable $exception
+     * @return void
+     */
+    private function handleException(Throwable $exception): void
+    {
+        if ($exception instanceof LoginException) {
             if ($exception->getCode() === 403) {
                 $this->response->withStatus(403)
                     ->setContentType(Response::TYPE_JSON)
@@ -287,18 +305,20 @@ class Route
                 $this->response->withStatus($exception->getCode())
                     ->withLocation($exception->getMessage());
             }
-        } catch (RestException $exception) {
+        } elseif ($exception instanceof TooManyRequestsException) {
+            $this->tooManyRequests($exception);
+        } elseif ($exception instanceof RestException) {
             $this->response->withStatus($exception->getCode())
                 ->setContentType(Response::TYPE_JSON)
                 ->setBody($exception->getMessage());
-        } catch (MessageException $exception) {
+        } elseif ($exception instanceof MessageException) {
             $this->response->withStatus($exception->getCode())
                 ->setBody($exception->getMessage());
-        } catch (InternalServerError $exception) {
-            $this->response = self::handleErrors(500, $exception->getMessage() ?? 'Internal server error', $this); //phpcs:ignore
-        } catch (NotFoundException $exception) {
-            $this->response = self::handleErrors(404, $exception->getMessage() ?? '404 Not found', $this);
-        } catch (Throwable $exception) {
+        } elseif ($exception instanceof InternalServerError) {
+            $this->response = self::handleErrors(500, $exception->getMessage() ?: 'Internal server error', $this);
+        } elseif ($exception instanceof NotFoundException) {
+            $this->response = self::handleErrors(404, $exception->getMessage() ?: '404 Not found', $this);
+        } else {
             $this->response = ExceptionRenderer::render($exception, $this->response);
         }
     }
@@ -338,6 +358,63 @@ class Route
         $controller->message('Your session expired, please try again', MessageType::Warning);
 
         throw new LoginException($controller->referer(), 302);
+    }
+
+    /**
+     * Enforces #[RateLimited] on the action and its controller, adding the X-RateLimit-*
+     * headers of the last limit checked.
+     *
+     * @param ReflectionMethod $reflection
+     * @return void
+     * @throws TooManyRequestsException
+     * @throws ConfigException
+     */
+    private function applyRateLimits(ReflectionMethod $reflection): void
+    {
+        $attributes = [
+            ...$reflection->getDeclaringClass()->getAttributes(RateLimited::class),
+            ...$reflection->getAttributes(RateLimited::class),
+        ];
+
+        foreach ($attributes as $attribute) {
+            $limit = $attribute->newInstance();
+            $key = match ($limit->key) {
+                RateLimited::KEY_ROUTE => $this->request->clientIp . '|' . $reflection->class . '::' . $reflection->name,
+                RateLimited::KEY_SESSION => (session_id() ?: $this->request->clientIp),
+                default => $this->request->clientIp,
+            };
+
+            foreach (RateLimit::for($limit->name)->check($key)->headers() as $name => $value) {
+                $this->response->addHeader($name, $value);
+            }
+        }
+    }
+
+    /**
+     * 429 with Retry-After; JSON for AJAX / JSON clients.
+     *
+     * @param TooManyRequestsException $exception
+     * @return void
+     */
+    private function tooManyRequests(TooManyRequestsException $exception): void
+    {
+        $this->response->withStatus(429);
+
+        foreach ($exception->result->headers() as $name => $value) {
+            $this->response->addHeader($name, $value);
+        }
+
+        if ($this->request->ajax || $this->request->wantsJson() || $this->request->isJson()) {
+            $this->response->setContentType(Response::TYPE_JSON)->setBody([
+                'ok' => false,
+                'error' => 'rate_limit',
+                'retry_after' => $exception->result->retryAfter(),
+            ]);
+
+            return;
+        }
+
+        $this->response->setContentType(Response::TYPE_TEXT)->setBody($exception->getMessage());
     }
 
     /**

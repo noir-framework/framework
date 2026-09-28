@@ -154,3 +154,69 @@ and inline scripts and styles need the `{nonce}` tag:
 
 `{topJs}`, `{bottomJs}`, `{topCss}` and `{bottomCss}` add the nonce themselves. Tracy's bar
 picks the nonce up from the sent header. In PHP code: `SecurityHeaders::nonce()`.
+
+## Rate limiting
+
+Built on [nikolaposa/rate-limit](https://github.com/nikolaposa/rate-limit): fixed windows of
+N attempts per interval, plus an optional escalating block (as in aplus-api): after
+`block_after` refused attempts within `block_for` seconds, the key is refused outright for
+`block_for` seconds.
+
+```neon
+rate_limiter:
+    storage: apcu            # apcu | memcached | pdo | memory
+    memcached: 'localhost:11211'
+    connection: mysql        # pdo: which `db` entry to use (default: the first)
+    table: rate_limits       # pdo: created on first use
+    prefix: 'rl:'
+
+rate_limits:
+    api:    {limit: 100, per: minute}             # per: seconds, or second | minute | hour | day
+    search: {limit: 10, per: 10}
+    login:  {limit: 5, per: 60, block_after: 5, block_for: 900}
+```
+
+Storage: `apcu` (the default when the extension is loaded) is per server; with several web
+servers use `memcached` or `pdo`. `memory` lasts one PHP process only, which is useless under
+PHP-FPM; it is the fallback without APCu, for tests and Swoole. APCu needs
+`apc.use_request_time = 0`.
+
+`login`, `magic_link` and `totp` have built-in defaults (`RateLimit::DEFAULTS`); any other name
+must be configured.
+
+### On a controller action
+
+```php
+use Noirapi\Lib\Attributes\RateLimited;
+
+#[RateLimited('api')]                      // per client IP (see trusted_proxies)
+public function list(): Response { ... }
+
+#[RateLimited('search', key: 'route')]     // per client IP and action
+#[RateLimited('upload', key: 'session')]   // per session
+```
+
+The attribute also works on a controller class. Responses carry `X-RateLimit-Limit`,
+`X-RateLimit-Remaining` and `X-RateLimit-Reset`. A refused request gets `429` with
+`Retry-After`, and a body of `Too many requests`, or for AJAX/JSON clients
+`{"ok": false, "error": "rate_limit", "retry_after": 42}`.
+
+### In code
+
+```php
+use Noirapi\Lib\RateLimit\RateLimit;
+
+// Throws TooManyRequestsException, which Route turns into the 429 above:
+RateLimit::for('login')->check($request->clientIp);
+
+// Or decide yourself:
+$result = RateLimit::for('login')->hit(strtolower($email));
+if (! $result->allowed) {
+    $this->message('Too many attempts, try again in ' . $result->retryAfter() . ' seconds');
+    return $this->forward('/login');
+}
+```
+
+Key the limit by what an attacker can't rotate cheaply: the client IP, and for logins also the
+account (email), so one IP can't spray many accounts and many IPs can't hammer one account. In
+dev mode Tracy shows the limits hit during the request.

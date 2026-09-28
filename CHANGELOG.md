@@ -39,6 +39,12 @@
 - **Security headers** (opt-in, `security_headers:`): nosniff, frame options, Referrer-Policy,
   Permissions-Policy, COOP and HSTS (HTTPS only) on every response, each overridable, plus an
   optional Content-Security-Policy with a per-request nonce that views receive as `$nonce`.
+- **Rate limiting** on `nikolaposa/rate-limit`: named limits from `rate_limits`, APCu /
+  Memcached / PDO / memory storage (`rate_limiter`), an escalating block like aplus-api's, the
+  `#[RateLimited]` attribute, `TooManyRequestsException` answered with 429 + `Retry-After`, and
+  a Tracy panel. Built-in defaults for `login`, `magic_link` and `totp`.
+- Route maps controller exceptions in one place; an empty `NotFoundException` /
+  `InternalServerError` message now falls back to the default text.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 
