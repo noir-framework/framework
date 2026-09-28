@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Noirapi\Auth\Providers;
 
 use Noirapi\Auth\Contracts\AuthProviderInterface;
+use Noirapi\Exceptions\ConfigException;
+use Noirapi\Exceptions\TooManyRequestsException;
+use Noirapi\Lib\RateLimit\RateLimit;
 use Override;
 use RobThree\Auth\Providers\Qr\BaconQrCodeProvider;
 use RobThree\Auth\TwoFactorAuth;
@@ -113,5 +116,19 @@ class TotpProvider implements AuthProviderInterface
     public function verify(string $storedSecret, string $code, int $window = 2): bool
     {
         return $this->tfa->verifyCode($storedSecret, $code, $window);
+    }
+
+    /**
+     * verify(), counting the attempt against the `totp` rate limit for $key (e.g. the user id):
+     * by default 5 a minute, then blocked for 15 minutes after 3 refusals.
+     *
+     * @throws TooManyRequestsException
+     * @throws ConfigException
+     */
+    public function verifyThrottled(string $storedSecret, string $code, string $key, int $window = 2): bool
+    {
+        RateLimit::for('totp')->check($key);
+
+        return $this->verify($storedSecret, $code, $window);
     }
 }

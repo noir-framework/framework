@@ -8,6 +8,9 @@ use Closure;
 use Noirapi\Auth\AuthMethod;
 use Noirapi\Auth\AuthResult;
 use Noirapi\Auth\Contracts\AuthProviderInterface;
+use Noirapi\Exceptions\ConfigException;
+use Noirapi\Exceptions\TooManyRequestsException;
+use Noirapi\Lib\RateLimit\RateLimit;
 use Override;
 
 /**
@@ -93,5 +96,21 @@ readonly class PasswordProvider implements AuthProviderInterface
             name:      $data['name'] ?? null,
             avatarUrl: $data['avatar_url'] ?? null,
         );
+    }
+
+    /**
+     * verify(), counting the attempt against the `login` rate limit per email and per client
+     * IP: by default 5 a minute, then blocked for 15 minutes after 5 refusals.
+     *
+     * @throws TooManyRequestsException
+     * @throws ConfigException
+     */
+    public function verifyThrottled(string $email, string $password, string $clientIp): ?AuthResult
+    {
+        $limiter = RateLimit::for('login');
+        $limiter->check('email:' . strtolower(trim($email)));
+        $limiter->check('ip:' . $clientIp);
+
+        return $this->verify($email, $password);
     }
 }

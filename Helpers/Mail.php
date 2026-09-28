@@ -104,7 +104,9 @@ class Mail
 
         $file = Config::getAppRoot() . "/templates/$template.latte";
         if (! is_readable($file)) {
-            throw new RuntimeException('Unable to load template: ' . $file);
+            // Framework defaults (e.g. magic-link), unless the app has its own.
+            $bundled = Config::getFrameworkDir() . "/Templates/mail/$template.latte";
+            $file = is_readable($bundled) ? $bundled : throw new RuntimeException('Unable to load template: ' . $file);
         }
 
         $latte = new Engine();

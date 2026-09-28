@@ -45,6 +45,14 @@
   a Tracy panel. Built-in defaults for `login`, `magic_link` and `totp`.
 - Route maps controller exceptions in one place; an empty `NotFoundException` /
   `InternalServerError` message now falls back to the default text.
+- **Magic links are complete**: `MagicLinkProvider::issue()` / `verify()` / `send()` with
+  stateless tokens signed by `app_secret_key` and bound to a per-user fingerprint (e.g. the
+  last-login time), so they expire (`auth.magic_link.ttl`) and work once without a token table.
+  `send()` is rate-limited per email and IP. A default email template is bundled
+  (`Templates/mail/magic-link.latte`; `Mail::setTemplate()` falls back to bundled templates).
+- `Noirapi\Lib\Security\Signer`: purpose-bound HMAC-SHA256 signatures with `app_secret_key`.
+- `PasswordProvider::verifyThrottled()` and `TotpProvider::verifyThrottled()` apply the `login`
+  and `totp` rate limits. The OAuth `state` check uses `hash_equals()`.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 

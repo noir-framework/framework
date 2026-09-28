@@ -102,7 +102,8 @@ abstract class OAuthProvider implements AuthProviderInterface
         Session::remove(self::SESSION_STATE_KEY);
         Session::remove(self::SESSION_ACTION_KEY);
 
-        if (empty($expected) || $expected !== ($queryParams['state'] ?? '')) {
+        $state = $queryParams['state'] ?? '';
+        if (! is_string($expected) || $expected === '' || ! is_string($state) || ! hash_equals($expected, $state)) {
             throw new RuntimeException('Invalid OAuth state — possible CSRF attempt.');
         }
 
