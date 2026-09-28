@@ -198,6 +198,8 @@ class Config
      * @return string
      *
      * @noinspection PhpUnused
+     *
+     * @psalm-external-mutation-free
      */
     public static function getRoot(): string
     {
