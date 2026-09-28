@@ -20,6 +20,7 @@ use Noirapi\Helpers\MessageType;
 use Noirapi\Helpers\RestMessage;
 use Noirapi\Helpers\Utils;
 use Noirapi\Lib\RateLimit\Limiter;
+use Noirapi\Lib\Routing\Url;
 use Noirapi\Lib\Tracy\GenericPanel;
 use Noirapi\Lib\Tracy\PDOBarPanel;
 use Throwable;
@@ -152,6 +153,22 @@ class Controller
         }
 
         return $this->response->withStatus($status)->withLocation($location);
+    }
+
+    /**
+     * Redirects to a named route (see Noirapi\Lib\Routing\Url::to()); the language prefix is
+     * added by Url.
+     *
+     * @param string $name
+     * @param array<string, mixed> $params
+     * @param array<string, mixed> $query
+     * @param int $status
+     * @return Response
+     * @throws UnableToForwardException
+     */
+    public function forwardTo(string $name, array $params = [], array $query = [], int $status = 302): Response
+    {
+        return $this->forward(Url::to($name, $params, $query), $status, true);
     }
 
     /**

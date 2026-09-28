@@ -11,6 +11,7 @@ use Latte\Compiler\PrintContext;
 use Latte\Compiler\Tag;
 use Latte\Extension;
 use Noirapi\Config;
+use Noirapi\Lib\Routing\Url;
 use Override;
 
 /**
@@ -41,6 +42,21 @@ class Macros extends Extension
             'head'       => [$this, 'head'],
             'csrf'       => [$this, 'csrf'],
             'csrfToken'  => [$this, 'csrfToken'],
+            'link'       => [$this, 'link'],
+        ];
+    }
+
+    /**
+     * url('user.show', id: 5) and absoluteUrl(...): see Noirapi\Lib\Routing\Url.
+     *
+     * @psalm-mutation-free
+     */
+    #[Override]
+    public function getFunctions(): array
+    {
+        return [
+            'url'         => static fn (string $name, mixed ...$params): string => Url::to($name, $params),
+            'absoluteUrl' => static fn (string $name, mixed ...$params): string => Url::absolute($name, $params),
         ];
     }
 
@@ -350,6 +366,32 @@ class Macros extends Extension
             fn (PrintContext $context) => $context->format(
                 'echo \htmlspecialchars(\Noirapi\Lib\Security\Csrf::token(), ENT_QUOTES);'
             )
+        );
+    }
+
+    /**
+     * {link user.show, id: 5}: the URL of a named route (Noirapi\Lib\Routing\Url::to()),
+     * escaped for where it is printed.
+     *
+     * @param Tag $tag
+     * @return Node
+     * @throws CompileException
+     */
+    public function link(Tag $tag): Node
+    {
+        $tag->expectArguments();
+        $name = $tag->parser->parseUnquotedStringOrExpression();
+        $tag->parser->stream->tryConsume(',');
+        $args = $tag->parser->parseArguments();
+
+        return new AuxiliaryNode(
+            fn (PrintContext $context) => $context->format(
+                'echo %escape(\Noirapi\Lib\Routing\Url::to(%node, %node)) %line;',
+                $name,
+                $args,
+                $tag->position,
+            ),
+            [$name, $args],
         );
     }
 }

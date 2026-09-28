@@ -30,6 +30,7 @@ use Noirapi\Lib\Attributes\NotFound;
 use Noirapi\Lib\Attributes\RateLimited;
 use Noirapi\Lib\Attributes\SkipCsrf;
 use Noirapi\Lib\RateLimit\RateLimit;
+use Noirapi\Lib\Routing\Url;
 use Noirapi\Lib\Security\Csrf;
 use Noirapi\Lib\Security\SecurityHeaders;
 use Noirapi\Lib\Tracy\GenericPanel;
@@ -154,6 +155,7 @@ class Route
 
         $languages = Config::get('languages') ?? [];
         $uri = $this->stripLanguageFromUri($uri, $languages);
+        Url::setContext($this->request->language, $this->request->baseUrl());
 
         /** @psalm-suppress RedundantCondition */
         if ($this->request->language === null && ! empty($languages)) {
