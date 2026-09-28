@@ -8,6 +8,7 @@ use Composer\InstalledVersions;
 use JsonException;
 use Nette\Neon\Exception;
 use Nette\Neon\Neon;
+use Noirapi\Lib\DevMode;
 use Noirapi\Exceptions\ConfigException;
 use RuntimeException;
 use Tracy\Debugger;
@@ -17,7 +18,7 @@ use function is_array;
 /** @psalm-api */
 class Config
 {
-    private static array $options;
+    private static array $options = [];
     private static ?string $root = null;
     public static string $config;
 
@@ -154,6 +155,18 @@ class Config
         }
 
         return self::$options[$option] ?? $default ?? null;
+    }
+
+    /**
+     * The one place dev mode is decided: on with `dev: true`, or when $clientIp is listed in
+     * `dev_ips` (addresses or CIDR ranges). Anything else, including `dev: false`, is off.
+     *
+     * @param string|null $clientIp the resolved client address (Request::$clientIp)
+     * @return bool
+     */
+    public static function isDev(?string $clientIp = null): bool
+    {
+        return DevMode::enabled($clientIp);
     }
 
     /**

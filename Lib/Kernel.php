@@ -6,7 +6,8 @@ namespace Noirapi\Lib;
 
 use Noirapi\Config;
 use Noirapi\Helpers\TracyFileSession;
-use Noirapi\Helpers\Utils;
+use Noirapi\Lib\Http\Headers;
+use Noirapi\Lib\Http\TrustedProxies;
 use Noirapi\Lib\Session\SessionHandlerFactory;
 use RuntimeException;
 use Throwable;
@@ -88,7 +89,7 @@ final class Kernel
         self::initTimezone();
         self::initSessionHandler();
 
-        Config::set('is_https', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
+        Config::set('is_https', TrustedProxies::fromConfig()->isSecure($_SERVER, Headers::fromServer($_SERVER)));
 
         self::initTracy();
     }
@@ -123,14 +124,15 @@ final class Kernel
      */
     public static function handle(): void
     {
-        $https = isset($_SERVER['HTTPS']);
+        /** @psalm-suppress PossiblyInvalidArgument */
+        $route = Route::fromGlobals($_SERVER, $_GET, $_POST, $_FILES, $_COOKIE);
+        $https = $route->getRequest()->https;
         Config::set('https', $https);
         /** @noinspection HostnameSubstitutionInspection */
         $domain = $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? 'default';
         Config::set('domain', $domain);
 
-        /** @psalm-suppress PossiblyInvalidArgument */
-        $response = Route::fromGlobals($_SERVER, $_GET, $_POST, $_FILES, $_COOKIE)->serve();
+        $response = $route->serve();
 
         self::emit($response, $https, $domain);
 
@@ -243,7 +245,12 @@ final class Kernel
 
         Debugger::setSessionStorage(self::tracySessionStorage());
 
-        if (Utils::isDev($_SERVER['REMOTE_ADDR'] ?? '')) {
+        $clientIp = TrustedProxies::fromConfig()->clientIp(
+            is_string($_SERVER['REMOTE_ADDR'] ?? null) ? $_SERVER['REMOTE_ADDR'] : '',
+            Headers::fromServer($_SERVER),
+        );
+
+        if (Config::isDev($clientIp)) {
             //we are missing some debug events in Tracy, that's why we start session so early
             if (session_status() !== PHP_SESSION_ACTIVE) {
                 session_start();

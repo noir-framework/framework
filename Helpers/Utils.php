@@ -8,6 +8,9 @@ namespace Noirapi\Helpers;
 
 use Exception;
 use Noirapi\Config;
+use Noirapi\Lib\Http\Headers;
+use Noirapi\Lib\Http\IpRange;
+use Noirapi\Lib\Http\TrustedProxies;
 use Random\Randomizer;
 use ReflectionClass;
 use ReflectionException;
@@ -337,36 +340,24 @@ final class Utils
     /**
      * @param string $remote_address
      * @return bool
+     * @deprecated use Config::isDev($request->clientIp)
      */
     public static function isDev(string $remote_address): bool
     {
-
-        $dev = Config::get('dev');
-
-        if ($dev === true) {
-            return true;
-        }
-
-        $dev_ips = Config::get('dev_ips');
-
-        if (empty($dev_ips)) {
-            return false;
-        }
-
-        return in_array(self::getRealIp($remote_address), $dev_ips, true);
+        return Config::isDev(self::getRealIp($remote_address));
     }
 
     /**
+     * The client address behind trusted proxies (config `trusted_proxies`; Cloudflare's
+     * CF-Connecting-IP only with the `cloudflare` keyword there).
+     *
      * @param string $remote_address
      * @return string
+     * @deprecated use Request::$clientIp
      */
     public static function getRealIp(string $remote_address): string
     {
-        if (self::isCloudFlare($remote_address)) {
-            return $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $remote_address;
-        }
-
-        return $remote_address;
+        return TrustedProxies::fromConfig()->clientIp($remote_address, Headers::fromServer($_SERVER));
     }
 
     /**
@@ -375,64 +366,6 @@ final class Utils
      */
     public static function isCloudFlare(string $remote_address): bool
     {
-        $cf_ranges = [
-            '173.245.48.0/20',
-            '103.21.244.0/22',
-            '103.22.200.0/22',
-            '103.31.4.0/22',
-            '141.101.64.0/18',
-            '108.162.192.0/18',
-            '190.93.240.0/20',
-            '188.114.96.0/20',
-            '197.234.240.0/22',
-            '198.41.128.0/17',
-            '162.158.0.0/15',
-            '104.16.0.0/13',
-            '104.24.0.0/14',
-            '172.64.0.0/13',
-            '131.0.72.0/22',
-            '2400:cb00::/32',
-            '2606:4700::/32',
-            '2803:f800::/32',
-            '2405:b500::/32',
-            '2405:8100::/32',
-            '2a06:98c0::/29',
-            '2c0f:f248::/32',
-        ];
-
-        return array_any($cf_ranges, static fn ($range) => self::inRange($remote_address, $range));
-    }
-
-    /**
-     * @param string $address
-     * @param string $range
-     *
-     * @return bool
-     *
-     * @psalm-pure
-     */
-    private static function inRange(string $address, string $range): bool
-    {
-        if (! str_contains($range, '/')) {
-            $range .= '/32';
-        }
-
-        [$range, $netmask] = explode('/', $range, 2);
-        $netmask = (int)$netmask;
-
-        $range_bin = inet_pton($range);
-        $ip_bin = inet_pton($address);
-
-        if ($range_bin === false || $ip_bin === false) {
-            return false;
-        }
-
-        $range_bits = unpack('H*', $range_bin)[1];
-        $ip_bits = unpack('H*', $ip_bin)[1];
-
-        $range_bits = str_pad(base_convert($range_bits, 16, 2), strlen($range_bin) * 8, '0', STR_PAD_LEFT);
-        $ip_bits = str_pad(base_convert($ip_bits, 16, 2), strlen($ip_bin) * 8, '0', STR_PAD_LEFT);
-
-        return str_starts_with($range_bits, substr($ip_bits, 0, $netmask));
+        return IpRange::matchesAny($remote_address, TrustedProxies::CLOUDFLARE);
     }
 }

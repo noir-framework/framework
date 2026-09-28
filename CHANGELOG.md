@@ -2,6 +2,24 @@
 
 ## 2.0.0 (unreleased)
 
+- **Trusted proxies.** `X-Forwarded-For/-Proto/-Host` and Cloudflare's `CF-Connecting-IP` are
+  only believed from peers listed in the new `trusted_proxies` config (`cloudflare` expands to
+  Cloudflare's ranges). **Breaking:** Cloudflare used to be trusted implicitly; apps behind it
+  need `trusted_proxies: [cloudflare]` to keep getting the visitor's address.
+- `Request::$clientIp`, and `Request::$https` / `$hostname` resolved through the trusted
+  proxies. HTTPS detection fixes: `HTTPS=off` is no longer HTTPS, `SERVER_PORT` `'443'` (a
+  string) is. Cookies get their `secure` flag from this, so it survives a TLS-terminating proxy.
+- `Config::isDev(?string $clientIp)` is the only dev-mode check (`dev: true`, or the client in
+  `dev_ips`, which now also takes CIDR ranges). **Fix:** `dev: false` used to switch dev mode on
+  in controllers. `Utils::isDev()` / `Utils::getRealIp()` are deprecated.
+- **Breaking:** `Request::$uri` is no longer URL-decoded. The path is decoded once, in `Route`,
+  before dispatching (it used to be decoded twice, so `%2520` reached routes as a space).
+- Request helpers: `input()`, `query()`, `has()`, typed `string()`, `int()`, `float()`,
+  `bool()`, `enum()`, `array()`, `json()` / `body()`, `header()`, `isJson()`, `accepts()`,
+  `wantsJson()`, `isMethod()`, `isSecure()`, `baseUrl()`. `CONTENT_TYPE` and `CONTENT_LENGTH`
+  are now in `$request->headers`.
+- `Request::fromSwoole()` works again (it read upper-case keys from Swoole's lower-case server
+  array); `swoole.php` passes the raw body.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 
