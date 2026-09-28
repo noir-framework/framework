@@ -33,7 +33,7 @@
         "nikic/fast-route": "^1.3",
         "nikic/php-parser": "^5.0",
         "noirapi/database": "^5.0",
-        "php-curl-class/php-curl-class": "^9.1 || ^10.0 || ^11.0",
+        "php-curl-class/php-curl-class": "^9.1 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
         "robthree/twofactorauth": "^2.0 || ^3.0",
         "symfony/mailer": "^7.0 || ^8.0",
         "tracy/tracy": "^2.10"
