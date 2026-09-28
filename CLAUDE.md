@@ -13,7 +13,7 @@ Consequences:
 - Never hard-code paths. App paths come from `Config::getRoot()` and its helpers (`getTemp()`, `getViews()`, …), framework files from `Config::getFrameworkDir()`. Root resolution order: explicit `Config::setRoot()` (done by the Kernel) → `NOIRAPI_ROOT` env → submodule parent containing `app/` → root of the Composer install that contains `noirapi/framework` (not `InstalledVersions::getRootPackage()`, which can be Rector's bundled vendor).
 - The framework calls into app classes that may not exist, always behind `class_exists` guards: `App\Route` (required: `process($method, $uri)` returning a FastRoute dispatch result), `App\Models\<ControllerName>`, `App\Lib\Config::validate()`, `App\Lib\Macros`, `App\Lib\ErrorHandler::handle()`, `App\Controllers\Errors::e404()/e405()/e500()`, `App\App::run()` (CLI), `App\Tasks\*` (Swoole). Static analysers can't see them, hence the `@psalm-suppress UndefinedClass` / `@noinspection` annotations.
 - `kernel.php` and `Lib/Kernel.php` differ only by case. That's why the class lives in `Lib/`: a root-level `Kernel.php` would clash on case-insensitive filesystems.
-- The apps' `composer phpmd` scans `noirapi/`, including `Rector/` and `tests/`, with the default suffixes (so `.inc` too). Keep new code phpmd-clean and parseable by pdepend: use `(new Foo())->bar()`, not PHP 8.4's `new Foo()->bar()`, in files phpmd sees.
+- The apps' `composer phpmd` scans `noirapi/`, including `Rector/` and `tests/`, with the default suffixes (so `.inc` too). Keep code clean under `composer phpmd` (PHPMD 3.x-dev, `phpmd.xml`), which CI runs. PHPMD 3 parses PHP 8.4 syntax (property hooks, `new Foo()->bar()`). Apps still on the PHPMD 2.15 phar (qb's `tools/phpmd.phar`) can't parse hooked files such as `Lib/Controller.php` and `Lib/Model.php`. Fix findings instead of excluding files. When a name is fixed by public API or an interface (`Model::$db`, `Controller::ok()`, `gc()`), use a targeted `@SuppressWarnings("PHPMD.Rule")` with the reason.
 
 ## Commands
 
@@ -21,7 +21,9 @@ In this repo:
 
 ```bash
 composer install
-composer test                                        # PHPUnit: Config root detection + Rector fixtures
+composer test                                        # PHPUnit: Config root detection, lazy DB connections, Rector fixtures
+composer phpmd                                       # PHPMD 3 with phpmd.xml (CI gate)
+composer phpcs                                       # PSR-12, phpcs 4 (CI gate)
 vendor/bin/phpunit --filter LegacyEntryPointRectorTest
 ```
 
@@ -38,7 +40,7 @@ php noirapi/bin/latte-check.php [--strict] [--no-controller-check]
 
 `bin/noirapi` only sets `NOIRAPI_ROOT` (from `COMPOSER_RUNTIME_BIN_DIR` or the cwd) and execs the per-tool scripts, which fall back to `dirname(__DIR__, 2)` for the submodule layout. The dev server writes its pid to `temp/` and logs to `logs/`, and reads optional `<root>/dev-server.ini` settings. `PHP_CLI_SERVER_WORKERS` defaults to 4.
 
-No phpstan/psalm/phpcs config lives here yet. The app gates (e.g. `../qb`: `composer lint`) use `php ../qb/tools/phpmd.phar <files> text ../qb/phpmd.xml` and `../qb/vendor/bin/phpcs --standard=../qb/phpcs.xml <files>`. qb's phpstan autoloads qb's own (older) `noirapi/` submodule, so it reports false "undefined method" errors for new framework APIs.
+`phpmd.xml` mirrors the shared ruleset in `../phpmd-ruleset` (`noirapi/phpmd-ruleset`); keep the two in sync. PHPMD reads `pdepend.yml.dist` from the working directory, which switches pdepend to its memory cache: the default `~/.pdepend` file cache can report findings from a file's old content. No phpstan/psalm config lives here yet. The app gates (e.g. `../qb`: `composer lint`) use `php ../qb/tools/phpmd.phar <files> text ../qb/phpmd.xml` (PHPMD 2.15) and `../qb/vendor/bin/phpcs --standard=../qb/phpcs.xml <files>`. qb's phpstan autoloads qb's own (older) `noirapi/` submodule, so it reports false "undefined method" errors for new framework APIs.
 
 ## Request lifecycle
 
@@ -65,8 +67,9 @@ The non-PHP migration steps (composer.json, submodule removal, tool configs) are
 
 - **Controller** (`Lib/Controller.php`): `$this->model` is resolved lazily through a PHP 8.4 property hook to `App\Models\<ShortControllerName>` (or a bare `Model`) on the first configured DB driver. `#[LazyModel]` is deprecated. Dev-mode Tracy panels (PDO, route) are attached in `__destruct`. `forward()` auto-prefixes the current language.
 - **Attributes** on actions: `#[AutoWire('modelMethod')]` / `#[AutoWire([Class, 'method'])]` resolve typed, non-builtin parameters from same-named route args (a `_id` suffix is stripped; backed enums use `tryFrom`). When the result is null for a non-nullable parameter, it redirects back with a flash message, customizable via `#[NotFound]`.
-- **Model**: connections are pooled per driver per request (`getNewInstance()` forces a new one). SQLite relative DSNs resolve under `<root>/data/`.
+- **Model**: `$db` is a property hook, so the PDO opens on first use of `$db`, not in the constructor. `connect()` and `getNewInstance()` still connect right away. Connections are pooled per driver per request (`getNewInstance()` forces a new one). SQLite relative DSNs resolve under `<root>/data/`. The SQL session handlers also open their PDO lazily, because `Kernel::boot()` builds them on every request.
 - **View** (`Lib/View.php`): Latte 3 with `StrictParsing` + `StrictTypes`. Filters and tags come from `Lib/View/FilterExtension.php` and `Lib/View/Macros.php` (plus optional `App\Lib\Macros`). `__*.latte` files always resolve from `app/layouts/` (`LatteLoader`). `nocheck` is a real runtime passthrough filter that `latte-check` uses as a marker. Translation uses `EasyTranslator` when `languages` is configured, else `DummyTranslator`.
+- **ACL**: apps build a `Laminas\Permissions\Acl\Acl` themselves (usually in their base controller) and pass it to `Controller::hasResource()` / `isAllowed()`. `Lib/AclCache::remember($builder, $key, $sources)` serializes the built ACL to `temp/acl-cache/`. The cache is invalidated by source-file mtimes, which default to the file that defines the builder. An ACL that can't be serialized (closure assertions) is rebuilt on every request.
 - **Auth** (`Auth/`): `AuthManager` registers providers (Password, MagicLink, TOTP, OAuth GitHub/Google) implementing `Contracts/AuthProviderInterface`. `SudoMode` handles re-authentication. TOTP QR codes are rendered locally (bacon-qr-code; needs robthree/twofactorauth 2.x or 3.x).
 - Style: `declare(strict_types=1)`, `#[Override]`, typed class constants, readonly where possible.
 

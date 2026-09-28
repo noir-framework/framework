@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\LatteLint;
 
+use App\Lib\Macros as AppMacros;
 use Latte\Engine;
 use Latte\Essential\TranslatorExtension;
 use Latte\Loaders\StringLoader;
@@ -41,9 +42,9 @@ class EngineFactory
         // consuming app scaffolds it; the class_exists guard makes this safe at
         // runtime even though static analysis can't see the class yet.
         /** @noinspection PhpUndefinedClassInspection */
-        if (class_exists(\App\Lib\Macros::class)) {
+        if (class_exists(AppMacros::class)) {
             /** @noinspection PhpParamsInspection */
-            $engine->addExtension(new \App\Lib\Macros());
+            $engine->addExtension(new AppMacros());
         }
 
         // Latte's built-in semantic linter (validates filters, classes, functions, constants)
@@ -51,7 +52,7 @@ class EngineFactory
 
         // nocheck is a Latte compile-time modifier consumed by Passes; register as passthrough
         // so LinterExtension doesn't flag it as unknown (kept in sync with bin/latte-lint)
-        $engine->addFilter('nocheck', static fn (mixed $v): mixed => $v);
+        $engine->addFilter('nocheck', static fn (mixed $value): mixed => $value);
 
         // Our custom variable-usage tracker
         $engine->addExtension($collector);

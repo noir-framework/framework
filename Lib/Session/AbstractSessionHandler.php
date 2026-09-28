@@ -73,6 +73,8 @@ abstract class AbstractSessionHandler implements SessionHandlerInterface
 
     /**
      * @psalm-mutation-free
+     *
+     * @SuppressWarnings("PHPMD.ShortMethodName") name fixed by SessionHandlerInterface.
      */
     #[Override]
     public function gc(int $max_lifetime): int|false

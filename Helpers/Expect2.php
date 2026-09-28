@@ -11,8 +11,6 @@ namespace Noirapi\Helpers;
 
 use DateTimeZone;
 use Exception;
-use function is_callable;
-use function is_string;
 use Nette\Schema\Schema;
 use Noirapi\Helpers\Schema\Cidr;
 use Noirapi\Helpers\Schema\Date;
@@ -23,15 +21,19 @@ use Noirapi\Helpers\Schema\Json;
 use Noirapi\Helpers\Schema\Numeric;
 use Noirapi\Helpers\Schema\Recaptcha;
 use Noirapi\Helpers\Schema\Time;
-
 use Noirapi\Helpers\Schema\Url;
 use RuntimeException;
+
+use function is_callable;
+use function is_string;
 
 /**
  * @psalm-api
  * @SuppressWarnings("PHPMD.CouplingBetweenObjects") this is a static factory
  * facade over every Schema type (Port, Numeric, Domain, Cidr, Ip, etc.) -
  * referencing all of them is the entire point of this class.
+ * @SuppressWarnings("PHPMD.TooManyPublicMethods") one static factory per Schema type,
+ * like Nette's Expect; the method count tracks the number of types.
  */
 final class Expect2
 {
@@ -80,6 +82,8 @@ final class Expect2
      * @return Ip
      *
      * @psalm-pure
+     *
+     * @SuppressWarnings("PHPMD.ShortMethodName") public API named after the Ip type it builds.
      */
     public static function Ip(): Ip // phpcs:ignore
     {

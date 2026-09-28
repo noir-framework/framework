@@ -68,32 +68,53 @@ class TracyFileSession implements SessionStorage
      */
     private function open(): void
     {
-        $id = $_COOKIE[$this->cookieName] ?? null;
-        if (
-            ! is_string($id)
-            || ! preg_match('#^\w{10}\z#i', $id)
-            || ! ($file = @fopen($path = $this->sessionFilePath($id), 'r+b')) // intentionally @
-        ) {
+        $file = $this->openExisting($_COOKIE[$this->cookieName] ?? null);
+
+        if ($file === null) {
             $id = bin2hex(random_bytes(5));
             setcookie($this->cookieName, $id, time() + self::COOKIE_LIFETIME, '/', '', secure: false, httponly: true);
 
-            $file = @fopen($path = $this->sessionFilePath($id), 'c+b'); // intentionally @
+            $path = $this->sessionFilePath($id);
+            $file = fopen($path, 'c+b');
             if ($file === false) {
-                throw new RuntimeException("Unable to create file '$path'. " . error_get_last()['message']);
+                throw new RuntimeException("Unable to create file '$path'. " . (error_get_last()['message'] ?? ''));
             }
         }
 
-        if (! @flock($file, LOCK_EX)) { // intentionally @
-            throw new RuntimeException("Unable to acquire exclusive lock on '$path'. " . error_get_last()['message']);
+        if (! flock($file, LOCK_EX)) {
+            throw new RuntimeException('Unable to acquire exclusive lock on the Tracy session file.');
         }
 
         $this->file = $file;
-        $data = @unserialize(stream_get_contents($this->file), ['allowed_classes' => false]); // @ - file may be empty
-        $this->data = empty($data) ? [] : $data;
+        // Empty for a new session; unserialize('') is false without a warning
+        $data = unserialize((string)stream_get_contents($this->file), ['allowed_classes' => false]);
+        $this->data = is_array($data) ? $data : [];
 
         if (mt_rand() / mt_getrandmax() < $this->gcProbability) {
             $this->clean();
         }
+    }
+
+    /**
+     * Opens the session file named by the cookie, if the id is valid and the file exists.
+     *
+     * @param mixed $id
+     * @return resource|null
+     */
+    private function openExisting(mixed $id): mixed
+    {
+        if (! is_string($id) || preg_match('#^\w{10}\z#i', $id) !== 1) {
+            return null;
+        }
+
+        $path = $this->sessionFilePath($id);
+        if (! is_file($path)) {
+            return null;
+        }
+
+        $file = fopen($path, 'r+b');
+
+        return $file === false ? null : $file;
     }
 
 

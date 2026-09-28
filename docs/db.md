@@ -68,7 +68,7 @@ db:
 
 ## Model Class
 
-All application models extend `Noirapi\Lib\Model`. On construction the model connects to the configured database and exposes `$this->db` (a `Noirapi\Database\Database` instance).
+All application models extend `Noirapi\Lib\Model`. The model exposes `$this->db` (a `Noirapi\Database\Database` instance). Constructing a model doesn't connect: the connection opens the first time `$this->db` is used, so a request that never queries never touches the database. Connection errors (bad credentials, server down) therefore surface at the first query, not at `new Model()`.
 
 ```php
 namespace App\Models;
@@ -100,7 +100,7 @@ $model = new Articles('mysql', [
 
 ### Connection Pooling
 
-Connections are cached per-driver within the request lifecycle. Calling `new Articles()` twice returns the same underlying PDO connection.
+Connections are cached per-driver within the request lifecycle. Two models of the same driver share one PDO connection, opened when the first of them uses `$this->db`.
 
 ```php
 // Both share one PDO connection — safe and efficient
@@ -109,6 +109,9 @@ $b = new Articles();
 
 // Force a brand-new connection (e.g. after a fork or long-running CLI process)
 $model = Articles::getNewInstance();
+
+// Reconnect an existing model right away (e.g. after "MySQL server has gone away")
+$model->connect(true);
 ```
 
 ---

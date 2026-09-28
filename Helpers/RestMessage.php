@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Noirapi\Helpers;
 
-use function in_array;
 use InvalidArgumentException;
-
-use function is_string;
 use JsonException;
+
+use function in_array;
+use function is_string;
 
 /**
  * @property bool $ok
@@ -21,10 +21,10 @@ class RestMessage
 {
     private array $params = [];
 
-    public static function new(bool $ok, string|object|array $message, string|null $next, string|null $message_tag): self // phpcs:ignore
+    public static function new(bool $success, string|object|array $message, string|null $next, string|null $message_tag): self // phpcs:ignore
     {
         $static = new self();
-        $static->params['ok'] = $ok;
+        $static->params['ok'] = $success;
         $static->params['next'] = $next;
         $static->params['message_tag'] = $message_tag;
 

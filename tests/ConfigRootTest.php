@@ -26,7 +26,7 @@ final class ConfigRootTest extends TestCase
         self::assertSame(realpath(__DIR__) . '/app/views', Config::getViews());
     }
 
-    public function testEnvironmentVariableIsUsedWhenNothingIsPinned(): void
+    public function testEnvVariableIsUsedWhenUnpinned(): void
     {
         putenv('NOIRAPI_ROOT=' . __DIR__);
 

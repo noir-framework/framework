@@ -12,21 +12,21 @@ declare(strict_types=1);
 namespace Noirapi\Lib;
 
 use Exception;
-use function gettype;
-use function is_array;
-use function is_callable;
-use function is_float;
-use function is_int;
-use function is_object;
-
-use function is_resource;
-use function is_string;
 use JsonException;
 use LaLit\Array2XML;
 use Noirapi\Helpers\RestMessage;
 use RuntimeException;
 use SimpleXMLElement;
 use stdClass;
+
+use function gettype;
+use function is_array;
+use function is_callable;
+use function is_float;
+use function is_int;
+use function is_object;
+use function is_resource;
+use function is_string;
 
 /**
  * @psalm-api
@@ -555,42 +555,42 @@ class Response
         $csv = $this->csv_utf8_bom;
         $written = 0;
 
-        $fh = fopen('php://temp', 'rwb');
-        if ($fh === false) {
+        $buffer = fopen('php://temp', 'rwb');
+        if ($buffer === false) {
             throw new RuntimeException('Unable to open php://temp for CSV generation');
         }
 
         if ($this->csv_header) {
-            fputcsv($fh, array_keys(current((array)$data)), $this->csv_separator, $this->csv_enclosure, $this->csv_escape); //phpcs:ignore
+            fputcsv($buffer, array_keys(current((array)$data)), $this->csv_separator, $this->csv_enclosure, $this->csv_escape); //phpcs:ignore
         }
 
         foreach ($data as $key => $row) {
-            $w = fputcsv($fh, (array)$row, $this->csv_separator, $this->csv_enclosure, $this->csv_escape);
-            if ($w === false) {
+            $bytes = fputcsv($buffer, (array)$row, $this->csv_separator, $this->csv_enclosure, $this->csv_escape);
+            if ($bytes === false) {
                 $error = error_get_last();
 
                 throw new RuntimeException('fputcsv failed on key: ' . $key . ' with error: ' . ($error === null ? 'unknown' : $error['message'])); //phpcs:ignore
             }
-            $written += $w;
+            $written += $bytes;
             if ($written > $this->csv_maxmem) {
-                rewind($fh);
-                $csv .= stream_get_contents($fh);
+                rewind($buffer);
+                $csv .= stream_get_contents($buffer);
                 $written = 0;
-                ftruncate($fh, 0);
+                ftruncate($buffer, 0);
                 // Important to avoid memory leaks
-                rewind($fh);
+                rewind($buffer);
             }
         }
 
-        rewind($fh);
+        rewind($buffer);
 
-        $csv .= stream_get_contents($fh);
+        $csv .= stream_get_contents($buffer);
 
         if (empty($csv)) {
             throw new RuntimeException('no csv data found');
         }
 
-        fclose($fh);
+        fclose($buffer);
 
         return $csv;
     }

@@ -29,7 +29,7 @@ class Ip implements Schema
     private bool $required = false;
     private bool $nullable = false;
     private string $from = 'string';
-    private string $to = 'string';
+    private string $target = 'string';
 
     /**
      * @psalm-external-mutation-free
@@ -68,7 +68,7 @@ class Ip implements Schema
      */
     public function toBin(): self
     {
-        $this->to = 'bin';
+        $this->target = 'bin';
 
         return $this;
     }
@@ -78,7 +78,7 @@ class Ip implements Schema
      */
     public function toString(): self
     {
-        $this->to = 'string';
+        $this->target = 'string';
 
         return $this;
     }
@@ -88,7 +88,7 @@ class Ip implements Schema
      */
     public function toLong(): self
     {
-        $this->to = 'long';
+        $this->target = 'long';
 
         return $this;
     }
@@ -223,8 +223,8 @@ class Ip implements Schema
     }
 
     /**
-     * Converts the normalized $from ip-address string into $this->to's target
-     * format, adding a Context error and returning null on any failure.
+     * Converts the normalized $from ip-address string into the
+     * $this->target format, adding a Context error and returning null on any failure.
      *
      * @param string $from
      * @param Context $context
@@ -232,9 +232,9 @@ class Ip implements Schema
      */
     private function resolveTo(string $from, Context $context)
     {
-        switch ($this->to) {
+        switch ($this->target) {
             case 'string':
-                $to = $from;
+                $converted = $from;
 
                 break;
 
@@ -245,12 +245,12 @@ class Ip implements Schema
 
                     return null;
                 }
-                $to = ip2long($from);
+                $converted = ip2long($from);
 
                 break;
 
             case 'bin':
-                $to = inet_pton($from);
+                $converted = inet_pton($from);
 
                 break;
         }
@@ -259,14 +259,14 @@ class Ip implements Schema
          * @noinspection PhpUndefinedVariableInspection
          * @phpstan-ignore-next-line
          */
-        if (empty($to) && $to !== 0) {
+        if (empty($converted) && $converted !== 0) {
             /** @noinspection UnusedFunctionResultInspection */
             $context->addError('The option %path% unable to produce valid ip address', Message::TypeMismatch);
 
             return null;
         }
 
-        return is_string($to) || is_int($to) ? $to : null;
+        return is_string($converted) || is_int($converted) ? $converted : null;
     }
 
     /**

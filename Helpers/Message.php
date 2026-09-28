@@ -17,10 +17,10 @@ class Message
      * @psalm-mutation-free
      */
     public function __construct(
-        public string      $message = '',
+        public string $message = '',
         public MessageType $type = MessageType::Info,
-        public int         $timeout_ms = 5000,
-        public bool        $html = false,
+        public int $timeout_ms = 5000,
+        public bool $html = false,
     ) {
     }
 
@@ -47,10 +47,10 @@ class Message
      * @psalm-suppress ImpureMethodCall self::new() is intentionally left without a
      * purity annotation - see the @psalm-suppress note on its declaration.
      */
-    public static function fromSchema(ValidationException $e, ?string $type = null): self
+    public static function fromSchema(ValidationException $exception, ?string $type = null): self
     {
 
-        return self::new(SchemaHelper::message($e), $type);
+        return self::new(SchemaHelper::message($exception), $type);
     }
 
 

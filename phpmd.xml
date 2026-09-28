@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="NoirAPI"
+         xmlns="http://pmd.sf.net/ruleset/1.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd">
+    <description>NoirAPI mess detection. The apps scan noirapi/ with their own rulesets, so keep this at least as strict as theirs.</description>
+
+    <rule ref="rulesets/codesize.xml" />
+    <rule ref="rulesets/unusedcode.xml" />
+    <rule ref="rulesets/design.xml" />
+
+    <!-- cleancode: only the rules that catch real bugs. StaticAccess, ElseExpression and
+         BooleanArgumentFlag are style opinions; UndefinedVariable misreads static properties. -->
+    <rule ref="rulesets/cleancode.xml/ErrorControlOperator" />
+    <rule ref="rulesets/cleancode.xml/IfStatementAssignment" />
+    <rule ref="rulesets/cleancode.xml/MissingImport" />
+
+    <rule ref="rulesets/naming.xml">
+        <exclude name="ShortVariable" />
+    </rule>
+    <rule ref="rulesets/naming.xml/ShortVariable">
+        <properties>
+            <!-- $id: the standard entity/route-param identifier -->
+            <property name="exceptions" value="id" />
+        </properties>
+    </rule>
+</ruleset>

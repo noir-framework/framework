@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\PDO;
 
-use function is_array;
-use function is_string;
 use Override;
-
 use PDOStatement as NativePdoStatement;
 use RuntimeException;
+
+use function is_array;
+use function is_string;
 
 /**
  * @psalm-suppress MissingTemplateParam

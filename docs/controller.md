@@ -282,6 +282,28 @@ public function __construct(...)
 }
 ```
 
+### Caching the ACL
+
+Building the ACL (roles, resources, rules) on every request is wasted work when it never changes. Wrap the builder in `AclCache::remember()`:
+
+```php
+use Noirapi\Lib\AclCache;
+
+$this->acl = AclCache::remember(static function (): Acl {
+    $acl = new Acl();
+    $acl->addRole(new GenericRole('guest'));
+    $acl->addResource(new GenericResource(Index::class));
+    $acl->allow('guest', Index::class);
+
+    return $acl;
+});
+$this->request->role = $this->user->role ?? 'guest';
+```
+
+- **Where it's stored:** the built ACL is serialized to `temp/acl-cache/` and reused until the file that defines the builder changes. Pass `sources: [...]` to watch other files too, and a `key` if the app keeps more than one ACL.
+- **What the builder may contain:** only roles, resources and rules. Keep per-user state (the current role, the user) outside it.
+- **Assertions:** an ACL with closure assertions can't be serialized, so it's rebuilt on every request. Use assertion classes to keep it cacheable.
+
 ---
 
 ## Action Lifecycle

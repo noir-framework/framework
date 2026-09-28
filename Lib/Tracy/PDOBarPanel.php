@@ -108,7 +108,6 @@ class PDOBarPanel implements IBarPanel
                 $html .= ' / ' . $this->getTotalTime($idx) . ' ms';
                 $html .= "<i class='bi bi-three-dots-vertical  mx-1'></i>";
             }
-
         }
 
         return $html;
