@@ -11,6 +11,7 @@ use Nette\Schema\Message;
 use Nette\Schema\Schema;
 use Override;
 
+use function is_int;
 use function is_string;
 
 /** @psalm-api  */
@@ -90,9 +91,9 @@ class Numeric implements Schema
             return null;
         }
 
-        if (is_string($value) && ! preg_match('/\d+/', $value)) {
+        if (! self::isWholeNumber($value)) {
             /** @noinspection UnusedFunctionResultInspection */
-            $context->addError('The mandatory option %path% is string but not number.', Message::PatternMismatch);
+            $context->addError('The option %path% is not a whole number.', Message::PatternMismatch);
 
             return null;
         }
@@ -162,5 +163,15 @@ class Numeric implements Schema
 
         return ($range[0] === null || $value >= $range[0])
             && ($range[1] === null || $value <= $range[1]);
+    }
+
+    /**
+     * An int, or a string of digits with an optional minus sign.
+     *
+     * @psalm-pure
+     */
+    private static function isWholeNumber(mixed $value): bool
+    {
+        return is_int($value) || (is_string($value) && preg_match('/^\s*-?\d+\s*$/', $value) === 1);
     }
 }

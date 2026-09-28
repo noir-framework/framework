@@ -9,6 +9,7 @@ namespace Noirapi\Helpers\Schema;
 use Nette\Schema\Context;
 use Nette\Schema\Message;
 use Nette\Schema\Schema;
+use Noirapi\Lib\Http\IpRange;
 use Override;
 
 /** @psalm-api  */
@@ -67,33 +68,44 @@ class Cidr implements Schema
         }
 
         if ($this->multiple) {
-            $parsed = preg_split('/(\r\n|\n|\r)/', $value);
-            $cidrs = [];
-
-            foreach ($parsed as $cidr) {
-                if (empty(trim($cidr))) {
-                    continue;
-                }
-                if (! $this->validateCidr($cidr)) {
-                    /** @noinspection UnusedFunctionResultInspection */
-                    $context->addError("Value: ($cidr) is not valid ipv4 or ipv6 cidr", Message::TypeMismatch);
-
-                    return null;
-                }
-                $cidrs[] = $cidr;
-            }
-
-            return $cidrs;
+            return $this->normalizeMultiple($value, $context);
         }
 
-        if ($this->validateCidr($value)) {
+        if (! is_string($value) || ! $this->validateCidr(trim($value))) {
             /** @noinspection UnusedFunctionResultInspection */
-            $context->addError("Value: ($value) is not valid ipv4 or ipv6 cidr", Message::TypeMismatch);
+            $context->addError('Value: (' . (is_scalar($value) ? $value : get_debug_type($value)) . ') is not valid ipv4 or ipv6 cidr', Message::TypeMismatch); //phpcs:ignore
 
             return null;
         }
 
-        return $value;
+        return trim($value);
+    }
+
+    /**
+     * One CIDR per line; blank lines are skipped.
+     *
+     * @return list<string>|null
+     */
+    private function normalizeMultiple(mixed $value, Context $context): ?array
+    {
+        $parsed = preg_split('/(\r\n|\n|\r)/', is_string($value) ? $value : '') ?: [];
+        $cidrs = [];
+
+        foreach ($parsed as $cidr) {
+            if (empty(trim($cidr))) {
+                continue;
+            }
+            $cidr = trim($cidr);
+            if (! $this->validateCidr($cidr)) {
+                /** @noinspection UnusedFunctionResultInspection */
+                $context->addError("Value: ($cidr) is not valid ipv4 or ipv6 cidr", Message::TypeMismatch);
+
+                return null;
+            }
+            $cidrs[] = $cidr;
+        }
+
+        return $cidrs;
     }
 
     /**
@@ -149,21 +161,7 @@ class Cidr implements Schema
      */
     private function validateCidr(string $cidr): bool
     {
-
-        [$address, $netmask] = explode('/', $cidr);
-
-        if ($netmask < 0) {
-            return false;
-        }
-
-        if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            return $netmask <= 32;
-        }
-
-        if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
-            return $netmask <= 128;
-        }
-
-        return false;
+        // address/prefix, with a prefix length valid for the address family
+        return str_contains($cidr, '/') && IpRange::contains(explode('/', $cidr, 2)[0], $cidr);
     }
 }

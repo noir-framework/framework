@@ -145,11 +145,12 @@ security_headers:
 ```
 
 With a nonce in the policy, views get `$nonce` automatically (unless the app passes its own),
-and inline scripts and styles need the `{nonce}` tag:
+and inline scripts and styles need the `{nonce}` tag, which prints `nonce="…"` (nothing without
+a nonce):
 
 ```latte
-<script{nonce}>initPage();</script>
-<style{nonce}>.x { color: red }</style>
+<script {nonce}>initPage();</script>
+<style {nonce}>.x { color: red }</style>
 ```
 
 `{topJs}`, `{bottomJs}`, `{topCss}` and `{bottomCss}` add the nonce themselves. Tracy's bar
