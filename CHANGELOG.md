@@ -76,7 +76,7 @@
     non-ASCII names no longer break the header.
   - **Breaking:** `{nonce}` prints `nonce="…"` (escaped) without a leading space, and is written
     `<script {nonce}>`; Latte 3 rejects `<script{nonce}>`.
-- CI runs PHPStan (level 5) and Psalm 7 (level 4) with stubs for the optional `App\\*` classes,
+- CI runs PHPStan (level 5) and Psalm 7 (level 4) with stubs for the optional `App\*` classes,
   and reports test coverage. Purity annotations were corrected where they were wrong (interfaces
   and abstract methods whose implementations do I/O) and added where Psalm 7 requires them.
 - **Fix:** `Controller::restMessage()` always threw (it passed `ok:` to `RestMessage::new()`,
