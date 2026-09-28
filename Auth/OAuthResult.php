@@ -16,14 +16,14 @@ class OAuthResult extends AuthResult
      * @psalm-mutation-free
      */
     public function __construct(
-        public string  $provider,
-        public string  $providerUserId,
+        public string $provider,
+        public string $providerUserId,
         public ?string $accessToken = null,
         public ?string $refreshToken = null,
-        public ?int    $tokenExpiresAt = null,
-        ?string        $email = null,
-        ?string        $name = null,
-        ?string        $avatarUrl = null,
+        public ?int $tokenExpiresAt = null,
+        ?string $email = null,
+        ?string $name = null,
+        ?string $avatarUrl = null,
     ) {
         parent::__construct(
             method: AuthMethod::OAuth,

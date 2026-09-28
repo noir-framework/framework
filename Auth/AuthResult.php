@@ -19,9 +19,10 @@ class AuthResult
      * @psalm-mutation-free
      */
     public function __construct(
-        public ?AuthMethod $method    = null,
-        public ?string     $email     = null,
-        public ?string     $name      = null,
-        public ?string     $avatarUrl = null,
-    ) {}
+        public ?AuthMethod $method = null,
+        public ?string $email = null,
+        public ?string $name = null,
+        public ?string $avatarUrl = null,
+    ) {
+    }
 }

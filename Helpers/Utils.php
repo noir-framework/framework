@@ -6,26 +6,26 @@ declare(strict_types=1);
 
 namespace Noirapi\Helpers;
 
-use function array_key_exists;
-use function array_slice;
-use function bin2hex;
-use function chr;
-use function count;
-use function defined;
 use Exception;
-use function is_array;
-
-use function is_object;
 use Noirapi\Config;
-use function ord;
-use function proc_close;
-use function proc_open;
 use Random\Randomizer;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use RuntimeException;
 use stdClass;
+
+use function array_key_exists;
+use function array_slice;
+use function bin2hex;
+use function chr;
+use function count;
+use function defined;
+use function is_array;
+use function is_object;
+use function ord;
+use function proc_close;
+use function proc_open;
 use function str_split;
 use function strlen;
 use function vsprintf;
@@ -277,8 +277,8 @@ final class Utils
     }
 
     /**
-     * @param array $a1
-     * @param array $a2
+     * @param array $left
+     * @param array $right
      *
      * @return array
      *
@@ -286,26 +286,26 @@ final class Utils
      *
      * @psalm-pure
      */
-    public static function array_diff_recursive(array $a1, array $a2): array // phpcs:ignore
+    public static function array_diff_recursive(array $left, array $right): array // phpcs:ignore
     {
-        $r = [];
+        $diff = [];
 
-        foreach ($a1 as $k => $v) {
-            if (array_key_exists($k, $a2)) {
+        foreach ($left as $k => $v) {
+            if (array_key_exists($k, $right)) {
                 if (is_array($v)) {
-                    $rad = self::array_diff_recursive($v, $a2[$k]);
+                    $rad = self::array_diff_recursive($v, $right[$k]);
                     if (count($rad) > 0) {
-                        $r[$k] = $rad;
+                        $diff[$k] = $rad;
                     }
-                } elseif ($v != $a2[$k]) {
-                    $r[$k] = $v;
+                } elseif ($v != $right[$k]) {
+                    $diff[$k] = $v;
                 }
             } else {
-                $r[$k] = $v;
+                $diff[$k] = $v;
             }
         }
 
-        return $r;
+        return $diff;
     }
 
     /**
@@ -404,14 +404,14 @@ final class Utils
     }
 
     /**
-     * @param string $ip
+     * @param string $address
      * @param string $range
      *
      * @return bool
      *
      * @psalm-pure
      */
-    private static function inRange(string $ip, string $range): bool
+    private static function inRange(string $address, string $range): bool
     {
         if (! str_contains($range, '/')) {
             $range .= '/32';
@@ -421,7 +421,7 @@ final class Utils
         $netmask = (int)$netmask;
 
         $range_bin = inet_pton($range);
-        $ip_bin = inet_pton($ip);
+        $ip_bin = inet_pton($address);
 
         if ($range_bin === false || $ip_bin === false) {
             return false;

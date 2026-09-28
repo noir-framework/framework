@@ -19,7 +19,7 @@ use RuntimeException;
  */
 class MemcachedSessionHandler extends AbstractSessionHandler
 {
-    private Memcached $mc;
+    private Memcached $memcached;
     private string $prefix;
     private int $ttl;
 
@@ -30,8 +30,8 @@ class MemcachedSessionHandler extends AbstractSessionHandler
         }
 
         [$host, $port] = explode(':', $hostPort) + ['localhost', '11211'];
-        $this->mc = new Memcached();
-        $this->mc->addServer($host, (int)$port);
+        $this->memcached = new Memcached();
+        $this->memcached->addServer($host, (int)$port);
         $this->prefix = $prefix;
         $this->ttl = $ttl > 0 ? $ttl : (int)ini_get('session.gc_maxlifetime');
     }
@@ -42,7 +42,7 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     #[Override]
     protected function doRead(string $id): ?string
     {
-        $val = $this->mc->get($this->prefix . $id);
+        $val = $this->memcached->get($this->prefix . $id);
 
         return $val !== false ? (string)$val : null;
     }
@@ -53,7 +53,7 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     #[Override]
     protected function doWrite(string $id, string $data): bool
     {
-        return $this->mc->set($this->prefix . $id, $data, $this->ttl);
+        return $this->memcached->set($this->prefix . $id, $data, $this->ttl);
     }
 
     /**
@@ -62,7 +62,7 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     #[Override]
     protected function doDestroy(string $id): bool
     {
-        $this->mc->delete($this->prefix . $id);
+        $this->memcached->delete($this->prefix . $id);
 
         return true;
     }

@@ -10,6 +10,9 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib;
 
+use App\Controllers\Errors as AppErrors;
+use App\Lib\ErrorHandler as AppErrorHandler;
+use App\Route as AppRoute;
 use BackedEnum;
 use FastRoute\Dispatcher;
 use Noirapi\Config;
@@ -30,8 +33,8 @@ use Swoole\Http\Server;
 use Throwable;
 use Tracy\Debugger;
 use Tracy\ILogger;
-
 use ReflectionNamedType;
+
 use function in_array;
 use function strlen;
 
@@ -115,7 +118,7 @@ class Route
 
         $this->response = new Response();
 
-        $route = new \App\Route();
+        $route = new AppRoute();
 
         $pos = strpos($this->request->uri, '?');
         $uri = $pos !== false ? substr($this->request->uri, 0, $pos) : $this->request->uri;
@@ -222,9 +225,9 @@ class Route
         $detected = null;
         $detector = Config::get('language_detector');
         if ($detector !== null && class_exists($detector)) {
-            $ip = $this->server['HTTP_X_FORWARDED_FOR'] ?? $this->server['REMOTE_ADDR'] ?? '';
-            $ip = explode(',', $ip)[0];
-            $detected = new $detector()->detect(trim($ip));
+            $address = $this->server['HTTP_X_FORWARDED_FOR'] ?? $this->server['REMOTE_ADDR'] ?? '';
+            $address = explode(',', $address)[0];
+            $detected = new $detector()->detect(trim($address));
             if (! isset($languages[$detected])) {
                 $detected = null;
             }
@@ -424,10 +427,10 @@ class Route
 
         /** @psalm-suppress UndefinedClass */
         /** @noinspection PhpFullyQualifiedNameUsageInspection */
-        if (class_exists(\App\Lib\ErrorHandler::class)) {
+        if (class_exists(AppErrorHandler::class)) {
             try {
                 /** @noinspection PhpFullyQualifiedNameUsageInspection */
-                return \App\Lib\ErrorHandler::handle($status_code, $defaultText, $instance);
+                return AppErrorHandler::handle($status_code, $defaultText, $instance);
             } catch (Throwable $e) {
                 Debugger::log($e, ILogger::EXCEPTION);
             }
@@ -436,14 +439,14 @@ class Route
 
             /** @psalm-suppress UndefinedClass */
             /** @noinspection PhpFullyQualifiedNameUsageInspection */
-            if (class_exists(\App\Controllers\Errors::class) && method_exists(\App\Controllers\Errors::class, $function)) { // phpcs:ignore
+            if (class_exists(AppErrors::class) && method_exists(AppErrors::class, $function)) { // phpcs:ignore
                 $instance->request->controller = 'Errors';
                 $instance->request->function = $function;
 
                 try {
                     /** @noinspection PhpFullyQualifiedNameUsageInspection */
                     /** @noinspection PhpParenthesesCanBeOmittedForNewCallInspection */
-                    return (new \App\Controllers\Errors($instance->request, $instance->response, $instance->server))->$function(); // phpcs:ignore
+                    return (new AppErrors($instance->request, $instance->response, $instance->server))->$function(); // phpcs:ignore
                 } catch (LoginException $e) {
                     $response = new Response();
                     if ($e->getCode() === 301) {

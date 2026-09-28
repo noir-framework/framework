@@ -32,14 +32,16 @@ class AuthManager
     /** @var array<string, AuthProviderInterface> */
     private array $providers = [];
 
-    private ?PasswordProvider  $passwordProvider = null;
+    private ?PasswordProvider $passwordProvider = null;
     private ?MagicLinkProvider $magicLinkProvider = null;
     private ?TotpProvider $totpProvider = null;
 
     /**
      * @psalm-mutation-free
      */
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     /* ── OAuth provider registry ─────────────────────────────── */
 
@@ -183,8 +185,8 @@ class AuthManager
      * @noinspection PhpUnused
      */
     public static function fromConfig(
-        array  $config,
-        array  $mailConfig = [],
+        array $config,
+        array $mailConfig = [],
         string $appUrl = '',
     ): self {
         $manager = new self();

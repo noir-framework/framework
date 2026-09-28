@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib;
 
-use function count;
+use App\Lib\Macros as AppMacros;
 use Latte\Bridges\Tracy\TracyExtension;
 use Latte\Engine;
 use Latte\Essential\TranslatorExtension;
@@ -22,6 +22,8 @@ use Noirapi\Lib\View\Layout;
 use Noirapi\Lib\View\Macros;
 use RuntimeException;
 use stdClass;
+
+use function count;
 
 /**
  * @SuppressWarnings("PHPMD.CouplingBetweenObjects") coordinates the Latte
@@ -83,12 +85,12 @@ class View
          * @noinspection RedundantSuppression
          * @noinspection PhpUndefinedNamespaceInspection
          */
-        if (class_exists(\App\Lib\Macros::class)) {
+        if (class_exists(AppMacros::class)) {
             /**
              * @noinspection PhpParamsInspection
              * @noinspection RedundantSuppression
              */
-            $this->latte->addExtension(new \App\Lib\Macros());
+            $this->latte->addExtension(new AppMacros());
         }
 
         $languages = Config::get('languages') ?? [];
@@ -136,8 +138,8 @@ class View
     {
 
         if ($this->dev) {
-            $bt = debug_backtrace();
-            $this->setFromBackTrace($bt);
+            $trace = debug_backtrace();
+            $this->setFromBackTrace($trace);
         }
 
         if ($this->template === null) {
@@ -194,8 +196,8 @@ class View
     {
 
         if ($this->dev) {
-            $bt = debug_backtrace();
-            $this->setFromBackTrace($bt);
+            $trace = debug_backtrace();
+            $this->setFromBackTrace($trace);
         }
 
         $this->setTemplate($view);
@@ -427,13 +429,13 @@ class View
     }
 
     /**
-     * @param array $bt
+     * @param array $trace
      * @return void
      */
-    private function setFromBackTrace(array $bt): void
+    private function setFromBackTrace(array $trace): void
     {
 
-        $caller = array_shift($bt);
+        $caller = array_shift($trace);
 
         $this->response->initiator_class = $caller['class'] ?? null;
         $this->response->initiator_method = $caller['function'] ?? null;

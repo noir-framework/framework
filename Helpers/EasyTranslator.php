@@ -8,8 +8,8 @@ use Nette\Neon\Exception;
 use Nette\Neon\Neon;
 use Noirapi\Config;
 use Noirapi\Interfaces\Translator;
-
 use Override;
+
 use function array_map;
 use function is_string;
 use function sprintf;

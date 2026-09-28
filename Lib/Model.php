@@ -21,7 +21,17 @@ use RuntimeException;
 class Model
 {
     public string $driver;
-    public Database $db;
+    /**
+     * Opened on first access, so constructing a model never touches the database
+     * by itself. Uses the per-driver pooled connection; see connect().
+     *
+     * @SuppressWarnings("PHPMD.ShortVariable") public API every app model uses as $this->db.
+     */
+    //phpcs:disable
+    public Database $db {
+        get => $this->db ??= $this->openDatabase(false);
+    }
+    //phpcs:enable
     /** @var PDO[] */
     protected static array $pdo = [];
     private array $params;
@@ -32,19 +42,25 @@ class Model
      */
     public function __construct(?string $driver = null, array $params = [])
     {
-        $db = Config::get('db');
+        $drivers = Config::get('db');
         if ($driver === null) {
-            $this->driver = array_key_first($db);
+            $this->driver = array_key_first($drivers);
         } else {
             $this->driver = $driver;
         }
 
         if (empty($params)) {
-            $this->params = $db[$this->driver];
+            $this->params = $drivers[$this->driver];
         } else {
             $this->params = $params;
         }
-        $this->connect(false);
+
+        if (
+            str_starts_with($this->driver, 'sqlite') && (! str_starts_with($this->params['dsn'], '/') &&
+                ! str_contains($this->params['dsn'], 'memory'))
+        ) {
+            $this->params['dsn'] = Config::getRoot() . '/data/' . $this->params['dsn'];
+        }
     }
 
     /**
@@ -68,18 +84,24 @@ class Model
     }
 
     /**
+     * Connects right away instead of on first use of $db. With $new = true it opens
+     * a dedicated connection (e.g. to reconnect after the server went away);
+     * otherwise it (re)attaches to the pooled one for this driver.
+     *
      * @param bool $new
      * @return void
      */
     public function connect(bool $new): void
     {
-        if (
-            str_starts_with($this->driver, 'sqlite') && (! str_starts_with($this->params['dsn'], '/') &&
-                ! str_contains($this->params['dsn'], 'memory'))
-        ) {
-            $this->params['dsn'] = Config::getRoot() . '/data/' . $this->params['dsn'];
-        }
+        $this->db = $this->openDatabase($new);
+    }
 
+    /**
+     * @param bool $new
+     * @return Database
+     */
+    private function openDatabase(bool $new): Database
+    {
         if ($new) {
             $pdo = $this->newPdo();
             $idx = count(self::$pdo) + 1;
@@ -91,7 +113,7 @@ class Model
             $pdo = self::$pdo[$this->driver];
         }
 
-        $this->db = new Database(Connection::fromPDO($pdo));
+        return new Database(Connection::fromPDO($pdo));
     }
 
     /**

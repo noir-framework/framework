@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @noinspection PhpUndefinedClassInspection
  * @noinspection PhpUnused
@@ -183,7 +184,7 @@ class FilterExtension extends Extension
         $ref = new ReflectionClass($class);
         $methods = array_filter(
             $ref->getMethods(),
-            static fn ($m) => $m->getDeclaringClass()->getName() === $class && $m->isPublic() && $m->isStatic()
+            static fn ($method) => $method->getDeclaringClass()->getName() === $class && $method->isPublic() && $method->isStatic()
         );
 
         $res = [];

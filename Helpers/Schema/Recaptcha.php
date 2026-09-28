@@ -25,7 +25,7 @@ class Recaptcha implements Schema
     private bool $nullable = false;
 
     private string $secret;
-    private string $ip;
+    private string $address;
 
     /**
      * @param bool $state
@@ -74,11 +74,13 @@ class Recaptcha implements Schema
 
     /**
      * @psalm-external-mutation-free
+     *
+     * @SuppressWarnings("PHPMD.ShortMethodName") public API the apps call as ->ip($remoteAddr).
      */
-    public function ip(string $ip): self
+    public function ip(string $address): self
     {
 
-        $this->ip = $ip;
+        $this->address = $address;
 
         return $this;
     }
@@ -184,8 +186,8 @@ class Recaptcha implements Schema
             'response' => $code,
         ];
 
-        if (! empty($this->ip)) {
-            $post['remoteip'] = $this->ip;
+        if (! empty($this->address)) {
+            $post['remoteip'] = $this->address;
         }
 
         $opts = [

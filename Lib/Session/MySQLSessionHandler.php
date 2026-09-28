@@ -9,14 +9,22 @@ use PDO;
 
 class MySQLSessionHandler extends AbstractSessionHandler
 {
-    private PDO $pdo;
-
-    public function __construct(string $dsn, ?string $user = null, ?string $pass = null)
-    {
-        $this->pdo = new PDO('mysql:' . $dsn, $user, $pass, [
+    // Connected on first use: Kernel::boot() builds the handler on every request,
+    // including those that never start a session.
+    //phpcs:disable
+    private PDO $pdo {
+        get => $this->pdo ??= new PDO('mysql:' . $this->dsn, $this->user, $this->pass, [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
         ]);
+    }
+    //phpcs:enable
+
+    public function __construct(
+        private readonly string $dsn,
+        private readonly ?string $user = null,
+        private readonly ?string $pass = null,
+    ) {
     }
 
     /**

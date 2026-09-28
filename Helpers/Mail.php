@@ -42,11 +42,11 @@ class Mail
 
     /**
      * @param string|array $from
-     * @param array|string $to
+     * @param array|string $recipients
      * @param string $subject
      * @return Mail
      */
-    public function new(string|array $from, array|string $to, string $subject): self
+    public function new(string|array $from, array|string $recipients, string $subject): self
     {
         if (is_string($from)) {
             $this->message->from($from);
@@ -54,10 +54,10 @@ class Mail
             $this->message->from(new Address($from[0], $from[1]));
         }
 
-        if (is_string($to)) {
-            $this->message->to($to);
+        if (is_string($recipients)) {
+            $this->message->to($recipients);
         } else {
-            foreach ($to as $address) {
+            foreach ($recipients as $address) {
                 $this->message->addTo($address);
             }
         }
@@ -69,12 +69,12 @@ class Mail
     }
 
     /**
-     * @param array $cc
+     * @param array $copies
      * @return $this
      */
-    public function setCC(array $cc): self
+    public function setCC(array $copies): self
     {
-        foreach ($cc as $address) {
+        foreach ($copies as $address) {
             $this->message->addCc($address);
         }
 

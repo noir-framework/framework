@@ -143,8 +143,8 @@ class TemplateChecker
         // Report linter semantic warnings (unknown filters, classes, functions, constants)
         foreach ($warnings as $w) {
             $line = 0;
-            if (preg_match('/on line (\d+)/', $w['message'], $m)) {
-                $line = (int)$m[1];
+            if (preg_match('/on line (\d+)/', $w['message'], $lineMatch)) {
+                $line = (int)$lineMatch[1];
             }
             if ($w['severity'] === E_USER_DEPRECATED) {
                 $result->warning($file, $line, '[DEPRECATED] ' . $w['message']);

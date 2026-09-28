@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\View;
 
-use function is_string;
-
 use Noirapi\Interfaces\Translator;
+
+use function is_string;
 
 /**
  * @psalm-api
@@ -207,7 +207,7 @@ class Layout
     }
 
     /**
-     * @param string $js
+     * @param string $script
      *
      * @return void
      *
@@ -217,15 +217,15 @@ class Layout
      *
      * @psalm-external-mutation-free
      */
-    public function addTopJS(string $js): void
+    public function addTopJS(string $script): void
     {
-        if (! in_array($js, $this->params['top-js'], true)) {
-            $this->params['top-js'][] = $js;
+        if (! in_array($script, $this->params['top-js'], true)) {
+            $this->params['top-js'][] = $script;
         }
     }
 
     /**
-     * @param string $js
+     * @param string $script
      *
      * @return void
      *
@@ -235,10 +235,10 @@ class Layout
      *
      * @psalm-external-mutation-free
      */
-    public function addBottomJS(string $js): void
+    public function addBottomJS(string $script): void
     {
-        if (! in_array($js, $this->params['bottom-js'], true)) {
-            $this->params['bottom-js'][] = $js;
+        if (! in_array($script, $this->params['bottom-js'], true)) {
+            $this->params['bottom-js'][] = $script;
         }
     }
 

@@ -17,6 +17,7 @@ use Latte\Essential\Nodes\VarNode;
 use Latte\Extension;
 use Override;
 use stdClass;
+
 use function is_string;
 use function str_starts_with;
 

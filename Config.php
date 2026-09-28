@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Noirapi;
 
 use Composer\InstalledVersions;
-use function is_array;
 use JsonException;
 use Nette\Neon\Exception;
 use Nette\Neon\Neon;
-
 use Noirapi\Exceptions\ConfigException;
 use RuntimeException;
 use Tracy\Debugger;
+
+use function is_array;
 
 /** @psalm-api */
 class Config

@@ -20,9 +20,10 @@ use Noirapi\Helpers\MessageType;
 use Noirapi\Helpers\RestMessage;
 use Noirapi\Helpers\Utils;
 use Noirapi\Lib\Tracy\PDOBarPanel;
-use function strlen;
 use Throwable;
 use Tracy\Debugger;
+
+use function strlen;
 
 /**
  * @psalm-api
@@ -79,12 +80,12 @@ class Controller
 
     protected function resolveModel(): ?Model
     {
-        $db = Config::get('db');
-        if ($db === null) {
+        $drivers = Config::get('db');
+        if ($drivers === null) {
             return null;
         }
-        $driver = array_key_first($db);
-        $params = $db[$driver];
+        $driver = array_key_first($drivers);
+        $params = $drivers[$driver];
         $class = static::MODEL_PATH . Utils::getClassName($this::class);
         if (class_exists($class) && is_subclass_of($class, Model::class)) {
             return new $class($driver, $params);
@@ -149,6 +150,8 @@ class Controller
      * @psalm-suppress PossiblyUnusedMethod
      *
      * @psalm-external-mutation-free
+     *
+     * @SuppressWarnings("PHPMD.ShortMethodName") public API the apps call as $this->ok().
      */
     public function ok(): Response
     {
@@ -215,8 +218,8 @@ class Controller
         }
 
         if ($this->dev) {
-            $bt = debug_backtrace();
-            $caller = array_shift($bt);
+            $trace = debug_backtrace();
+            $caller = array_shift($trace);
 
             $this->response->initiator_class = $caller['class'] ?? null;
             $this->response->initiator_method = $caller['function'] ?? null;

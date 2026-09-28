@@ -41,6 +41,12 @@ jobs:
       - name: Lint shell scripts
         run: bash -n bin/noirapi && bash -n bin/dev-server
 
+      - name: PHPMD
+        run: composer phpmd
+
+      - name: PHPCS
+        run: composer phpcs
+
       - name: Tests
         run: vendor/bin/phpunit
 

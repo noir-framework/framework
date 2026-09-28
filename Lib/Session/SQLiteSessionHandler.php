@@ -9,22 +9,34 @@ use PDO;
 
 class SQLiteSessionHandler extends AbstractSessionHandler
 {
-    private PDO $pdo;
+    // Opened on first use: Kernel::boot() builds the handler on every request,
+    // including those that never start a session.
+    //phpcs:disable
+    private PDO $pdo {
+        get => $this->pdo ??= $this->connect();
+    }
+    //phpcs:enable
+
+    public function __construct(private readonly string $path)
+    {
+    }
 
     /** @noinspection SqlNoDataSourceInspection */
-    public function __construct(string $path)
+    private function connect(): PDO
     {
-        $this->pdo = new PDO('sqlite:' . $path, null, null, [
+        $pdo = new PDO('sqlite:' . $this->path, null, null, [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
         ]);
-        $this->pdo->exec(
+        $pdo->exec(
             'CREATE TABLE IF NOT EXISTS sessions (
                 id TEXT PRIMARY KEY,
                 data BLOB NOT NULL,
                 last_activity INTEGER NOT NULL
             )'
         );
+
+        return $pdo;
     }
 
     /**

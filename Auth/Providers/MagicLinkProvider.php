@@ -68,7 +68,7 @@ readonly class MagicLinkProvider implements AuthProviderInterface
         string $toEmail,
         string $toName,
         string $token,
-        int    $ttlMinutes = 15,
+        int $ttlMinutes = 15,
     ): void {
         $url = rtrim($this->appUrl, '/') . '/auth/magic-link/' . $token;
         $mail = new Mail($this->mailDsn);

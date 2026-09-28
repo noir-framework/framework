@@ -9,8 +9,8 @@ namespace Noirapi\Helpers\Schema;
 use Nette\Schema\Context;
 use Nette\Schema\Message;
 use Nette\Schema\Schema;
-
 use Override;
+
 use function is_string;
 
 /** @psalm-api  */

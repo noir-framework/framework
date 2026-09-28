@@ -6,6 +6,7 @@ namespace Noirapi\Lib\LatteLint;
 
 use Latte\SecurityViolationException;
 use Noirapi\Lib\Controller;
+
 use function array_keys;
 use function array_merge;
 use function array_unique;
@@ -124,15 +125,15 @@ class Checker
             // Find {include '_name'}, {include "_name"}, or bare {include _name.latte}
             // (all with optional trailing ', key: $val, ...' args)
             preg_match_all("/\{include\s+'([^']+)'/", $source, $matches, PREG_SET_ORDER);
-            preg_match_all('/\{include\s+"([^"]+)"/', $source, $m2, PREG_SET_ORDER);
-            preg_match_all('/\{include\s+([A-Za-z0-9_.\/-]+)/', $source, $m5, PREG_SET_ORDER);
-            $includes = array_merge($matches, $m2, $m5);
+            preg_match_all('/\{include\s+"([^"]+)"/', $source, $dquoteIncludes, PREG_SET_ORDER);
+            preg_match_all('/\{include\s+([A-Za-z0-9_.\/-]+)/', $source, $bareIncludes, PREG_SET_ORDER);
+            $includes = array_merge($matches, $dquoteIncludes, $bareIncludes);
 
             // Also find renderTemplate('_name', [...]) calls
-            preg_match_all("/renderTemplate\s*\(\s*'([^']+)'/", $source, $m3, PREG_SET_ORDER);
-            preg_match_all('/renderTemplate\s*\(\s*"([^"]+)"/', $source, $m4, PREG_SET_ORDER);
+            preg_match_all("/renderTemplate\s*\(\s*'([^']+)'/", $source, $squoteRenders, PREG_SET_ORDER);
+            preg_match_all('/renderTemplate\s*\(\s*"([^"]+)"/', $source, $dquoteRenders, PREG_SET_ORDER);
             /** @noinspection SlowArrayOperationsInLoopInspection */
-            $includes = array_merge($includes, $m3, $m4);
+            $includes = array_merge($includes, $squoteRenders, $dquoteRenders);
 
             // Get the {varType} declared vars of this parent template
             $parentDeclared = array_keys($this->templateChecker->extractVarTypeDeclarations($source));
@@ -196,12 +197,12 @@ class Checker
         // Derive controller name and template name from the file path
         // e.g., /app/views/deliveries/index.latte → controller=Deliveries, template=index
         $relative = substr($file, strlen($this->viewsDir) + 1); // deliveries/index.latte
-        if (preg_match('#^([^/]+)/([^/]+)\.latte$#', $relative, $m) !== 1) {
+        if (preg_match('#^([^/]+)/([^/]+)\.latte$#', $relative, $parts) !== 1) {
             return $result;
         }
 
-        $controllerName = ucfirst($m[1]);  // deliveries → Deliveries
-        $templateName = $m[2];           // index
+        $controllerName = ucfirst($parts[1]);  // deliveries → Deliveries
+        $templateName = $parts[2];           // index
 
         if (! isset($controllerMap[$controllerName][$templateName])) {
             return $result;

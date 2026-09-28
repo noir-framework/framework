@@ -1,0 +1,6 @@
+# PHPMD 3 reads this from the working directory. pdepend's default file cache
+# (~/.pdepend) can merge a file's stale AST into the next run, so findings from
+# old content show up; the memory cache avoids that.
+pdepend:
+  cache:
+    driver: memory

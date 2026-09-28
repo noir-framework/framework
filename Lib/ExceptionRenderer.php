@@ -19,15 +19,15 @@ class ExceptionRenderer
      *
      * @throws Throwable when content type is text/html
      */
-    public static function render(Throwable $e, Response $response): Response
+    public static function render(Throwable $exception, Response $response): Response
     {
         $type = $response->getContentType();
 
         if (str_starts_with($type, 'text/html')) {
-            throw $e;
+            throw $exception;
         }
 
-        Debugger::log($e, ILogger::EXCEPTION);
+        Debugger::log($exception, ILogger::EXCEPTION);
         $response->withStatus(500);
 
         if (str_starts_with($type, Response::TYPE_JSON)) {
