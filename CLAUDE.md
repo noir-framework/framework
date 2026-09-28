@@ -54,7 +54,7 @@ Other entry points: `script.php` (CLI → `App\App::run()`) and `swoole.php` (Sw
 
 ## Database
 
-`Lib/Model.php` uses `noirapi/database` 5 (`Noirapi\Database\*`, a fork of opis/database; sibling checkout `../database`). Apps written against `Opis\Database\*` work through noirapi/database's lazy aliases. PHP doesn't autoload for type checks, though, so the Opis classes the apps type-hint are listed in `Kernel::LEGACY_DATABASE_CLASSES` and loaded up front for the submodule layout. noirapi/database is `5.0.0-beta*`, so consumers need `minimum-stability: beta`. Until it's on Packagist, `composer.json` carries a VCS repository for it (root-only, so apps need their own).
+`Lib/Model.php` uses `noirapi/database` 5 (`Noirapi\Database\*`, a fork of opis/database; sibling checkout `../database`). Apps written against `Opis\Database\*` work through noirapi/database's lazy aliases. PHP doesn't autoload for type checks, though, so the Opis classes the apps type-hint are listed in `Kernel::LEGACY_DATABASE_CLASSES` and loaded up front for the submodule layout. noirapi/database 5.0.0 is on Packagist (stable), so no `minimum-stability` or VCS repository is needed.
 
 ## Rector (app migrations)
 
