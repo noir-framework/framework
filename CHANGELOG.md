@@ -26,6 +26,13 @@
   extensions compare case-insensitively, and a file `getimagesize()` can't read is rejected
   instead of raising a warning. Requires `ext-fileinfo`. **Breaking:** uploads whose content
   doesn't match the allowed types are now rejected.
+- `Session::start()` hardens the session (strict mode, cookie-only IDs, `HttpOnly`, cookie name,
+  lifetime, `SameSite` and `Secure` from `session.cookie`); `Session::regenerate()` for login and
+  privilege changes (also drops the CSRF token), `Session::destroy()` for logout. The dev-mode
+  session Tracy starts goes through it too.
+- **`SudoMode` expires.** `grant()` stores an expiry (`auth.sudo_ttl`, default 900 s, or an
+  explicit TTL); `isActive()` checks it and `remaining()` returns the seconds left. **Breaking:**
+  elevations used to last the whole session; ones granted by the old version count as expired.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 

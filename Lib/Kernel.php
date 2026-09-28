@@ -252,9 +252,7 @@ final class Kernel
 
         if (Config::isDev($clientIp)) {
             //we are missing some debug events in Tracy, that's why we start session so early
-            if (session_status() !== PHP_SESSION_ACTIVE) {
-                session_start();
-            }
+            Session::start();
             Debugger::enable(Debugger::Development, Config::getLogs());
         } else {
             Debugger::enable(Debugger::Production, Config::getLogs(), Config::get('dev_email'));

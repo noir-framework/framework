@@ -1,3 +1,48 @@
+### Starting the session
+
+Start the session with `Session::start()` (usually in the app's base controller, where
+`session_start()` used to be). It turns on `session.use_strict_mode` (unknown or expired IDs
+are replaced, not adopted), cookie-only session IDs, an `HttpOnly` cookie, and the cookie
+settings below:
+
+```neon
+session:
+    cookie:
+        name: app_session   # default: PHP's session.name
+        lifetime: 0         # seconds; 0 = until the browser closes
+        samesite: Lax       # Lax | Strict | None (None forces Secure)
+        secure: auto        # auto = when the request is HTTPS (see trusted_proxies); or true / false
+        domain: ''          # default: the cookie_domain setting, else the current host
+```
+
+```php
+use Noirapi\Lib\Session;
+
+Session::start();
+
+// after a successful login, logout, or any change of privileges:
+Session::regenerate();   // new session ID, same data; the CSRF token is re-created
+
+// on logout:
+Session::destroy();      // clears the data, expires the cookie, deletes the stored session
+```
+
+### Sudo mode
+
+`Noirapi\Auth\SudoMode` marks the session as re-authenticated for a limited time:
+
+```php
+SudoMode::grant();          // after the user re-enters a TOTP code or password
+SudoMode::isActive();       // true for auth.sudo_ttl seconds (default 900)
+SudoMode::remaining();      // seconds left
+SudoMode::revoke();         // e.g. on logout
+```
+
+```neon
+auth:
+    sudo_ttl: 900
+```
+
 ### Session handlers
 
 The session driver is configured in `app/config/*.neon` under the `session:` key.
@@ -88,9 +133,9 @@ expired but before GC has deleted the row:
 - **Memcached** — the TTL set on `mc->set()` matches `session.gc_maxlifetime`, so
   expired keys are never returned.
 
-When a session cookie arrives but no valid session is found, `Site` calls
-`session_regenerate_id(true)` after `session_start()`. This issues a fresh session ID
-to the client and deletes the stale backing record, invalidating the stolen cookie.
+With `Session::start()`, `session.use_strict_mode` makes PHP issue a fresh session ID
+whenever the cookie names a session that doesn't exist (any more), so a stale or stolen
+cookie is never adopted.
 
 ---
 
