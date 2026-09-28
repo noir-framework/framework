@@ -39,6 +39,8 @@ class Macros extends Extension
             'message'    => [$this, 'message'],
             'nonce'      => [$this, 'nonce'],
             'head'       => [$this, 'head'],
+            'csrf'       => [$this, 'csrf'],
+            'csrfToken'  => [$this, 'csrfToken'],
         ];
     }
 
@@ -311,6 +313,43 @@ class Macros extends Extension
                     echo $line;
                 }
             ')
+        );
+    }
+
+    /**
+     * {csrf}: the hidden CSRF field for a form (see Noirapi\Lib\Security\Csrf).
+     *
+     * @param Tag $tag
+     * @return Node
+     * @noinspection PhpUnusedParameterInspection
+     * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
+     */
+    public function csrf(Tag $tag): Node
+    {
+        return new AuxiliaryNode(
+            fn (PrintContext $context) => $context->format(
+                'echo \'<input type="hidden" name="\' . \Noirapi\Lib\Security\Csrf::FIELD . \'" value="\' . '
+                . '\htmlspecialchars(\Noirapi\Lib\Security\Csrf::token(), ENT_QUOTES) . \'">\';'
+            )
+        );
+    }
+
+    /**
+     * {csrfToken}: the bare token, HTML-escaped, e.g. for <meta name="csrf-token" content="{csrfToken}">.
+     *
+     * @param Tag $tag
+     * @return Node
+     * @noinspection PhpUnusedParameterInspection
+     * @psalm-suppress PossiblyUnusedParam
+     * @SuppressWarnings("PHPMD.UnusedFormalParameter") $tag is required by Latte's Tag-callback signature
+     */
+    public function csrfToken(Tag $tag): Node
+    {
+        return new AuxiliaryNode(
+            fn (PrintContext $context) => $context->format(
+                'echo \htmlspecialchars(\Noirapi\Lib\Security\Csrf::token(), ENT_QUOTES);'
+            )
         );
     }
 }

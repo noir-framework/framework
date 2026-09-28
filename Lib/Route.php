@@ -21,9 +21,12 @@ use Noirapi\Exceptions\LoginException;
 use Noirapi\Exceptions\MessageException;
 use Noirapi\Exceptions\NotFoundException;
 use Noirapi\Exceptions\RestException;
+use Noirapi\Helpers\MessageType;
 use Noirapi\Helpers\Utils;
 use Noirapi\Lib\Attributes\AutoWire;
 use Noirapi\Lib\Attributes\NotFound;
+use Noirapi\Lib\Attributes\SkipCsrf;
+use Noirapi\Lib\Security\Csrf;
 use Noirapi\Lib\Tracy\GenericPanel;
 use ReflectionClass;
 use ReflectionException;
@@ -245,6 +248,8 @@ class Route
 
             $reflection = new ReflectionMethod($controller, $method);
 
+            $this->verifyCsrf($controller, $reflection);
+
             $realArgs = [];
             if (count($reflection->getAttributes()) > 0) {
                 $realArgs = $this->resolveAutoWiredArgs($reflection, $controller, $args);
@@ -277,6 +282,43 @@ class Route
         } catch (Throwable $exception) {
             $this->response = ExceptionRenderer::render($exception, $this->response);
         }
+    }
+
+    /**
+     * With `csrf` enabled, rejects state-changing requests that are cross-site or lack the
+     * session's token, unless the action or its controller has #[SkipCsrf]. Runs after the
+     * controller is built, because apps start the session in their base controller.
+     *
+     * @param Controller $controller
+     * @param ReflectionMethod $reflection
+     * @return void
+     * @throws LoginException redirect back with a flash message (regular requests)
+     * @throws RestException 403 JSON (AJAX / JSON requests)
+     */
+    private function verifyCsrf(Controller $controller, ReflectionMethod $reflection): void
+    {
+        if (
+            ! Csrf::enabled()
+            || $reflection->getAttributes(SkipCsrf::class) !== []
+            || $reflection->getDeclaringClass()->getAttributes(SkipCsrf::class) !== []
+        ) {
+            return;
+        }
+
+        if (Csrf::check($this->request)) {
+            // Keep the token out of what nette/schema structures validate.
+            unset($this->request->post[Csrf::FIELD]);
+
+            return;
+        }
+
+        if ($this->request->ajax || $this->request->wantsJson() || $this->request->isJson()) {
+            throw new RestException((string) json_encode(['ok' => false, 'error' => 'csrf']), 403);
+        }
+
+        $controller->message('Your session expired, please try again', MessageType::Warning);
+
+        throw new LoginException($controller->referer(), 302);
     }
 
     /**

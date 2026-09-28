@@ -33,6 +33,9 @@
 - **`SudoMode` expires.** `grant()` stores an expiry (`auth.sudo_ttl`, default 900 s, or an
   explicit TTL); `isActive()` checks it and `remaining()` returns the seconds left. **Breaking:**
   elevations used to last the whole session; ones granted by the old version count as expired.
+- **CSRF protection** (opt-in, `csrf: true`): `Noirapi\Lib\Security\Csrf`, the `{csrf}` and
+  `{csrfToken}` Latte tags, the `X-CSRF-Token` header for AJAX, an Origin / Sec-Fetch-Site check,
+  and `#[SkipCsrf]` for webhooks and token APIs. See `docs/security.md`.
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 

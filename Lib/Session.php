@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Lib;
 
 use Noirapi\Config;
+use Noirapi\Lib\Security\Csrf;
 
 use function is_array;
 use function is_bool;
@@ -28,7 +29,7 @@ use function is_string;
 class Session
 {
     /** Session keys holding per-session secrets, dropped by regenerate(). */
-    public const array ROTATED_KEYS = ['_csrf_token'];
+    public const array ROTATED_KEYS = [Csrf::SESSION_KEY];
 
     /**
      * Starts the session with strict mode, cookie-only IDs and the cookie settings from
