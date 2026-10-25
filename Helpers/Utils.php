@@ -440,12 +440,6 @@ final class Utils
      */
     private static function toBits(string $binary): string
     {
-        $bits = '';
-
-        foreach (str_split($binary) as $byte) {
-            $bits .= str_pad(decbin(ord($byte)), 8, '0', STR_PAD_LEFT);
-        }
-
-        return $bits;
+        return vsprintf(str_repeat('%08b', strlen($binary)), unpack('C*', $binary));
     }
 }
