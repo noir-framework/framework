@@ -22,6 +22,9 @@ use const PHP_URL_HOST;
  */
 final class CrawlConfig
 {
+    /** URLs containing one of these are never requested unless "exclude" says otherwise: they often act on GET. */
+    private const array DESTRUCTIVE = ['/logout', '/remove', '/delete', '/destroy', '/toggle', '/clear', '/reset'];
+
     /**
      * @param array<string, mixed> $raw
      * @return array<string, mixed>
@@ -47,7 +50,7 @@ final class CrawlConfig
             'max_pages' => (int) ($raw['max_pages'] ?? 200),
             'max_depth' => (int) ($raw['max_depth'] ?? 3),
             'timeout' => (int) ($raw['timeout'] ?? 30),
-            'exclude' => array_values($raw['exclude'] ?? ['/logout']),
+            'exclude' => array_values($raw['exclude'] ?? self::DESTRUCTIVE),
             'error_dir' => (string) ($raw['error_dir'] ?? 'temp/crawl-errors'),
             'report' => (string) ($raw['report'] ?? 'temp/crawl-report.json'),
             'login' => self::login($raw['login'] ?? []),
