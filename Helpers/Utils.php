@@ -433,5 +433,4 @@ final class Utils
 
         return str_starts_with($range_bits, substr($ip_bits, 0, $netmask));
     }
-
 }
