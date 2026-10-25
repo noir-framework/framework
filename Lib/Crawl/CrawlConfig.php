@@ -11,6 +11,7 @@ use function getenv;
 use function is_array;
 use function is_string;
 use function parse_url;
+use function preg_replace;
 use function rtrim;
 use function str_starts_with;
 use function substr;
@@ -75,6 +76,20 @@ final class CrawlConfig
     }
 
     /**
+     * The part of the login URL that a redirect back to the login page contains: the path without a
+     * leading language segment, so `/bg/users/login` also matches a redirect to `/en/users/login`.
+     *
+     * @param string $loginUrl
+     * @return string
+     */
+    public static function loginMarker(string $loginUrl): string
+    {
+        $path = (string) parse_url($loginUrl, PHP_URL_PATH);
+
+        return preg_replace('#^/[a-z]{2}(?=/)#i', '', $path) ?? $path;
+    }
+
+    /**
      * @param mixed $login
      * @return array<string, mixed>
      */
@@ -90,7 +105,6 @@ final class CrawlConfig
             'username_field' => (string) ($login['username_field'] ?? 'user'),
             'password_field' => (string) ($login['password_field'] ?? 'pass'),
             'extra' => is_array($login['extra'] ?? null) ? $login['extra'] : [],
-            'verify_url' => (string) ($login['verify_url'] ?? ''),
         ];
     }
 }

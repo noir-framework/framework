@@ -127,6 +127,9 @@ final class Crawler
     }
 
     /**
+     * POSTs the credentials without following redirects (a 307 would replay the POST), then judges the
+     * outcome: it fails when the server sends the client back to the login page.
+     *
      * @param array<string, mixed> $login
      * @return bool
      */
@@ -137,19 +140,18 @@ final class Crawler
             $login['password_field'] => $login['password'],
         ] + $login['extra'];
 
+        $this->http->setOpt(CURLOPT_FOLLOWLOCATION, false);
         $this->http->post($this->absolute($login['url']), $fields);
+        $this->http->setOpt(CURLOPT_FOLLOWLOCATION, true);
 
-        if ($this->http->error) {
+        $status = (int) $this->http->httpStatusCode;
+        $location = (string) ($this->http->responseHeaders['location'] ?? '');
+
+        if ($this->http->curlError || $status >= 400) {
             return false;
         }
 
-        if ($login['verify_url'] !== '') {
-            $this->http->get($this->absolute($login['verify_url']));
-
-            return ! $this->http->error && ! str_contains((string) $this->http->effectiveUrl, $login['url']);
-        }
-
-        return ! str_contains((string) $this->http->effectiveUrl, $login['url']);
+        return ! str_contains($location, CrawlConfig::loginMarker($login['url']));
     }
 
     /**
