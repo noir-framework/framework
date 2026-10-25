@@ -30,7 +30,9 @@ client (`dev: true`, or `127.0.0.1` in `dev_ips`), otherwise the variable is ign
 }
 ```
 
-- Only `base_url` is required. Paths in `urls` are relative to it; `error_dir` and `report` to the project root.
+- Only `base_url` is required. `exclude` is a list of substrings; by default `/logout`, `/remove`, `/delete`,
+  `/destroy`, `/toggle`, `/clear` and `/reset` are skipped because such links often change data on GET.
+  Setting `exclude` replaces that list, so keep the destructive entries when you add your own. Paths in `urls` are relative to it; `error_dir` and `report` to the project root.
 - `login.url` is POSTed with the two fields (plus `extra`) and the session cookie is kept. Login counts as
   failed when the final URL is still the login URL, or `verify_url` redirects back to it.
   A value of `env:NAME` is read from the environment, so the password need not be in the file.

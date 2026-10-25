@@ -21,6 +21,7 @@ final class CrawlTest extends TestCase
         self::assertSame('http://localhost:8000', $config['base_url']);
         self::assertSame(['/'], $config['urls']);
         self::assertFalse($config['login']['required']);
+        self::assertContains('/remove', $config['exclude']);
         self::assertSame('temp/crawl-errors', $config['error_dir']);
     }
 
