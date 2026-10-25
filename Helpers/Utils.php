@@ -427,12 +427,25 @@ final class Utils
             return false;
         }
 
-        $range_bits = unpack('H*', $range_bin)[1];
-        $ip_bits = unpack('H*', $ip_bin)[1];
-
-        $range_bits = str_pad(base_convert($range_bits, 16, 2), strlen($range_bin) * 8, '0', STR_PAD_LEFT);
-        $ip_bits = str_pad(base_convert($ip_bits, 16, 2), strlen($ip_bin) * 8, '0', STR_PAD_LEFT);
+        // Byte by byte: base_convert() goes through a float and loses precision on 128-bit IPv6 addresses.
+        $range_bits = self::toBits($range_bin);
+        $ip_bits = self::toBits($ip_bin);
 
         return str_starts_with($range_bits, substr($ip_bits, 0, $netmask));
+    }
+
+    /**
+     * @param string $binary packed address from inet_pton()
+     * @return string e.g. '11000000...' with 8 characters per byte
+     */
+    private static function toBits(string $binary): string
+    {
+        $bits = '';
+
+        foreach (str_split($binary) as $byte) {
+            $bits .= str_pad(decbin(ord($byte)), 8, '0', STR_PAD_LEFT);
+        }
+
+        return $bits;
     }
 }

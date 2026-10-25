@@ -56,7 +56,7 @@ final class ErrorLog
      * Entries written since $before, as parsed records.
      *
      * @param array{lines: array<string, int>, files: list<string>} $before
-     * @return list<array{key: string, level: string, file: string, line: int, message: string, dump: ?string}>
+     * @return list<array{key: string, level: string, severity: string, file: string, line: int, message: string, dump: ?string}>
      */
     public function since(array $before): array
     {
@@ -91,7 +91,7 @@ final class ErrorLog
      *
      * @param string $logName
      * @param string $raw
-     * @return array{key: string, level: string, file: string, line: int, message: string, dump: ?string}
+     * @return array{key: string, level: string, severity: string, file: string, line: int, message: string, dump: ?string}
      */
     public static function parse(string $logName, string $raw): array
     {
@@ -114,6 +114,9 @@ final class ErrorLog
         return [
             'key' => $key,
             'level' => $level,
+            'severity' => preg_match('/^(?:PHP )?(Notice|Warning|Deprecated|Fatal error|Parse error|\w+Error|\w+Exception)\b/', $message, $kind) === 1
+                ? $kind[1]
+                : $level,
             'file' => $file,
             'line' => $line,
             'message' => $message,
