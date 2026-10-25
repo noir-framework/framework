@@ -243,7 +243,17 @@ final class Kernel
 
         Debugger::setSessionStorage(self::tracySessionStorage());
 
-        if (Utils::isDev($_SERVER['REMOTE_ADDR'] ?? '')) {
+        $isDev = Utils::isDev($_SERVER['REMOTE_ADDR'] ?? '');
+        $captureDir = $isDev ? self::errorCaptureDir() : null;
+
+        if ($captureDir !== null) {
+            // `noirapi crawl`: log every notice, warning, deprecation and exception to $captureDir
+            // and keep serving the page, so one request reports all of its problems.
+            error_reporting(E_ALL);
+            Debugger::$strictMode = false;
+            Debugger::$logSeverity = E_ALL;
+            Debugger::enable(Debugger::Production, $captureDir);
+        } elseif ($isDev) {
             //we are missing some debug events in Tracy, that's why we start session so early
             if (session_status() !== PHP_SESSION_ACTIVE) {
                 session_start();
@@ -252,6 +262,27 @@ final class Kernel
         } else {
             Debugger::enable(Debugger::Production, Config::getLogs(), Config::get('dev_email'));
         }
+    }
+
+    /**
+     * Directory from NOIRAPI_ERROR_CAPTURE, created when missing. Only honoured for dev requests
+     * (the caller checks), so setting the variable on a production host does nothing.
+     *
+     * @return string|null
+     */
+    private static function errorCaptureDir(): ?string
+    {
+        $dir = getenv('NOIRAPI_ERROR_CAPTURE');
+
+        if (! is_string($dir) || $dir === '') {
+            return null;
+        }
+
+        if (! is_dir($dir) && ! mkdir($dir, 0775, true) && ! is_dir($dir)) {
+            return null;
+        }
+
+        return $dir;
     }
 
     /**
