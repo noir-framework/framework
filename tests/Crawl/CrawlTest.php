@@ -76,6 +76,7 @@ final class CrawlTest extends TestCase
         );
 
         self::assertSame('warning', $entry['level']);
+        self::assertSame('Warning', $entry['severity']);
         self::assertSame('/app/views/a.php', $entry['file']);
         self::assertSame(12, $entry['line']);
         self::assertSame('PHP Warning: Undefined variable $x in /app/views/a.php:12', $entry['message']);

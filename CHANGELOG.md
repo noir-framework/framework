@@ -10,6 +10,9 @@
   (Tracy production mode, no strict mode, so a request keeps running and reports every problem).
   It is only honoured for dev requests (`dev: true` or the client in `dev_ips`); on any other
   request the variable is ignored.
+- **Fix:** `Utils::isCloudFlare()` compared IPv6 addresses through `base_convert()`, which loses
+  precision on 128-bit values (an `Input number is larger than PHP_INT_MAX` notice on every request).
+  It now compares byte by byte.
 
 ## 1.1.1 (2026-09-28)
 
