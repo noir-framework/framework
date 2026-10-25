@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.0 (unreleased)
+## 1.2.0 (2026-10-25)
 
 - **`noirapi crawl <config.json>`** walks a site with `php-curl-class`, optionally logs in first, and
   attributes every Tracy log entry (notice, warning, deprecation, exception) to the URL that caused
