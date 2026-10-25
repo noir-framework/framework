@@ -4,6 +4,7 @@
 #   vendor/bin/noirapi dev-server [start|stop|restart|status] [--port N] [--host H] [--config NAME]
 #   vendor/bin/noirapi latte-lint <path> [<path>...] [--debug]
 #   vendor/bin/noirapi latte-check [--strict] [--no-controller-check] ...
+#   vendor/bin/noirapi crawl <config.json> [--start] [--port N] [--host H] [--config NAME]
 #
 # It only works out the project root and exports it as NOIRAPI_ROOT; the tools
 # themselves are the same scripts submodule apps call as noirapi/bin/<tool>.
@@ -24,7 +25,7 @@ fi
 export NOIRAPI_ROOT
 
 usage() {
-    echo "Usage: noirapi <dev-server|latte-lint|latte-check> [args...]" >&2
+    echo "Usage: noirapi <dev-server|latte-lint|latte-check|crawl> [args...]" >&2
     exit 1
 }
 
@@ -36,5 +37,6 @@ case "$command" in
     dev-server) exec "$BIN_DIR/dev-server" "$@" ;;
     latte-lint) exec php "$BIN_DIR/latte-lint" "$@" ;;
     latte-check) exec php "$BIN_DIR/latte-check.php" "$@" ;;
+    crawl) exec php "$BIN_DIR/crawl.php" "$@" ;;
     *) usage ;;
 esac

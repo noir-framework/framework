@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0 (unreleased)
+
+- **`noirapi crawl <config.json>`** walks a site with `php-curl-class`, optionally logs in first, and
+  attributes every Tracy log entry (notice, warning, deprecation, exception) to the URL that caused
+  it. Writes a JSON report and exits 1 when anything was logged. `--start` restarts the dev server
+  with the capture variable below and stops it afterwards. See `docs/crawl.md`.
+- **`NOIRAPI_ERROR_CAPTURE=<dir>`** makes `Kernel` log all errors, including deprecations, to `<dir>`
+  (Tracy production mode, no strict mode, so a request keeps running and reports every problem).
+  It is only honoured for dev requests (`dev: true` or the client in `dev_ips`); on any other
+  request the variable is ignored.
+
 ## 1.1.1 (2026-09-28)
 
 - Allow php-curl-class 12 and 13.
