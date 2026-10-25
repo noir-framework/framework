@@ -46,6 +46,13 @@ final class CrawlTest extends TestCase
         self::assertSame('s3cret', $config['login']['password']);
     }
 
+    public function testLoginMarkerDropsLanguagePrefix(): void
+    {
+        self::assertSame('/users/login', CrawlConfig::loginMarker('/bg/users/login'));
+        self::assertSame('/users/login', CrawlConfig::loginMarker('http://x.test/users/login'));
+        self::assertSame('/login', CrawlConfig::loginMarker('/login'));
+    }
+
     public function testResolveKeepsSameHostPagesOnly(): void
     {
         $page = self::BASE . '/shop/list';

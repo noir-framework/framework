@@ -24,8 +24,7 @@ client (`dev: true`, or `127.0.0.1` in `dev_ips`), otherwise the variable is ign
         "password": "env:CRAWL_PASSWORD",
         "username_field": "user",
         "password_field": "pass",
-        "extra": {},
-        "verify_url": "/admin"
+        "extra": {}
     }
 }
 ```
@@ -33,8 +32,9 @@ client (`dev: true`, or `127.0.0.1` in `dev_ips`), otherwise the variable is ign
 - Only `base_url` is required. `exclude` is a list of substrings; by default `/logout`, `/remove`, `/delete`,
   `/destroy`, `/toggle`, `/clear` and `/reset` are skipped because such links often change data on GET.
   Setting `exclude` replaces that list, so keep the destructive entries when you add your own. Paths in `urls` are relative to it; `error_dir` and `report` to the project root.
-- `login.url` is POSTed with the two fields (plus `extra`) and the session cookie is kept. Login counts as
-  failed when the final URL is still the login URL, or `verify_url` redirects back to it.
+- `login.url` is POSTed with the two fields (plus `extra`) without following redirects, and the session cookie is
+  kept. Login counts as failed on an error status, or when the redirect points back at the login page (same path,
+  ignoring a leading language segment such as `/bg`). Put the URL the form posts to there.
   A value of `env:NAME` is read from the environment, so the password need not be in the file.
 - The error directory is emptied first (`--no-clean` keeps it). Only GET requests are sent after login.
 - The report lists distinct errors (file, line, message, count, URLs) and every page with its HTTP status.
