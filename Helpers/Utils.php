@@ -428,18 +428,10 @@ final class Utils
         }
 
         // Byte by byte: base_convert() goes through a float and loses precision on 128-bit IPv6 addresses.
-        $range_bits = self::toBits($range_bin);
-        $ip_bits = self::toBits($ip_bin);
+        $range_bits = vsprintf(str_repeat('%08b', strlen($range_bin)), unpack('C*', $range_bin));
+        $ip_bits = vsprintf(str_repeat('%08b', strlen($ip_bin)), unpack('C*', $ip_bin));
 
         return str_starts_with($range_bits, substr($ip_bits, 0, $netmask));
     }
 
-    /**
-     * @param string $binary packed address from inet_pton()
-     * @return string e.g. '11000000...' with 8 characters per byte
-     */
-    private static function toBits(string $binary): string
-    {
-        return vsprintf(str_repeat('%08b', strlen($binary)), unpack('C*', $binary));
-    }
 }
