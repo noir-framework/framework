@@ -58,6 +58,7 @@ vendor/bin/noirapi dev-server start [--port 8000] [--host localhost] [--config N
 vendor/bin/noirapi dev-server stop|restart|status
 vendor/bin/noirapi latte-lint app/views
 vendor/bin/noirapi latte-check [--strict] [--no-controller-check]
+vendor/bin/noirapi crawl crawl.json [--start]   # see docs/crawl.md
 vendor/bin/noirapi cache:clear | config:check | routes:list | key:generate
 vendor/bin/noirapi make:controller Name | make:model Name | db:migrate
 ```

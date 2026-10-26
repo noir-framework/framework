@@ -4,6 +4,7 @@
 #   vendor/bin/noirapi dev-server [start|stop|restart|status] [--port N] [--host H] [--config NAME]
 #   vendor/bin/noirapi latte-lint <path> [<path>...] [--debug]
 #   vendor/bin/noirapi latte-check [--strict] [--no-controller-check] ...
+#   vendor/bin/noirapi crawl <config.json> [--start] [--port N] [--host H] [--config NAME] [--no-clean]
 #   vendor/bin/noirapi <command> [args...]   cache:clear, routes:list, config:check, make:*, ... (bin/console.php)
 #
 # It only works out the project root and exports it as NOIRAPI_ROOT; the tools
@@ -31,5 +32,6 @@ case "$command" in
     dev-server) shift; exec "$BIN_DIR/dev-server" "$@" ;;
     latte-lint) shift; exec php "$BIN_DIR/latte-lint" "$@" ;;
     latte-check) shift; exec php "$BIN_DIR/latte-check.php" "$@" ;;
+    crawl) shift; exec php "$BIN_DIR/crawl.php" "$@" ;;
     *) exec php "$BIN_DIR/console.php" "$@" ;;
 esac
