@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 (unreleased)
+## 2.0.0 (2026-10-26)
 
 - **`noirapi crawl <config.json>`** and **`NOIRAPI_ERROR_CAPTURE=<dir>`**, ported from 1.2.0: walk a
   site (optionally logged in) and attribute every Tracy log entry to the URL that caused it. The
