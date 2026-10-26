@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.1 (2026-10-26)
+
+- **The dev server logs every request it serves** to `logs/dev-server.log`: status, method, full request
+  URI (with the query string), wall-clock time, the request's CPU time (user + system) and PHP memory
+  (current and peak), e.g. `[18:46:57] 200 GET /?a=1 55.7 ms cpu 53.2 ms mem 1.5 MB (peak 4.2 MB)`.
+  Static files are served by PHP itself and are not timed.
+
 ## 2.1.0 (2026-10-26)
 
 - **`noirapi latte-format [--check] [--indent=N|--tabs] [path...]`** tidies Latte templates: LF line
