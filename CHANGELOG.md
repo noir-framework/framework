@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.1.0 (2026-10-26)
+
+- **`noirapi latte-format [--check] [--indent=N|--tabs] [path...]`** tidies Latte templates: LF line
+  endings, no trailing whitespace, at most one blank line in a row, a final newline, and every line
+  indented by its HTML / Latte nesting (`{if}`/`{else}`/`{foreach}`..., multi-line tags). `<pre>`,
+  `<textarea>`, `<script>`, `<style>` and comments are copied as written, and the output is compared
+  with the input minus whitespace so only whitespace can change. Without paths it formats the views
+  and layouts directories; `--check` writes nothing and exits 1 when a file would change (CI).
+  Class `Noirapi\Lib\LatteLint\Formatter`.
+
 ## 2.0.1 (2026-10-26)
 
 - **`noirapi crawl` no longer passes a failed login silently.** A server can accept the login POST and

@@ -13,6 +13,7 @@ vendor/bin/noirapi list                 # every command, including the app's
 |---|---|
 | `dev-server start\|stop\|restart\|status [--port 8000] [--host localhost] [--config NAME]` | PHP's built-in server with static files, pid in `temp/`, log in `logs/` |
 | `latte-lint <paths>` | syntax-check Latte templates |
+| `latte-format [--check] [--indent=N\|--tabs] [paths]` | tidy Latte templates in place (indentation, trailing whitespace, blank lines); `--check` for CI |
 | `latte-check [--strict] [--no-controller-check]` | check templates against the variables their controllers pass |
 | `cache:clear` | delete compiled templates and the config, ACL and route caches in `temp/` |
 | `config:check [name]` | load `app/config/<name>.neon` (default: `$CONFIG`, else `default`), run `App\Lib\Config::validate()`, and check `temp/`/`logs/`, `trusted_proxies`, `dev_ips`, `app_secret_key` and `rate_limiter` |

@@ -9,6 +9,7 @@ use Noirapi\Lib\Console\Commands\CacheClear;
 use Noirapi\Lib\Console\Commands\ConfigCheck;
 use Noirapi\Lib\Console\Commands\DbMigrate;
 use Noirapi\Lib\Console\Commands\KeyGenerate;
+use Noirapi\Lib\Console\Commands\LatteFormat;
 use Noirapi\Lib\Console\Commands\MakeController;
 use Noirapi\Lib\Console\Commands\MakeModel;
 use Noirapi\Lib\Console\Commands\RoutesList;
@@ -35,6 +36,7 @@ final class Application
             new ConfigCheck(),
             new DbMigrate(),
             new KeyGenerate(),
+            new LatteFormat(),
             new MakeController(),
             new MakeModel(),
             new RoutesList(),
