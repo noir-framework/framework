@@ -36,9 +36,10 @@ From an app root (either layout):
 
 ```bash
 noirapi/bin/dev-server [start|stop|restart|status] [--port 8000] [--host localhost] [--config NAME]
-vendor/bin/noirapi dev-server ...                    # Composer layout; also latte-lint, latte-check
+vendor/bin/noirapi dev-server ...                    # Composer layout; also latte-lint, latte-check, latte-format
 noirapi/bin/latte-lint app/views
 php noirapi/bin/latte-check.php [--strict] [--no-controller-check]
+php noirapi/bin/console.php latte-format [--check] [--indent=N|--tabs] [paths]   # tidy templates (Lib/LatteLint/Formatter, whitespace only)
 ```
 
 `bin/noirapi` runs `bin/console.php` (`Lib/Console`: cache:clear, config:check, routes:list, make:*, key:generate, db:migrate, and `App\Commands\*` from `app/commands/`) for anything but the three shell tools. It only sets `NOIRAPI_ROOT` (from `COMPOSER_RUNTIME_BIN_DIR` or the cwd) and execs the per-tool scripts, which fall back to `dirname(__DIR__, 2)` for the submodule layout. The dev server writes its pid to `temp/` and logs to `logs/`, and reads optional `<root>/dev-server.ini` settings. `PHP_CLI_SERVER_WORKERS` defaults to 4.
