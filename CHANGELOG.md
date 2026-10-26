@@ -2,6 +2,10 @@
 
 ## 2.0.0 (unreleased)
 
+- **`noirapi crawl <config.json>`** and **`NOIRAPI_ERROR_CAPTURE=<dir>`**, ported from 1.2.0: walk a
+  site (optionally logged in) and attribute every Tracy log entry to the URL that caused it. The
+  capture variable is only honoured for dev requests (`Config::isDev`). See `docs/crawl.md`.
+- Allow nette/neon 4 and php-curl-class 12/13.
 - **Trusted proxies.** `X-Forwarded-For/-Proto/-Host` and Cloudflare's `CF-Connecting-IP` are
   only believed from peers listed in the new `trusted_proxies` config (`cloudflare` expands to
   Cloudflare's ranges). **Breaking:** Cloudflare used to be trusted implicitly; apps behind it
