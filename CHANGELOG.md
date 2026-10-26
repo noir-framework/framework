@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 (2026-10-26)
+
+- Allow nette/neon 4 (`^3.4 || ^4.0`). Only `Neon::decodeFile()` and `Nette\Neon\Exception` are used,
+  both unchanged in 4.0; tests, phpcs pass on neon 4.0.0.
+
 ## 1.2.0 (2026-10-25)
 
 - **`noirapi crawl <config.json>`** walks a site with `php-curl-class`, optionally logs in first, and
