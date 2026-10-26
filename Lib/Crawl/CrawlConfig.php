@@ -90,6 +90,28 @@ final class CrawlConfig
     }
 
     /**
+     * True when a request for $requestedUrl ended up on the login page (after redirects), i.e. the
+     * session is not authenticated. Requests for the login page itself never count.
+     *
+     * @param string $effectiveUrl the URL curl finished on
+     * @param string $requestedUrl
+     * @param string $loginUrl
+     * @return bool
+     */
+    public static function endedOnLogin(string $effectiveUrl, string $requestedUrl, string $loginUrl): bool
+    {
+        $marker = self::loginMarker($loginUrl);
+
+        if ($marker === '' || $marker === '/') {
+            return false;
+        }
+
+        $effective = self::loginMarker($effectiveUrl);
+
+        return $effective === $marker && self::loginMarker($requestedUrl) !== $marker;
+    }
+
+    /**
      * @param mixed $login
      * @return array<string, mixed>
      */

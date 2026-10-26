@@ -103,4 +103,4 @@ foreach ($report['notes'] as $note) {
     fwrite(STDERR, 'Note: ' . $note . "\n");
 }
 
-exit($summary['distinct_errors'] > 0 || $summary['server_errors'] > 0 ? 1 : 0);
+exit($summary['distinct_errors'] > 0 || $summary['server_errors'] > 0 || ($summary['login_redirects'] ?? 0) > 0 || ($summary['login_failed'] ?? false) ? 1 : 0);
