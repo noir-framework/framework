@@ -92,6 +92,10 @@
 - Requires the stable `noirapi/database ^5.0` from Packagist: no `minimum-stability: beta` or
   VCS repository entry is needed any more.
 
+## 1.1.1 (2026-09-28)
+
+- Allow php-curl-class 12 and 13.
+
 ## 1.1.0 (2026-09-28)
 
 - `Model` connects lazily: `$db` is a property hook, so the PDO opens on first use, not in the
