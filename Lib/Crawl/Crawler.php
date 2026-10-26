@@ -40,6 +40,11 @@ final class Crawler
     /** @var array<string, array<string, mixed>> */
     private array $errors = [];
 
+    private bool $loginFailed = false;
+
+    /** @var list<string> pages that ended on the login page although the crawl is logged in */
+    private array $loginRedirects = [];
+
     /**
      * @param array<string, mixed> $config
      * @param ErrorLog $log
@@ -62,6 +67,8 @@ final class Crawler
         $login = $this->config['login'];
 
         if ($login['required'] && ! $this->login($login)) {
+            $this->loginFailed = true;
+
             return $this->report(['login failed: check login.url, username, password and field names']);
         }
 
@@ -118,6 +125,12 @@ final class Crawler
      */
     private function notes(): array
     {
+        if ($this->loginRedirects !== []) {
+            return [count($this->loginRedirects) . ' page(s) ended on the login page (first: '
+                . $this->loginRedirects[0] . '): the login probably failed or the session was lost, so '
+                . 'authenticated pages were not crawled'];
+        }
+
         if ($this->errors !== []) {
             return [];
         }
@@ -177,12 +190,36 @@ final class Crawler
             }
         }
 
+        $this->noteLoginRedirect($url);
+
         $status = (int) $this->http->httpStatusCode;
         $this->pages[$url] = ['url' => $url, 'status' => $status, 'ms' => $millis, 'errors' => count($new)];
 
         $type = strtolower((string) ($this->http->responseHeaders['content-type'] ?? ''));
 
         return ! $this->http->error && str_contains($type, 'html') ? (string) $this->http->response : null;
+    }
+
+    /**
+     * With login.required, a page that ends on the login page means the login did not take (the POST
+     * can succeed in the server's eyes yet redirect elsewhere) or the session was lost.
+     *
+     * @param string $url
+     * @return void
+     */
+    private function noteLoginRedirect(string $url): void
+    {
+        $login = $this->config['login'];
+
+        if (! $login['required']) {
+            return;
+        }
+
+        $effective = (string) $this->http->getInfo(CURLINFO_EFFECTIVE_URL);
+
+        if (CrawlConfig::endedOnLogin($effective, $url, $login['url'])) {
+            $this->loginRedirects[] = $url;
+        }
     }
 
     /**
@@ -222,6 +259,8 @@ final class Crawler
                 'pages' => count($this->pages),
                 'distinct_errors' => count($this->errors),
                 'server_errors' => count($failed),
+                'login_redirects' => count($this->loginRedirects),
+                'login_failed' => $this->loginFailed,
             ],
             'notes' => $notes,
             'errors' => array_values($this->errors),

@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Noirapi\Lib\Crawl\CrawlConfig;
 use Noirapi\Lib\Crawl\Links;
 use Noirapi\Lib\Crawl\ErrorLog;
+use Noirapi\Lib\Kernel;
 use PHPUnit\Framework\TestCase;
 
 final class CrawlTest extends TestCase
@@ -51,6 +52,32 @@ final class CrawlTest extends TestCase
         self::assertSame('/users/login', CrawlConfig::loginMarker('/bg/users/login'));
         self::assertSame('/users/login', CrawlConfig::loginMarker('http://x.test/users/login'));
         self::assertSame('/login', CrawlConfig::loginMarker('/login'));
+    }
+
+    public function testEndedOnLoginIgnoresTheLoginPageItself(): void
+    {
+        $login = '/bg/users/login';
+
+        self::assertTrue(CrawlConfig::endedOnLogin('http://x.test/users/login', 'http://x.test/bg/autoplus', $login));
+        self::assertTrue(CrawlConfig::endedOnLogin('http://x.test/bg/users/login', 'http://x.test/bg/autoplus', $login));
+        self::assertFalse(CrawlConfig::endedOnLogin('http://x.test/bg/users/login', 'http://x.test/bg/users/login', $login));
+        self::assertFalse(CrawlConfig::endedOnLogin('http://x.test/bg/autoplus', 'http://x.test/bg/autoplus', $login));
+    }
+
+    public function testRelativeErrorCaptureDirIsMadeAbsolute(): void
+    {
+        $relative = 'tmp-capture-' . getmypid();
+        putenv('NOIRAPI_ERROR_CAPTURE=' . $relative);
+
+        try {
+            $dir = (new \ReflectionMethod(Kernel::class, 'errorCaptureDir'))->invoke(null);
+
+            self::assertSame(getcwd() . DIRECTORY_SEPARATOR . $relative, $dir);
+            self::assertDirectoryExists($dir);
+        } finally {
+            putenv('NOIRAPI_ERROR_CAPTURE');
+            @rmdir(getcwd() . DIRECTORY_SEPARATOR . $relative);
+        }
     }
 
     public function testResolveKeepsSameHostPagesOnly(): void

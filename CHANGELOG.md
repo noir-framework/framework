@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.1 (2026-10-26)
+
+- **`noirapi crawl` no longer passes a failed login silently.** A server can accept the login POST and
+  still redirect somewhere other than the login page, which looked like success. Now any page that
+  ends on the login page after a successful-looking login is counted (`summary.login_redirects`),
+  reported in `notes`, and the command exits 1; a login that fails outright sets
+  `summary.login_failed` and also exits 1 (it used to exit 0 with zero pages crawled).
+- **`NOIRAPI_ERROR_CAPTURE` accepts a relative directory.** Tracy refuses a relative log directory and
+  exits with a 500 on every request; the path is now resolved against the working directory.
+
 ## 2.0.0 (2026-10-26)
 
 - **`noirapi crawl <config.json>`** and **`NOIRAPI_ERROR_CAPTURE=<dir>`**, ported from 1.2.0: walk a

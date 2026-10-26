@@ -283,6 +283,11 @@ final class Kernel
             return null;
         }
 
+        // Tracy refuses a relative log directory (and exits), so resolve it against the working directory.
+        if (! preg_match('#^([a-z]+:)?[/\\\\]#i', $dir)) {
+            $dir = getcwd() . DIRECTORY_SEPARATOR . $dir;
+        }
+
         if (! is_dir($dir) && ! mkdir($dir, 0775, true) && ! is_dir($dir)) {
             return null;
         }
