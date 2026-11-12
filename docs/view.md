@@ -247,6 +247,23 @@ Render a standalone template fragment and print it inline. The template receives
 
 The template file is resolved from `app/templates/`.
 
+### App-level functions
+
+Register your own functions on the Latte engine, usually in the base controller's constructor (so every template can use them), or in the controller or action that renders the template:
+
+```php
+$this->view()->latte->addFunction('server_now', static fn (): string => date('Y-m-d H:i:s'));
+$this->view()->latte->addFilter('shout', static fn (string $text): string => strtoupper($text));
+```
+
+`latte-check` does not run your controllers, it reads their source. It treats a function or filter as known when:
+
+1. it is in `app/lib/Functions.php` (public static methods), `Filters.php` (public static methods) or `Macros.php` (keys of the arrays `getFunctions()` / `getFilters()` return), or
+2. a base controller (a parent class of the controller, below `Noirapi\Lib\Controller`) registers it with `addFunction('name', ...)` / `addFilter('name', ...)`, or
+3. the controller registers it: in the constructor or a non-public helper for all its templates, in a public method only for the templates that method renders.
+
+Layouts and partials are rendered by many controllers, so for them any of the above counts. Only a literal name is seen (`addFunction($name, ...)` is not). Nothing loads `App\Lib\Functions` at runtime: a function listed there must also be registered with `addFunction()`.
+
 ---
 
 ## Layout Configuration via NEON

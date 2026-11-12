@@ -7,6 +7,7 @@ namespace Noirapi\Lib\LatteLint;
 use Latte\SecurityViolationException;
 use Noirapi\Lib\Controller;
 
+use function array_fill_keys;
 use function array_keys;
 use function array_merge;
 use function array_unique;
@@ -14,7 +15,9 @@ use function array_values;
 use function basename;
 use function dirname;
 use function file_get_contents;
+use function implode;
 use function glob;
+use function strlen;
 use function preg_match;
 use function preg_match_all;
 use function str_starts_with;
@@ -29,6 +32,12 @@ class Checker
     private TemplateChecker $templateChecker;
     private ControllerAnalyzer $controllerAnalyzer;
     private BaseVarAnalyzer $baseVarAnalyzer;
+    private RegistrationAnalyzer $registrations;
+    private VarUsageCollector $collector;
+    private readonly string $libDir;
+
+    /** @var array<string, TemplateChecker> Template checkers keyed by the app functions/filters they know. */
+    private array $checkers = [];
 
     /** @var string[] SYSTEM_VARS plus vars discovered via BaseVarAnalyzer, resolved once per run() */
     private array $globalVars = [];
@@ -38,19 +47,24 @@ class Checker
      * @param string $layoutsDir      Absolute path to the layouts directory.
      * @param string $controllersDir  Absolute path to the controllers directory.
      * @param bool   $controllerCheck Whether to run the controller ↔ template variable check.
+     * @param string|null $libDir     Application lib directory with Functions.php, Filters.php and Macros.php
+     *                                (default: "lib" next to the controllers directory).
      */
     public function __construct(
         private readonly string $viewsDir,
         private readonly string $layoutsDir,
         private readonly string $controllersDir,
         private readonly bool $controllerCheck = true,
+        ?string $libDir = null,
     ) {
-        $collector = new VarUsageCollector();
-        $engine = EngineFactory::create($collector);
+        $this->libDir = $libDir ?? dirname($controllersDir) . '/lib';
+        $this->collector = new VarUsageCollector();
+        $engine = EngineFactory::create($this->collector);
 
-        $this->templateChecker = new TemplateChecker($engine, $collector);
+        $this->templateChecker = new TemplateChecker($engine, $this->collector);
         $this->controllerAnalyzer = new ControllerAnalyzer();
         $this->baseVarAnalyzer = new BaseVarAnalyzer();
+        $this->registrations = new RegistrationAnalyzer();
     }
 
     /**
@@ -63,10 +77,12 @@ class Checker
         // Pre-build includes map for partials: partial file => vars passed by parents
         $parentVarMap = $this->buildParentVarMap();
 
-        // Analyze controllers once if needed
-        $controllerMap = $this->controllerCheck
-            ? $this->controllerAnalyzer->analyze($this->controllersDir)
-            : [];
+        // Analyze controllers once; the registration lookup needs them even without the variable check
+        $analyzed = $this->controllerAnalyzer->analyze($this->controllersDir);
+        $controllerMap = $this->controllerCheck ? $analyzed : [];
+
+        // Latte functions/filters the app registers (app/lib, base controllers, the controller itself)
+        $this->prepareRegistrations($analyzed);
 
         // Vars every controller's base class(es) inject into every view (e.g. App\Site's
         // addParam('user', ...)), resolved via the real class hierarchy - not tied to any
@@ -91,7 +107,8 @@ class Checker
             $parentVars = $parentVarMap[$file] ?? [];
 
             // Template syntax + varType completeness check
-            $result->merge($this->templateChecker->check($file, $isPartial, $parentVars));
+            $checker = $this->checkerFor($file, $isPartial);
+            $result->merge($checker->check($file, $isPartial, $parentVars));
 
             // Controller ↔ template variable match check (skip partials and layouts)
             if ($this->controllerCheck && ! $isPartial && str_starts_with($file, $this->viewsDir)) {
@@ -100,6 +117,58 @@ class Checker
         }
 
         return $result;
+    }
+
+    /**
+     * @param array<string, array<string, string[]>> $analyzed Controller map from ControllerAnalyzer.
+     */
+    private function prepareRegistrations(array $analyzed): void
+    {
+        $controllers = [];
+        foreach (array_keys($analyzed) as $shortName) {
+            $fqcn = $this->controllerAnalyzer->getFqcn($shortName);
+            if ($fqcn !== null) {
+                $controllers[$shortName] = $fqcn;
+            }
+        }
+
+        $this->registrations->prepare($this->libDir, $controllers, Controller::class);
+        $this->checkers = [];
+    }
+
+    /**
+     * The template checker whose engine knows the functions and filters registered for this template:
+     * a view by its controller (and the method that renders it), a layout or partial by everything.
+     */
+    private function checkerFor(string $file, bool $isPartial): TemplateChecker
+    {
+        $known = $this->registrations->forShared();
+
+        $isView = ! $isPartial && str_starts_with($file, $this->viewsDir);
+
+        if ($isView && preg_match('#^([^/]+)/([^/]+)\.latte$#', substr($file, strlen($this->viewsDir) + 1), $parts) === 1) {
+            $methods = $this->controllerAnalyzer->getTemplateMethods()[ucfirst($parts[1])][$parts[2]] ?? [];
+            $known = $this->registrations->forTemplate($parts[1], $methods);
+        }
+
+        if ($known['functions'] === [] && $known['filters'] === []) {
+            return $this->templateChecker;
+        }
+
+        $key = implode(',', $known['functions']) . '|' . implode(',', $known['filters']);
+
+        if (! isset($this->checkers[$key])) {
+            $engine = EngineFactory::create(
+                $this->collector,
+                array_fill_keys($known['functions'], static fn (): mixed => null),
+                array_fill_keys($known['filters'], static fn (mixed $value): mixed => $value),
+            );
+            $checker = new TemplateChecker($engine, $this->collector);
+            $checker->setGlobalVars($this->globalVars);
+            $this->checkers[$key] = $checker;
+        }
+
+        return $this->checkers[$key];
     }
 
     /**

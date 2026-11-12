@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.1.2 (2026-11-12)
+
+- **`latte-check` knows the Latte functions and filters an app registers.** It used to report
+  `Unknown function order_cutoff_hour()` for a function that `App\Site` registers with
+  `$this->view()->latte->addFunction(...)`, because the linter's own engine never ran the app's
+  controllers. It now reads the source (nothing of the app is executed) in three places:
+  1. `app/lib/Functions.php`, `Filters.php` and `Macros.php` (lower-case file names too): public static
+     methods of `Functions.php` are functions, those of `Filters.php` are filters, `Macros.php` may list
+     names in `getFunctions()` / `getFilters()`.
+  2. Base controllers between a controller and `Noirapi\Lib\Controller` (usually `App\Site`): every
+     `addFunction('name', ...)` / `addFilter('name', ...)` call with a literal name.
+  3. The controller itself: the constructor and non-public helpers count for all its templates, a call
+     inside a public method only for the templates that method renders with `display()`.
+  Layouts and partials are rendered by many controllers, so they get everything found anywhere. A name
+  that is not a string literal cannot be seen. Classes `Lib/LatteLint/RegistrationScanner` and
+  `RegistrationAnalyzer`; `Checker` takes an optional `$libDir` (default: `lib` next to the controllers
+  directory) and builds one engine per distinct set of known names; `EngineFactory::create()` takes
+  `$extraFilters`. `App\Lib\Functions` is only read by the linter, nothing loads it at runtime.
 ## 2.1.1 (2026-10-26)
 
 - **The dev server logs every request it serves** to `logs/dev-server.log`: status, method, full request

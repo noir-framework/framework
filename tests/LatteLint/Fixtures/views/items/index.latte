@@ -1,0 +1,3 @@
+{varType string $title}
+<h1>{$title|base_filter|lib_filter|macros_filter}</h1>
+<p>{from_base()} {from_lib()} {from_macros()} {from_ctor()} {from_helper()} {from_index()}</p>
