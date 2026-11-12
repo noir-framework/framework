@@ -10,6 +10,7 @@ use Noirapi\Lib\Crawl\Links;
 use Noirapi\Lib\Crawl\ErrorLog;
 use Noirapi\Lib\Kernel;
 use PHPUnit\Framework\TestCase;
+use ReflectionMethod;
 
 final class CrawlTest extends TestCase
 {
@@ -54,7 +55,7 @@ final class CrawlTest extends TestCase
         self::assertSame('/login', CrawlConfig::loginMarker('/login'));
     }
 
-    public function testEndedOnLoginIgnoresTheLoginPageItself(): void
+    public function testEndedOnLoginIgnoresLoginPage(): void
     {
         $login = '/bg/users/login';
 
@@ -64,19 +65,22 @@ final class CrawlTest extends TestCase
         self::assertFalse(CrawlConfig::endedOnLogin('http://x.test/bg/autoplus', 'http://x.test/bg/autoplus', $login));
     }
 
-    public function testRelativeErrorCaptureDirIsMadeAbsolute(): void
+    public function testRelativeCaptureDirBecomesAbsolute(): void
     {
         $relative = 'tmp-capture-' . getmypid();
         putenv('NOIRAPI_ERROR_CAPTURE=' . $relative);
 
         try {
-            $dir = (new \ReflectionMethod(Kernel::class, 'errorCaptureDir'))->invoke(null);
+            $dir = (new ReflectionMethod(Kernel::class, 'errorCaptureDir'))->invoke(null);
 
             self::assertSame(getcwd() . DIRECTORY_SEPARATOR . $relative, $dir);
             self::assertDirectoryExists($dir);
         } finally {
             putenv('NOIRAPI_ERROR_CAPTURE');
-            @rmdir(getcwd() . DIRECTORY_SEPARATOR . $relative);
+            $created = getcwd() . DIRECTORY_SEPARATOR . $relative;
+            if (is_dir($created)) {
+                rmdir($created);
+            }
         }
     }
 
