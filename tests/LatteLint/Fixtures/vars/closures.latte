@@ -1,0 +1,7 @@
+{varType array $rows}
+{varType int $limit}
+{if array_filter($rows, fn($r) => $r > $limit)}many{/if}
+{var $sum = array_reduce($rows, function ($carry, $item) use ($limit) { return $carry + min($item, $limit); }, 0)}
+{$sum}
+{$undeclared}
+{$r}

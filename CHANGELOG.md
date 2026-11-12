@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.1.6 (2026-11-12)
+
+- **`latte-check` no longer reports closure, arrow function and `{define}` parameters as undeclared
+  variables.** `fn($d) => $d->active` and `function ($x) use ($y) {...}` used to produce
+  `Variable $d used but not declared`; so did every variable of a `{define block, string $a, $b}`
+  and of a `{define block}` whose `{include block, name: value}` passes it as a named argument
+  (Latte makes those variables inside a block without declared parameters). They are scoped to their
+  own body: a template variable with the same name is still tracked outside it, so a `{varType}`
+  declaration is not reported as unused just because a block shadows it. Classes
+  `Lib/LatteLint/BlockScopes` and `VarUsageCollector`.
+
 ## 2.1.5 (2026-11-12)
 
 - **Psalm passes with `ext-memcached` installed too.** CI has the extension, so Psalm analysed the
