@@ -20,6 +20,8 @@ use const PHP_URL_HOST;
 
 /**
  * Validates the crawl JSON file and fills in defaults.
+ *
+ * @psalm-immutable
  */
 final class CrawlConfig
 {
@@ -28,7 +30,10 @@ final class CrawlConfig
 
     /**
      * @param array<string, mixed> $raw
+     *
      * @return array<string, mixed>
+     *
+     * @psalm-pure
      */
     public static function normalize(array $raw): array
     {
@@ -62,7 +67,10 @@ final class CrawlConfig
      * "env:NAME" reads the value from the environment, so passwords need not live in the JSON file.
      *
      * @param string $value
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     public static function fromEnv(string $value): string
     {
@@ -80,7 +88,10 @@ final class CrawlConfig
      * leading language segment, so `/bg/users/login` also matches a redirect to `/en/users/login`.
      *
      * @param string $loginUrl
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     public static function loginMarker(string $loginUrl): string
     {
@@ -96,7 +107,10 @@ final class CrawlConfig
      * @param string $effectiveUrl the URL curl finished on
      * @param string $requestedUrl
      * @param string $loginUrl
+     *
      * @return bool
+     *
+     * @psalm-pure
      */
     public static function endedOnLogin(string $effectiveUrl, string $requestedUrl, string $loginUrl): bool
     {
@@ -113,7 +127,10 @@ final class CrawlConfig
 
     /**
      * @param mixed $login
+     *
      * @return array<string, mixed>
+     *
+     * @psalm-pure
      */
     private static function login(mixed $login): array
     {

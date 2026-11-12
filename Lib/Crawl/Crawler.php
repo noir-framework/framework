@@ -55,7 +55,7 @@ final class Crawler
         $this->http->setOpt(CURLOPT_FOLLOWLOCATION, true);
         $this->http->setOpt(CURLOPT_MAXREDIRS, 5);
         $this->http->setOpt(CURLOPT_TIMEOUT, (int) ($config['timeout'] ?? 30));
-        $this->http->setCookieJar(sys_get_temp_dir() . '/noirapi-crawl-' . getmypid() . '.cookies');
+        $this->http->setCookieJar(sys_get_temp_dir() . '/noirapi-crawl-' . (int) getmypid() . '.cookies');
         $this->http->setHeader('User-Agent', 'noirapi-crawl');
     }
 
@@ -113,7 +113,10 @@ final class Crawler
 
     /**
      * @param int $depth
+     *
      * @return bool
+     *
+     * @psalm-mutation-free
      */
     private function mayFollow(int $depth): bool
     {
@@ -122,6 +125,8 @@ final class Crawler
 
     /**
      * @return list<string>
+     *
+     * @psalm-mutation-free
      */
     private function notes(): array
     {
@@ -176,7 +181,7 @@ final class Crawler
         $before = $this->log->snapshot();
         $started = microtime(true);
         $this->http->get($url);
-        $millis = (int) round((microtime(true) - $started) * 1000);
+        $millis = (int) round((microtime(true) - $started) * 1000.0);
 
         $new = $this->log->since($before);
 
@@ -239,7 +244,10 @@ final class Crawler
 
     /**
      * @param string $path
+     *
      * @return string
+     *
+     * @psalm-mutation-free
      */
     private function absolute(string $path): string
     {
