@@ -22,7 +22,6 @@ final readonly class MemcachedBlockStore implements BlockStore
     }
 
     /**
-     * @psalm-mutation-free
      */
     #[Override]
     public function blockedUntil(string $key): ?int
@@ -33,7 +32,6 @@ final readonly class MemcachedBlockStore implements BlockStore
     }
 
     /**
-     * @psalm-mutation-free
      */
     #[Override]
     public function block(string $key, int $until): void

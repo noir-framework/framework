@@ -53,7 +53,6 @@ final class MemcachedBackend implements Backend
     }
 
     /**
-     * @psalm-external-mutation-free
      */
     private function memcached(): Memcached
     {
