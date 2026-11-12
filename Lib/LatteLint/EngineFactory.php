@@ -25,8 +25,9 @@ class EngineFactory
     /**
      * @param VarUsageCollector $collector Shared collector instance; reset before each compile call.
      * @param array<string, callable> $extraFunctions Additional functions to register (e.g. app-specific).
+     * @param array<string, callable> $extraFilters Additional filters to register (e.g. app-specific).
      */
-    public static function create(VarUsageCollector $collector, array $extraFunctions = []): Engine
+    public static function create(VarUsageCollector $collector, array $extraFunctions = [], array $extraFilters = []): Engine
     {
         $engine = new Engine();
         $engine->setStrictParsing();
@@ -65,6 +66,10 @@ class EngineFactory
 
         foreach ($extraFunctions as $name => $callable) {
             $engine->addFunction($name, $callable);
+        }
+
+        foreach ($extraFilters as $name => $callable) {
+            $engine->addFilter($name, $callable);
         }
 
         return $engine;

@@ -23,6 +23,7 @@ use function array_values;
 use function basename;
 use function file_get_contents;
 use function glob;
+use function in_array;
 
 /**
  * Parses controller PHP files and maps display() calls to their variable keys.
@@ -41,6 +42,9 @@ class ControllerAnalyzer
 
     /** @var array<string, string>  controllerShortName => FQCN */
     private array $fqcnMap = [];
+
+    /** @var array<string, array<string, list<string>>>  controllerShortName => [templateName => public method names that render it] */
+    private array $templateMethods = [];
 
     private Parser $parser;
     private NodeFinder $finder;
@@ -95,6 +99,19 @@ class ControllerAnalyzer
     }
 
     /**
+     * Which public controller methods render which template, discovered during analyze():
+     * [controllerShortName => [templateName => methodName[]]].
+     *
+     * @return array<string, array<string, list<string>>>
+     *
+     * @psalm-mutation-free
+     */
+    public function getTemplateMethods(): array
+    {
+        return $this->templateMethods;
+    }
+
+    /**
      * @return array<string, string[]>  [templateName => varNames[]]
      */
     private function parseController(string $file, string $controllerName): array
@@ -132,7 +149,7 @@ class ControllerAnalyzer
                 continue;
             }
 
-            $result = $this->mergeMethodDisplayCalls($method, $result);
+            $result = $this->mergeMethodDisplayCalls($method, $result, $controllerName);
         }
 
         return $result;
@@ -141,15 +158,19 @@ class ControllerAnalyzer
     /**
      * @param ClassMethod $method
      * @param array<string, string[]> $result
+     * @param string $controllerName
      * @return array<string, string[]>
      */
-    private function mergeMethodDisplayCalls(ClassMethod $method, array $result): array
+    private function mergeMethodDisplayCalls(ClassMethod $method, array $result, string $controllerName): array
     {
         $methodName = $method->name->toString();
 
         foreach ($this->findDisplayCalls($method) as [$templateName, $varNames]) {
             // If template is explicitly set via setTemplate(), use that; otherwise use method name
             $tpl = $templateName ?? $methodName;
+            if (! in_array($methodName, $this->templateMethods[$controllerName][$tpl] ?? [], true)) {
+                $this->templateMethods[$controllerName][$tpl][] = $methodName;
+            }
             // Multiple display() calls in one method → merge keys (e.g., early-return patterns)
             $result[$tpl] = isset($result[$tpl])
                 ? array_values(array_unique([...$result[$tpl], ...$varNames]))
