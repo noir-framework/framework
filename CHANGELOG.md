@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.3 (2026-11-12)
+
+- **CI is green again.** The `PHPMD` and `Psalm` steps had been failing since 2.1.1; no behaviour changed.
+  `Lib/Crawl/*` got the `@psalm-pure` / `@psalm-mutation-free` / `@psalm-immutable` annotations Psalm asked
+  for, `Crawler` casts `getmypid()` to `int` and multiplies milliseconds by a float literal, and
+  `tests/Crawl/CrawlTest.php` uses shorter test names, imports `ReflectionMethod` and no longer silences
+  `rmdir()` with `@`.
+
 ## 2.1.2 (2026-11-12)
 
 - **`latte-check` knows the Latte functions and filters an app registers.** It used to report

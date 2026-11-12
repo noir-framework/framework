@@ -65,7 +65,10 @@ final class Links
      * @param string $href
      * @param string $pageUrl
      * @param string $baseUrl
+     *
      * @return string|null null for links that are not crawlable pages of $baseUrl
+     *
+     * @psalm-pure
      */
     public static function resolve(string $href, string $pageUrl, string $baseUrl): ?string
     {
@@ -97,7 +100,10 @@ final class Links
      * @param string $pageUrl
      * @param array<string, mixed> $base
      * @param string $origin
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     private static function absolutize(string $href, string $pageUrl, array $base, string $origin): string
     {
@@ -121,7 +127,10 @@ final class Links
     /**
      * @param array<string, mixed> $parts
      * @param array<string, mixed> $base
+     *
      * @return bool
+     *
+     * @psalm-pure
      */
     private static function sameHost(array $parts, array $base): bool
     {

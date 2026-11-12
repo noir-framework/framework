@@ -28,6 +28,8 @@ final class ErrorLog
 {
     /**
      * @param string $dir
+     *
+     * @psalm-mutation-free
      */
     public function __construct(private readonly string $dir)
     {
@@ -91,7 +93,10 @@ final class ErrorLog
      *
      * @param string $logName
      * @param string $raw
+     *
      * @return array{key: string, level: string, severity: string, file: string, line: int, message: string, dump: ?string}
+     *
+     * @psalm-pure
      */
     public static function parse(string $logName, string $raw): array
     {
@@ -126,7 +131,10 @@ final class ErrorLog
 
     /**
      * @param string $message
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     private static function stripPaths(string $message): string
     {
@@ -137,7 +145,10 @@ final class ErrorLog
      * Tracy names exception dumps `exception--<date>--<hash>.html` and mentions the same file stem in the log line.
      *
      * @param string $raw
+     *
      * @return string
+     *
+     * @psalm-pure
      */
     private function dumpStem(string $raw): string
     {
@@ -159,7 +170,10 @@ final class ErrorLog
 
     /**
      * @param string $path
+     *
      * @return int
+     *
+     * @psalm-mutation-free
      */
     private function lineCount(string $path): int
     {
@@ -168,7 +182,10 @@ final class ErrorLog
 
     /**
      * @param string $path
+     *
      * @return list<string>
+     *
+     * @psalm-pure
      */
     private function readLines(string $path): array
     {
