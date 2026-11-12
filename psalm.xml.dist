@@ -31,6 +31,40 @@
                 <referencedClass name="Memcached"/>
             </errorLevel>
         </UndefinedClass>
+        <!-- Taint findings (psalm 7.3 reports them in a normal run). Each one is a sink that is only
+             reached with data the application controls, see the comment per handler. -->
+        <TaintedHeader>
+            <errorLevel type="suppress">
+                <!-- header() refuses a value that contains a line break -->
+                <file name="Lib/Kernel.php"/>
+            </errorLevel>
+        </TaintedHeader>
+        <TaintedHtml>
+            <errorLevel type="suppress">
+                <!-- the body is the finished response, templates escape their output -->
+                <file name="Lib/Kernel.php"/>
+            </errorLevel>
+        </TaintedHtml>
+        <TaintedTextWithQuotes>
+            <errorLevel type="suppress">
+                <!-- same as TaintedHtml -->
+                <file name="Lib/Kernel.php"/>
+            </errorLevel>
+        </TaintedTextWithQuotes>
+        <TaintedSql>
+            <errorLevel type="suppress">
+                <!-- PDO::exec() wrapper: forwards the caller's statement unchanged -->
+                <file name="Lib/PDO/PDO.php"/>
+                <!-- the table name is a constructor argument chosen by the developer, values are bound parameters -->
+                <file name="Lib/RateLimit/Store/PdoRateLimitStore.php"/>
+            </errorLevel>
+        </TaintedSql>
+        <TaintedCallable>
+            <errorLevel type="suppress">
+                <!-- language_detector: a class name from the app's own config file, never from a request -->
+                <file name="Lib/Route.php"/>
+            </errorLevel>
+        </TaintedCallable>
     </issueHandlers>
     <stubs>
         <!-- The optional App\* classes the framework calls behind class_exists() guards -->

@@ -20,8 +20,6 @@ use const PHP_URL_HOST;
 
 /**
  * Validates the crawl JSON file and fills in defaults.
- *
- * @psalm-immutable
  */
 final class CrawlConfig
 {
@@ -32,8 +30,6 @@ final class CrawlConfig
      * @param array<string, mixed> $raw
      *
      * @return array<string, mixed>
-     *
-     * @psalm-pure
      */
     public static function normalize(array $raw): array
     {
@@ -69,8 +65,6 @@ final class CrawlConfig
      * @param string $value
      *
      * @return string
-     *
-     * @psalm-pure
      */
     public static function fromEnv(string $value): string
     {
@@ -129,8 +123,6 @@ final class CrawlConfig
      * @param mixed $login
      *
      * @return array<string, mixed>
-     *
-     * @psalm-pure
      */
     private static function login(mixed $login): array
     {

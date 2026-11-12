@@ -49,7 +49,6 @@ class DateTime implements Schema
     }
 
     /**
-     * @psalm-external-mutation-free
      */
     public function setTime(string $time, string $format): self
     {
@@ -63,8 +62,6 @@ class DateTime implements Schema
      * @param string $format
      *
      * @return $this
-     *
-     * @psalm-external-mutation-free
      */
     public function setDate(string $date, string $format): self
     {

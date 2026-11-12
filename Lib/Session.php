@@ -69,8 +69,6 @@ class Session
      * @return array{lifetime: int, path: string, domain: string, secure: bool, httponly: true, samesite: string}
      *
      * @SuppressWarnings("PHPMD.BooleanArgumentFlag") the request's scheme, not a behaviour switch.
-     *
-     * @psalm-external-mutation-free
      */
     public static function cookieParams(array $config, bool $https): array
     {

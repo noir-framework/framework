@@ -172,8 +172,6 @@ final class ErrorLog
      * @param string $path
      *
      * @return int
-     *
-     * @psalm-mutation-free
      */
     private function lineCount(string $path): int
     {
@@ -184,8 +182,6 @@ final class ErrorLog
      * @param string $path
      *
      * @return list<string>
-     *
-     * @psalm-pure
      */
     private function readLines(string $path): array
     {

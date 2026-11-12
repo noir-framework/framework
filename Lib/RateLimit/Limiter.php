@@ -90,7 +90,6 @@ final class Limiter
     }
 
     /**
-     * @psalm-external-mutation-free
      */
     private function record(Result $result): Result
     {

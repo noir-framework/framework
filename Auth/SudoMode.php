@@ -65,8 +65,6 @@ class SudoMode
 
     /**
      * The configured elevation lifetime: `auth.sudo_ttl`, default 900 seconds.
-     *
-     * @psalm-external-mutation-free
      */
     public static function ttl(): int
     {

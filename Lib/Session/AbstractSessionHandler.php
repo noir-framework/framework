@@ -14,7 +14,6 @@ abstract class AbstractSessionHandler implements SessionHandlerInterface
     private static bool $staleSession = false;
 
     /**
-     * @psalm-external-mutation-free
      * @noinspection PhpUnused
      */
     public static function wasStale(): bool

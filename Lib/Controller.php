@@ -132,8 +132,6 @@ class Controller
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of Response method calls; leaving unannotated satisfies both.
-     *
-     * @psalm-external-mutation-free
      */
     public function forward(?string $location = null, int $status = 302, bool $skip_lang = false): Response
     {
@@ -183,8 +181,6 @@ class Controller
      * @psalm-suppress PossiblyUnusedMethod
      *
      * @SuppressWarnings("PHPMD.ShortMethodName") public API the apps call as $this->ok().
-     *
-     * @psalm-external-mutation-free
      */
     public function ok(): Response
     {
@@ -197,8 +193,6 @@ class Controller
      * @noinspection PhpUnused
      *
      * @psalm-suppress PossiblyUnusedMethod
-     *
-     * @psalm-external-mutation-free
      */
     public function notFound(): Response
     {
@@ -211,8 +205,6 @@ class Controller
      * @noinspection PhpUnused
      *
      * @psalm-suppress PossiblyUnusedMethod
-     *
-     * @psalm-external-mutation-free
      */
     public function internalServerError(): Response
     {
@@ -230,7 +222,7 @@ class Controller
     {
         Session::remove('message');
 
-        if ($translation_key !== null || $this->view?->translator !== null) {
+        if ($translation_key !== null || $this->view !== null) {
             try {
                 if ($text instanceof Message) {
                     $text->message = $this->view?->translator
@@ -271,8 +263,6 @@ class Controller
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of Config::get(); leaving unannotated satisfies both.
-     *
-     * @psalm-mutation-free
      */
     public function referer(bool $same_domain = true): string
     {
@@ -320,8 +310,6 @@ class Controller
      *
      * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
      * of Config::get(); leaving unannotated satisfies both.
-     *
-     * @psalm-external-mutation-free
      */
     private function refererSameDomainPath(array $parsed): string
     {

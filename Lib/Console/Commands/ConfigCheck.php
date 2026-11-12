@@ -121,7 +121,6 @@ final class ConfigCheck implements Command
     }
 
     /**
-     * @psalm-external-mutation-free
      */
     private static function secret(): ?string
     {
@@ -140,7 +139,6 @@ final class ConfigCheck implements Command
     }
 
     /**
-     * @psalm-external-mutation-free
      */
     private static function rateLimiter(): ?string
     {

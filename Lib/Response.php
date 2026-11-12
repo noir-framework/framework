@@ -340,8 +340,6 @@ class Response
 
     /**
      * @return array
-     *
-     * @psalm-mutation-free
      */
     public function getHeaders(): array
     {
@@ -454,8 +452,6 @@ class Response
      * @return $this
      *
      * @psalm-suppress PossiblyUnusedMethod
-     *
-     * @psalm-mutation-free
      */
     public function clearCookie(string $key): self
     {

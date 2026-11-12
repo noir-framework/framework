@@ -60,8 +60,6 @@ final class RateLimit
 
     /**
      * Forgets every limiter and store (tests, config reloads).
-     *
-     * @psalm-external-mutation-free
      */
     public static function reset(): void
     {
@@ -72,8 +70,6 @@ final class RateLimit
 
     /**
      * Uses $store for the `pdo` storage instead of building one (tests, custom connections).
-     *
-     * @psalm-external-mutation-free
      */
     public static function usePdoStore(PdoRateLimitStore $store): void
     {

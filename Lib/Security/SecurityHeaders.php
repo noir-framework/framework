@@ -80,7 +80,6 @@ final class SecurityHeaders
     private static ?string $nonce = null;
 
     /**
-     * @psalm-external-mutation-free
      */
     public static function enabled(): bool
     {
@@ -101,8 +100,6 @@ final class SecurityHeaders
 
     /**
      * Forgets the nonce. Route calls it at the start of every request (Swoole workers serve many).
-     *
-     * @psalm-external-mutation-free
      */
     public static function reset(): void
     {
@@ -111,8 +108,6 @@ final class SecurityHeaders
 
     /**
      * Whether the configured CSP uses the nonce, i.e. whether views need $nonce.
-     *
-     * @psalm-external-mutation-free
      */
     public static function usesNonce(): bool
     {
@@ -196,8 +191,6 @@ final class SecurityHeaders
 
     /**
      * @return array<string, list<string>>
-     *
-     * @psalm-external-mutation-free
      */
     private static function cspDirectives(): array
     {
@@ -231,8 +224,6 @@ final class SecurityHeaders
 
     /**
      * @return array<string, mixed>
-     *
-     * @psalm-external-mutation-free
      */
     private static function config(): array
     {

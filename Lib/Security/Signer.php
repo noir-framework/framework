@@ -19,7 +19,6 @@ use function strlen;
  * signed URL.
  *
  * @psalm-api
- * @psalm-external-mutation-free
  */
 final readonly class Signer
 {
