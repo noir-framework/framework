@@ -24,6 +24,10 @@ use function str_starts_with;
 /**
  * Latte compiler extension that collects variable usage and local declarations from the AST.
  * Used to detect variables used in templates without a matching {varType} declaration.
+ *
+ * Declared locally for the whole template: {var}, {foreach}, {for}, {capture} and {parameters}
+ * variables. The parameters of a closure, an arrow function or a {define} are scoped to their own
+ * body, see BlockScopes.
  */
 class VarUsageCollector extends Extension
 {
@@ -36,14 +40,21 @@ class VarUsageCollector extends Extension
     /** fast lookup set during traversal */
     private array $localVarSet = [];
 
+    private BlockScopes $scopes;
+
+    public function __construct()
+    {
+        $this->scopes = new BlockScopes();
+    }
+
     /**
-     * @psalm-external-mutation-free
      */
     public function reset(): void
     {
         $this->usedVars = [];
         $this->localVars = [];
         $this->localVarSet = [];
+        $this->scopes->reset();
     }
 
     /**
@@ -59,14 +70,16 @@ class VarUsageCollector extends Extension
 
     private function collectPass(TemplateNode $node): void
     {
-        new NodeTraverser()->traverse($node, $this->enter(...));
+        $this->scopes->learnIncludes($node);
+        new NodeTraverser()->traverse($node, $this->enter(...), $this->scopes->leave(...));
     }
 
     /**
-     * @psalm-external-mutation-free
      */
     private function enter(Node $node): void
     {
+        $this->scopes->enter($node);
+
         match (true) {
             $node instanceof ForeachNode => $this->enterForeach($node),
             $node instanceof VarNode => $this->enterVar($node),
@@ -156,6 +169,11 @@ class VarUsageCollector extends Extension
         $name = $node->name;
         // Skip Latte-internal variables (prefixed with Unicode ʟ)
         if ($name === 'this' || str_starts_with($name, 'ʟ')) {
+            return;
+        }
+
+        // a parameter of a closure or {define} body around this use is not the template variable
+        if ($this->scopes->isParameter($name)) {
             return;
         }
 

@@ -1,0 +1,12 @@
+{varType array $orders}
+{varType string $title}
+{define withParams, string $label, int $count = 1}
+    <b>{$label}</b> {$count}
+{/define}
+{define noParams}
+    <i>{$colId}</i> {$orders} {$typo}
+    {if array_filter($orders, fn($o) => $o === $colId)}match{/if}
+{/define}
+{include withParams, label: $title}
+{include noParams, colId: 'a', orders: $orders}
+<p>{$orders}</p>
