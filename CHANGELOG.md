@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.1.5 (2026-11-12)
+
+- **Psalm passes with `ext-memcached` installed too.** CI has the extension, so Psalm analysed the
+  `Memcached` calls in `MemcachedBackend`, `MemcachedBlockStore` and `MemcachedSessionHandler` and
+  rejected the purity annotations on the methods that call it; those annotations are removed. The
+  `UndefinedClass` handler for `Memcached` in `psalm.xml.dist` is only needed when the extension is
+  missing, so `findUnusedIssueHandlerSuppression` is off instead of failing CI where the extension is
+  present. No behaviour change.
+
 ## 2.1.4 (2026-11-12)
 
 - **Psalm 7.3 passes.** CI installs the newest Psalm, whose purity and taint checks are stricter than the

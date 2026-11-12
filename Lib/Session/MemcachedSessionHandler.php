@@ -37,7 +37,6 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     }
 
     /**
-     * @psalm-mutation-free
      */
     #[Override]
     protected function doRead(string $id): ?string
@@ -48,7 +47,6 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     }
 
     /**
-     * @psalm-mutation-free
      */
     #[Override]
     protected function doWrite(string $id, string $data): bool
@@ -57,7 +55,6 @@ class MemcachedSessionHandler extends AbstractSessionHandler
     }
 
     /**
-     * @psalm-mutation-free
      */
     #[Override]
     protected function doDestroy(string $id): bool
