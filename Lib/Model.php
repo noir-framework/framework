@@ -39,8 +39,6 @@ class Model
     /**
      * @param string|null $driver
      * @param array $params
-     *
-     * @psalm-mutation-free
      */
     public function __construct(?string $driver = null, array $params = [])
     {
@@ -69,8 +67,6 @@ class Model
      * @return static
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-pure
      */
     public static function getCachedInstance(): static
     {
@@ -123,8 +119,6 @@ class Model
 
     /**
      * @return PDO[]
-     *
-     * @psalm-external-mutation-free
      */
     public static function tracyGetPdo(): array
     {
@@ -132,7 +126,6 @@ class Model
     }
 
     /**
-     * @psalm-external-mutation-free
      */
     public static function flushPdoCache(): void
     {
@@ -145,8 +138,6 @@ class Model
      * @noinspection PhpUnused
      *
      * @psalm-suppress PossiblyUnusedMethod
-     *
-     * @psalm-external-mutation-free
      */
     public function clear(): void
     {

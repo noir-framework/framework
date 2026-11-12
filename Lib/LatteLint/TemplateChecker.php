@@ -164,8 +164,6 @@ class TemplateChecker
      * @param CheckResult $result
      *
      * @return void
-     *
-     * @psalm-external-mutation-free
      */
     private function checkUndeclaredVars(string $file, bool $isPartial, array $parentVars, array $declaredVars, CheckResult $result): void
     {

@@ -54,6 +54,9 @@ class TracyFileSession implements SessionStorage
      * contain '/' or '..' and cannot escape $this->dir - safe for file ops.
      *
      * @psalm-taint-escape file
+     * @psalm-taint-escape ssrf the id was checked against ^\w{10}$ and the path starts with our own directory
+     * @psalm-taint-escape url_component same reason
+     * @psalm-taint-escape url_path same reason
      *
      * @psalm-mutation-free
      */

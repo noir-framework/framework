@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.1.4 (2026-11-12)
+
+- **Psalm 7.3 passes.** CI installs the newest Psalm, whose purity and taint checks are stricter than the
+  7.0 beta the repo was developed on, so the `Psalm` step had been failing since 2.1.1. No behaviour
+  changed:
+  - about 50 `@psalm-pure` / `@psalm-mutation-free` / `@psalm-external-mutation-free` annotations that
+    were no longer true were removed (methods that read or write static properties such as `Config`,
+    `Url`, `SchemaHelper`, `RateLimit\Storage`, or call `getenv()`, `file()` and friends; the removal
+    cascades to their callers);
+  - `Helpers/TracyFileSession` declares that the validated session id is safe as a file path, URL path
+    and URL component (`@psalm-taint-escape`);
+  - the remaining taint findings are suppressed per file in `psalm.xml.dist`, each with the reason:
+    the response writer in `Lib/Kernel.php`, the `PDO::exec()` wrapper, `PdoRateLimitStore` (the table
+    name is a developer-chosen constructor argument) and the `language_detector` class name.
+  - `Controller::message()` checks `$this->view !== null` instead of `$this->view?->translator !== null`
+    (the same condition, `translator` is never null).
+
 ## 2.1.3 (2026-11-12)
 
 - **CI is green again.** The `PHPMD` and `Psalm` steps had been failing since 2.1.1; no behaviour changed.

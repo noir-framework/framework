@@ -36,7 +36,6 @@ final class MemcachedBackend implements Backend
     }
 
     /**
-     * @psalm-mutation-free
      */
     #[Override]
     public function blocks(): BlockStore

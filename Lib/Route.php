@@ -193,8 +193,6 @@ class Route
 
     /**
      * @return bool
-     *
-     * @psalm-external-mutation-free
      */
     private function isDevRequest(): bool
     {
@@ -503,8 +501,6 @@ class Route
      * @psalm-suppress MissingPureAnnotation this calls into arbitrary model/
      * callable code via $controller->model and call_user_func(), which is not
      * pure by definition.
-     *
-     * @psalm-mutation-free
      */
     private function resolveAutoWiredValue(
         ReflectionParameter $param,
@@ -638,8 +634,6 @@ class Route
      * @param int $status
      *
      * @return void
-     *
-     * @psalm-external-mutation-free
      */
     private function redirect(string $location, int $status = 302): void
     {

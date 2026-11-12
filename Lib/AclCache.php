@@ -67,7 +67,6 @@ final class AclCache
     }
 
     /**
-     * @psalm-external-mutation-free
      */
     private static function file(string $key): string
     {

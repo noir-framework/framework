@@ -124,8 +124,6 @@ class FilterExtension extends Extension
      * @psalm-suppress MissingPureAnnotation date()/strtotime() are time-dependent;
      * Psalm and PHPStan disagree on whether that counts as impure. Leaving
      * unannotated satisfies both.
-     *
-     * @psalm-pure
      */
     public static function date_format(string $date, string $format): string //phpcs:ignore
     {

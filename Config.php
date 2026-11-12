@@ -121,8 +121,6 @@ class Config
      * @param mixed $default
      *
      * @return mixed
-     *
-     * @psalm-external-mutation-free
      */
     public static function get(string $option, mixed $default = null): mixed
     {
@@ -164,8 +162,6 @@ class Config
      * @param string|null $clientIp the resolved client address (Request::$clientIp)
      *
      * @return bool
-     *
-     * @psalm-external-mutation-free
      */
     public static function isDev(?string $clientIp = null): bool
     {
@@ -177,8 +173,6 @@ class Config
      * @param mixed $data
      *
      * @return void
-     *
-     * @psalm-external-mutation-free
      */
     public static function set(string $option, mixed $data): void
     {
@@ -189,8 +183,6 @@ class Config
      * @return array
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function getAll(): array
     {
@@ -215,7 +207,6 @@ class Config
      *
      * @noinspection PhpUnused
      *
-     * @psalm-external-mutation-free
      * @psalm-suppress ImpureMethodCall detection runs once and is memoised; apps call getRoot()
      * from mutation-free methods, so it must stay mutation-free.
      */
@@ -276,8 +267,6 @@ class Config
      * @return string
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function getTemp(): string
     {
@@ -288,8 +277,6 @@ class Config
      * @return string
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function getLogs(): string
     {
@@ -300,8 +287,6 @@ class Config
      * @return string
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function getWwwRoot(): string
     {
@@ -312,8 +297,6 @@ class Config
      * @return string
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function getAppRoot(): string
     {
@@ -324,8 +307,6 @@ class Config
      * @return string
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function getViews(): string
     {
@@ -336,8 +317,6 @@ class Config
      * @return string
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function getTemplates(): string
     {
@@ -348,8 +327,6 @@ class Config
      * @return string
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function getLayouts(): string
     {

@@ -28,7 +28,6 @@ final class Storage
     private static ?PdoRateLimitStore $pdoStore = null;
 
     /**
-     * @psalm-external-mutation-free
      */
     public static function reset(): void
     {
@@ -38,8 +37,6 @@ final class Storage
 
     /**
      * Uses $store for the `pdo` storage, and makes `pdo` the default (tests, custom connections).
-     *
-     * @psalm-external-mutation-free
      */
     public static function usePdoStore(PdoRateLimitStore $store): void
     {
@@ -69,8 +66,6 @@ final class Storage
 
     /**
      * @throws ConfigException
-     *
-     * @psalm-external-mutation-free
      */
     private static function storage(): string
     {
@@ -102,7 +97,6 @@ final class Storage
     }
 
     /**
-     * @psalm-external-mutation-free
      */
     private static function string(string $key, string $default): string
     {

@@ -71,8 +71,6 @@ class Curl extends \Curl\Curl
      * @param object|array|string|null $response
      *
      * @return void
-     *
-     * @psalm-external-mutation-free
      */
     public function addLog(string $url, string $info, float $time, array $request, object|array|string|null $response = null): void //phpcs:ignore
     {
@@ -88,8 +86,6 @@ class Curl extends \Curl\Curl
 
     /**
      * @return array
-     *
-     * @psalm-external-mutation-free
      */
     public static function getLog(): array
     {

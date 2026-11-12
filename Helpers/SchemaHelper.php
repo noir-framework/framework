@@ -8,8 +8,6 @@ use Nette\Schema\ValidationException;
 
 /**
  * @psalm-api
- *
- * @psalm-external-mutation-free
  */
 class SchemaHelper
 {
@@ -19,8 +17,6 @@ class SchemaHelper
      * @param array $messages
      *
      * @return void
-     *
-     * @psalm-external-mutation-free
      */
     public static function set(array $messages): void
     {
@@ -35,8 +31,6 @@ class SchemaHelper
      * @return void
      *
      * @noinspection PhpUnused
-     *
-     * @psalm-external-mutation-free
      */
     public static function addMessage(string $code, string $field, string $message): void
     {
@@ -47,8 +41,6 @@ class SchemaHelper
      * @param ValidationException $exceptions
      *
      * @return string
-     *
-     * @psalm-external-mutation-free
      */
     public static function message(ValidationException $exceptions): string
     {
