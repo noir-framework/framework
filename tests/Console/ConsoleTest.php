@@ -88,12 +88,15 @@ final class ConsoleTest extends TestCase
         touch($this->root . '/temp/app-views-x.latte--abc.php');
         touch($this->root . '/temp/config-cache/a.json');
         touch($this->root . '/temp/route-cache/routes.php');
+        touch($this->root . '/temp/route.cache');             // FastRoute cachedDispatcher, as apps name it
+        touch($this->root . '/temp/route-1731000000.cache');  // ... or with the route file's mtime
         touch($this->root . '/temp/keep.txt');
 
         [$code, $out] = $this->console('cache:clear');
 
         self::assertSame(0, $code);
-        self::assertStringContainsString('Deleted 3 cached file(s)', $out);
+        self::assertStringContainsString('Deleted 5 cached file(s)', $out);
+        self::assertFileDoesNotExist($this->root . '/temp/route.cache');
         self::assertFileExists($this->root . '/temp/keep.txt');
     }
 

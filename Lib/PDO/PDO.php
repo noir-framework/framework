@@ -44,6 +44,10 @@ class PDO extends NativePdo
     }
 
     /**
+     * Without a fetch mode the statement uses the connection's ATTR_DEFAULT_FETCH_MODE, as \PDO::query() does.
+     * (The default used to be the constant ATTR_DEFAULT_FETCH_MODE itself, an attribute id, so a call without a
+     * mode threw a ValueError.)
+     *
      * @param string $query
      * @param int|null $fetchMode
      * @param mixed ...$fetch_mode_args
@@ -52,12 +56,14 @@ class PDO extends NativePdo
     #[Override]
     public function query(
         string $query,
-        ?int $fetchMode = NativePdo::ATTR_DEFAULT_FETCH_MODE,
+        ?int $fetchMode = null,
         ...$fetch_mode_args
     ): false|\PDOStatement {
         $start = microtime(true);
         /** @psalm-suppress TooManyArguments $result */
-        $result = parent::query($query, $fetchMode, ...$fetch_mode_args);
+        $result = $fetchMode === null
+            ? parent::query($query)
+            : parent::query($query, $fetchMode, ...$fetch_mode_args);
 
         $this->addLog($query, microtime(true) - $start);
 

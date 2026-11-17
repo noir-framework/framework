@@ -45,7 +45,9 @@ class SchemaHelper
     public static function message(ValidationException $exceptions): string
     {
         foreach ($exceptions->getMessageObjects() as $exception) {
-            $path = array_shift($exception->path);
+            // Read the field without array_shift(): the message objects belong to the exception, and shifting their
+            // paths made a second call on the same exception fall through to _default.
+            $path = $exception->path[0] ?? null;
             if (isset(self::$messages[$path])) {
                 return (string)self::$messages[$path];
             }

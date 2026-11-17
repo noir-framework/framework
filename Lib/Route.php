@@ -299,14 +299,7 @@ class Route
     private function handleException(Throwable $exception): void
     {
         if ($exception instanceof LoginException) {
-            if ($exception->getCode() === 403) {
-                $this->response->withStatus(403)
-                    ->setContentType(Response::TYPE_JSON)
-                    ->setBody(['forward' => $exception->getMessage()]);
-            } else {
-                $this->response->withStatus($exception->getCode())
-                    ->withLocation($exception->getMessage());
-            }
+            self::loginResponse($exception, $this->response);
         } elseif ($exception instanceof TooManyRequestsException) {
             $this->tooManyRequests($exception);
         } elseif ($exception instanceof RestException) {
@@ -533,6 +526,23 @@ class Route
     }
 
     /**
+     * A LoginException as a response: code 403 is a JSON {"forward": <location>} for AJAX callers, a redirect code
+     * (301, 302, 303, 307, 308) redirects with it, and anything else (the default code 0 included) redirects with 302.
+     */
+    private static function loginResponse(LoginException $exception, Response $response): Response
+    {
+        $code = $exception->getCode();
+        if ($code === 403) {
+            return $response->withStatus(403)
+                ->setContentType(Response::TYPE_JSON)
+                ->setBody(['forward' => $exception->getMessage()]);
+        }
+
+        return $response->withStatus(in_array($code, [301, 302, 303, 307, 308], true) ? $code : 302)
+            ->withLocation($exception->getMessage());
+    }
+
+    /**
      * @param Controller $controller
      * @param mixed $message #[NotFound] attribute instance, or null
      * @return void
@@ -540,7 +550,7 @@ class Route
     private function abortAutoWire(Controller $controller, mixed $message): void
     {
         $controller->message($message !== null ? $message->message : 'Not Found', 'danger'); //phpcs:ignore
-        $this->response->withStatus($message !== null ? $message->status : 301)
+        $this->response->withStatus($message !== null ? $message->status : 302)
             ->withLocation($controller->referer());
     }
 
@@ -576,16 +586,7 @@ class Route
                     /** @noinspection PhpParenthesesCanBeOmittedForNewCallInspection */
                     return (new AppErrors($instance->request, $instance->response, $instance->server))->$function(); // phpcs:ignore
                 } catch (LoginException $e) {
-                    $response = new Response();
-                    if ($e->getCode() === 301) {
-                        $response->withStatus(301)
-                            ->withLocation($e->getMessage());
-                    } else {
-                        $response->withStatus(403)
-                            ->setBody($e->getMessage());
-                    }
-
-                    return $response;
+                    return self::loginResponse($e, new Response());
                 } catch (Throwable $e) {
                     Debugger::log($e, ILogger::EXCEPTION);
                 }
