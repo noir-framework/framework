@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.2.0 (unreleased)
+## 2.2.0 (2026-11-17)
 
 Bugs found while migrating an app to 2.1.6. Two of them change defaults (marked **behaviour**).
 
