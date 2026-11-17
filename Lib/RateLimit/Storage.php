@@ -14,6 +14,8 @@ use Noirapi\Lib\RateLimit\Backend\MemoryBackend;
 use Noirapi\Lib\RateLimit\Backend\PdoBackend;
 use Noirapi\Lib\RateLimit\Store\PdoRateLimitStore;
 use PDO;
+use Tracy\Debugger;
+use Tracy\ILogger;
 
 use function is_string;
 
@@ -71,7 +73,18 @@ final class Storage
     {
         $storage = Config::get('rate_limiter.storage');
         if ($storage === null) {
-            return self::$pdoStore !== null ? 'pdo' : (extension_loaded('apcu') ? 'apcu' : 'memory');
+            $storage = self::$pdoStore !== null ? 'pdo' : (extension_loaded('apcu') ? 'apcu' : 'memory');
+            if ($storage === 'memory' && PHP_SAPI !== 'cli') {
+                // Counters in process memory reset with every PHP-FPM worker and request: no limit is enforced.
+                Debugger::log(
+                    'rate_limiter.storage is not set and apcu is not loaded, so rate limits are kept in process '
+                    . 'memory and never block anything under ' . PHP_SAPI . '; set rate_limiter.storage to pdo, '
+                    . 'apcu or memcached',
+                    ILogger::WARNING
+                );
+            }
+
+            return $storage;
         }
 
         if (! in_array($storage, ['apcu', 'memcached', 'pdo', 'memory'], true)) {

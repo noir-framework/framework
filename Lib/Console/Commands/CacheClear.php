@@ -11,7 +11,8 @@ use Override;
 
 /**
  * Deletes the framework's caches in temp/: compiled Latte templates, the config, ACL and
- * route caches. Nothing else in temp/ is touched.
+ * route caches, and the FastRoute cachedDispatcher files apps keep at temp/route*.cache (a stale one keeps
+ * serving deleted routes). Nothing else in temp/ is touched.
  *
  * @psalm-api
  */
@@ -34,14 +35,14 @@ final class CacheClear implements Command
     #[Override]
     public function description(): string
     {
-        return 'Delete compiled templates and the config, ACL and route caches in temp/';
+        return 'Delete compiled templates and the config, ACL and route caches (route*.cache too) in temp/';
     }
 
     #[Override]
     public function run(array $args, Output $output): int
     {
         $temp = Config::getTemp();
-        $files = glob($temp . '/*.latte--*') ?: [];
+        $files = array_merge(glob($temp . '/*.latte--*') ?: [], glob($temp . '/route*.cache') ?: []);
 
         foreach (self::DIRECTORIES as $directory) {
             array_push($files, ...(glob($temp . '/' . $directory . '/*') ?: []));

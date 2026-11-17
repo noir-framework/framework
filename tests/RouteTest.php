@@ -29,7 +29,7 @@ final class RouteTest extends TestCase
             $routes->get('/missing', [TestController::class, 'missing']);
             $routes->post('/rest', [TestController::class, 'rest']);
             $routes->get('/login', [TestController::class, 'login']);
-            $routes->get('/ajax-login', [TestController::class, 'ajaxLogin']);
+            $routes->get('/login-code/{code}', [TestController::class, 'loginCode']);
             $routes->get('/teapot', [TestController::class, 'teapot']);
             $routes->get('/color/{color}', [TestController::class, 'color']);
         };
@@ -103,9 +103,15 @@ final class RouteTest extends TestCase
         self::assertSame(302, $login->getStatus());
         self::assertSame('/login', $login->getLocation());
 
-        $ajax = self::serve('GET', '/ajax-login');
+        $ajax = self::serve('GET', '/login-code/403');
         self::assertSame(403, $ajax->getStatus());
         self::assertSame(['forward' => '/login'], $ajax->getRawBody());
+
+        // No code (0) used to be sent as status 0; a non-redirect code is a 302, a redirect code is kept.
+        $noCode = self::serve('GET', '/login-code/none');
+        self::assertSame(302, $noCode->getStatus());
+        self::assertSame('/login', $noCode->getLocation());
+        self::assertSame(303, self::serve('GET', '/login-code/303')->getStatus());
 
         $teapot = self::serve('GET', '/teapot');
         self::assertSame(418, $teapot->getStatus());
@@ -116,8 +122,9 @@ final class RouteTest extends TestCase
     {
         self::assertSame('red', self::serve('GET', '/color/red')->getBody());
 
+        // 302 by default since 2.2.0: a 301 is cached by the browser, so the URL kept redirecting.
         $unknown = self::serve('GET', '/color/green');
-        self::assertSame(301, $unknown->getStatus());
+        self::assertSame(302, $unknown->getStatus());
         self::assertSame('/', $unknown->getLocation());
         self::assertSame('Not Found', $_SESSION['message']->message);
     }

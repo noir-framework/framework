@@ -23,7 +23,7 @@ class NotFound
     /**
      * @psalm-mutation-free
      */
-    public function __construct(string $message, int $status = 301)
+    public function __construct(string $message, int $status = 302)
     {
         $this->message = $message;
         $this->status = $status;

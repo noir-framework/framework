@@ -1,5 +1,36 @@
 # Changelog
 
+## 2.2.0 (unreleased)
+
+Bugs found while migrating fproxies-ipv4 to 2.1.6. Two of them change defaults (marked **behaviour**).
+
+- **`PDO::query()` without a fetch mode threw a `ValueError`.** The wrapper's default was the constant
+  `PDO::ATTR_DEFAULT_FETCH_MODE` (an attribute id, 19), which `\PDO::query()` rejects as a fetch mode. Without
+  a mode it now calls `\PDO::query($sql)`, so the connection's default fetch mode applies, as with plain PDO.
+- **`#[LazyModel]` properties crashed with `Call to a member function newInstance() on null`.**
+  `SmartObject::__get()` tested `getAttributes($class) !== null`, which is always true, so it used the first
+  attribute class it knew of (whatever came first in the Composer classmap) and read `[0]` of an empty array.
+  The trait now records, per property, the attribute that marks it. It also no longer scans the Composer
+  classmap on every construction (that appended the attribute class list to a static array each time); an
+  attribute counts as a lazy loader when it is in `Noirapi\Lib\Attributes\` or `App\Lib\Attributes\`, as
+  before. `#[LazyModel]` stays deprecated.
+- **behaviour: `#[NotFound]` and AutoWire's not-found redirect default to 302 (was 301).** Browsers cache a
+  301, so once a record was missing, the URL kept redirecting after the record came back. Pass
+  `#[NotFound('...', 301)]` to keep a permanent redirect.
+- **behaviour: `LoginException` without a redirect code redirects with 302.** The default code 0 was sent as
+  the status (PHP turned the `Location` header into a 302 only by accident); any code other than 403 or a
+  redirect code (301, 302, 303, 307, 308) is now a 302. On the error-page path (`App\Controllers\Errors`)
+  a `LoginException` with 302 used to give a 403 whose body was the URL; both paths now share the same
+  handling (403 = `{"forward": url}` JSON, otherwise a redirect).
+- **`SchemaHelper::message()` no longer modifies the exception.** It `array_shift()`ed the paths of the
+  exception's message objects, so a second call on the same exception (or `Message::fromSchema()` after it)
+  returned `_default`.
+- **`cache:clear` also deletes `temp/route*.cache`**, the FastRoute `cachedDispatcher` files apps keep there;
+  a stale one kept serving deleted routes.
+- **Rate limits that silently do nothing are logged.** With `rate_limiter.storage` unset and no apcu, the
+  limiter falls back to process memory, which enforces nothing under PHP-FPM. That fallback now logs a Tracy
+  warning outside the CLI.
+
 ## 2.1.6 (2026-11-12)
 
 - **`latte-check` no longer reports closure, arrow function and `{define}` parameters as undeclared

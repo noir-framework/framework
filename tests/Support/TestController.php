@@ -42,9 +42,11 @@ final class TestController extends Controller
         throw new LoginException('/login', 302);
     }
 
-    public function ajaxLogin(): Response
+
+    /** "none" throws without a code (the default 0). */
+    public function loginCode(string $code): Response
     {
-        throw new LoginException('/login', 403);
+        throw $code === 'none' ? new LoginException('/login') : new LoginException('/login', (int) $code);
     }
 
     public function teapot(): Response
