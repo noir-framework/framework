@@ -95,19 +95,30 @@ final readonly class Authorization
     }
 
     /**
-     * The account $subject approved: a single-use code, as the address to send the browser back to.
+     * The account $subject approved: a single-use code, as the address to send the browser back to. $scope grants
+     * less than the request asked (a consent page's "read only"): it may only narrow the requested scope
+     * (OAuthConfig::narrows(), impliedScopes included), never widen it.
      *
      * @throws RandomException
+     * @throws OAuthError when $scope is not within the requested scope
      */
-    public function approve(AuthorizationRequest $request, string $subject): string
+    public function approve(AuthorizationRequest $request, string $subject, ?string $scope = null): string
     {
+        $granted = $request->scope;
+        if ($scope !== null) {
+            $granted = implode(' ', array_values(array_unique(array_filter(explode(' ', trim($scope))))));
+            if (! $this->config->narrows($request->scope, $granted)) {
+                throw new OAuthError('invalid_scope', 'The approved scope (' . $granted . ') is not within the'
+                    . ' requested one (' . $request->scope . ')');
+            }
+        }
         $code = bin2hex(random_bytes(32));
         $this->store->addCode(hash('sha256', $code), [
             'client'       => $request->client->id,
             'subject'      => $subject,
             'redirect_uri' => $request->redirectUri,
             'challenge'    => $request->codeChallenge,
-            'scope'        => $request->scope,
+            'scope'        => $granted,
             'resource'     => $request->resource,
         ], $this->config->codeTtl);
         $this->store->clientApproved($request->client->id);

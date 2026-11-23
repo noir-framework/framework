@@ -78,6 +78,11 @@ supported revision, the OAuth 2.1 sign-in, errors and rate limits.
    5. On approval, send the browser to `$server->approve($request, (string) $user->id)`. When the user declines,
       send it to `$server->refusal($request->redirectUri, $request->state, 'access_denied')`.
 
+   To let the user grant less than the app asked for (a "read only" choice), pass the scope:
+   `$server->approve($request, $subject, 'things:read')`. It may only narrow `$request->scope`: every scope must be
+   one the app asked for, or one a requested scope includes through `OAuthConfig::$impliedScopes` (for example
+   `['things' => ['things:read']]`); anything wider throws an `OAuthError` (`invalid_scope`).
+
 4. **Create the tables** from `Lib/Mcp/OAuth/schema.mysql.sql`.
 
 5. **Configure** (optional):

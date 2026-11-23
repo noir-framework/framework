@@ -18,6 +18,11 @@ final readonly class OAuthConfig
     /**
      * @param non-empty-list<string> $scopes the first is what a request without a scope gets
      * @param list<string> $allowedOrigins extra Origin values allowed on the MCP endpoint
+     * @param array<string, list<string>> $impliedScopes scope => the narrower scopes it includes (e.g.
+     *     ['statements' => ['statements:read']]), for a consent page that grants less than was asked
+     *
+     * @SuppressWarnings("PHPMD.ExcessiveParameterList") public API: settings are added at the end, as named
+     *     arguments with defaults, so existing projects keep working
      *
      * @psalm-mutation-free
      */
@@ -32,7 +37,33 @@ final readonly class OAuthConfig
         public int $refreshTtl = 30 * 86_400,
         public int $codeTtl = 300,
         public array $allowedOrigins = [],
+        public array $impliedScopes = [],
     ) {
+    }
+
+    /**
+     * Whether granting $chosen (space-separated) instead of $requested only narrows it: every chosen scope is one of
+     * this server's, and requested or included in a requested one (impliedScopes, followed through).
+     *
+     * @psalm-mutation-free
+     */
+    public function narrows(string $requested, string $chosen): bool
+    {
+        $within = array_values(array_filter(explode(' ', $requested)));
+        $queue = $within;
+        while ($queue !== []) {
+            foreach ($this->impliedScopes[array_pop($queue)] ?? [] as $implied) {
+                if (! in_array($implied, $within, true)) {
+                    $within[] = $implied;
+                    $queue[] = $implied;
+                }
+            }
+        }
+        $picked = array_values(array_filter(explode(' ', $chosen)));
+
+        return $picked !== []
+            && array_diff($picked, $this->scopes) === []
+            && array_diff($picked, $within) === [];
     }
 
     /**

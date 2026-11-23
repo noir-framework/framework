@@ -298,6 +298,47 @@ final class OAuthTest extends TestCase
         }
     }
 
+    public function testAConsentPageMayOnlyNarrowTheScope(): void
+    {
+        $config = new OAuthConfig(
+            'https://app.test',
+            ['statements', 'statements:read', 'extra'],
+            'Test',
+            '/connect',
+            impliedScopes: ['statements' => ['statements:read']]
+        );
+        self::assertTrue($config->narrows('statements statements:read', 'statements:read'));
+        self::assertTrue($config->narrows('statements', 'statements:read'), 'included in a requested scope');
+        self::assertTrue($config->narrows('statements extra', 'extra'));
+        self::assertFalse($config->narrows('statements:read', 'statements'), 'wider than asked');
+        self::assertFalse($config->narrows('statements', 'extra'), 'not asked');
+        self::assertFalse($config->narrows('statements', 'statements:write'), 'not a scope of this server');
+        self::assertFalse($config->narrows('statements', ''), 'nothing');
+
+        [$client, $redirect] = $this->registered();
+        $authorization = Mcp::authorization($this->request);
+        $request = $authorization->request($authorization->client($client, $redirect), ['scope' => 'tools extra']
+            + $this->authorize($client, $redirect));
+        self::assertSame('tools extra', $request->scope);
+
+        $tokens = Mcp::tokens($this->request);
+        $narrow = $authorization->approve($request, '1', 'extra');
+        parse_str((string) parse_url($narrow, PHP_URL_QUERY), $query);
+        $pair = $tokens->token(['grant_type' => 'authorization_code', 'code' => $query['code'], 'client_id' => $client,
+            'code_verifier' => self::VERIFIER], null);
+        self::assertSame('extra', $pair['scope']);
+        self::assertSame('extra', $tokens->authenticate('Bearer ' . $pair['access_token'])?->scope);
+
+        $plain = $authorization->request($authorization->client($client, $redirect), ['scope' => 'extra']
+            + $this->authorize($client, $redirect));
+        try {
+            $authorization->approve($plain, '1', 'tools extra');
+            self::fail('a consent page widened the scope');
+        } catch (OAuthError $e) {
+            self::assertSame('invalid_scope', $e->error);
+        }
+    }
+
     public function testTheConfigCanNameTheApplication(): void
     {
         $registry = new ReflectionProperty(Mcp::class, 'application');

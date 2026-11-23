@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.4.1 (2026-11-23)
+
+- **MCP consent pages can grant a narrower scope safely.** `Authorization::approve($request, $subject, ?string
+  $scope)` takes the scope the user chose ("read only") and refuses one that isn't within the requested scope
+  (`OAuthError` `invalid_scope`). `OAuthConfig::$impliedScopes` declares which scopes include which (e.g.
+  `['statements' => ['statements:read']]`), so an app that asked only for `statements` can be granted
+  `statements:read`. `OAuthConfig::narrows()` is the check. Backward compatible: without `$scope` nothing changes.
+
 ## 2.4.0 (2026-11-23)
 
 - **behaviour (MCP): `McpApplication::tools()` receives the connection.** The signature is now
