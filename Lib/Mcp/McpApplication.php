@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\Mcp;
 
+use Noirapi\Lib\Mcp\OAuth\Grant;
 use Noirapi\Lib\Mcp\OAuth\OAuthConfig;
 use Noirapi\Lib\Mcp\OAuth\Store;
 use Noirapi\Lib\Request;
@@ -27,6 +28,10 @@ interface McpApplication
      */
     public function account(string $subject): ?object;
 
-    /** The tools $account (from account()) may use. */
-    public function tools(object $account): ToolProvider;
+    /**
+     * The tools $account (from account()) may use through this connection: $grant carries what the account approved
+     * (scope, a space-separated list of OAuthConfig::$scopes), the app (clientName) and the connection's id, so a
+     * read-only scope can leave the changing tools out.
+     */
+    public function tools(object $account, Grant $grant): ToolProvider;
 }

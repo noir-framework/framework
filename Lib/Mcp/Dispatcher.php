@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\Mcp;
 
+use Noirapi\Lib\Mcp\OAuth\Grant;
 use stdClass;
 use Throwable;
 use Tracy\Debugger;
@@ -19,7 +20,7 @@ final readonly class Dispatcher
     /**
      * @psalm-mutation-free
      */
-    public function __construct(private McpApplication $app, private object $account)
+    public function __construct(private McpApplication $app, private object $account, private Grant $grant)
     {
     }
 
@@ -151,7 +152,9 @@ final readonly class Dispatcher
      */
     private function toolList(): array
     {
-        return array_map(static fn (Tool $tool): array => $tool->toArray(), $this->app->tools($this->account)->tools());
+        $tools = $this->app->tools($this->account, $this->grant)->tools();
+
+        return array_map(static fn (Tool $tool): array => $tool->toArray(), $tools);
     }
 
     /**
@@ -175,7 +178,7 @@ final readonly class Dispatcher
                 : "Header mismatch: Mcp-Name header value '$nameHeader' does not match body value '$name'");
         }
         try {
-            return $this->app->tools($this->account)->call($name, $arguments)->toArray();
+            return $this->app->tools($this->account, $this->grant)->call($name, $arguments)->toArray();
         } catch (UnknownTool $unknown) {
             throw new McpError(McpError::INVALID_PARAMS, $unknown->getMessage());
         } catch (Throwable $failure) {

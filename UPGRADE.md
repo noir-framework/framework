@@ -1,3 +1,16 @@
+# Upgrading to noirapi/framework 2.4
+
+Only for apps with an MCP server (`Noirapi\Lib\Mcp`): `McpApplication::tools()` gains the connection.
+
+```php
+// 2.3
+public function tools(object $account): ToolProvider
+// 2.4
+public function tools(object $account, \Noirapi\Lib\Mcp\OAuth\Grant $grant): ToolProvider
+```
+
+`$grant->scope` is what the account approved for this app; use it to leave tools out of a narrower scope.
+
 # Upgrading to noirapi/framework 2.0
 
 2.0 adds security features (all off until the config turns them on), named routes, CLI

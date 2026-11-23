@@ -44,9 +44,10 @@ supported revision, the OAuth 2.1 sign-in, errors and rate limits.
            return new Users()->findActive((int) $subject);
        }
 
-       public function tools(object $account): ToolProvider
+       public function tools(object $account, Grant $grant): ToolProvider
        {
-           return new MyTools($account);                     // list<Tool> tools(), ToolResult call($name, $args)
+           // $grant->scope: the scopes this connection was approved for, space-separated (also clientName, id).
+           return new MyTools($account, scopes: explode(' ', $grant->scope));
        }
    }
    ```
@@ -56,8 +57,16 @@ supported revision, the OAuth 2.1 sign-in, errors and rate limits.
    - `/.well-known/oauth-protected-resource[/mcp]` and `/.well-known/oauth-authorization-server`;
    - `/oauth/register`, `/oauth/token` and `/oauth/revoke`.
 
-   If `App\Route` uses FastRoute's `cachedDispatcher`, the registration doesn't run once the cache exists. Also
-   name the class in the config, as `mcp: { application: App\Services\McpServer }`.
+   If `App\Route` uses FastRoute's `cachedDispatcher` (or `simpleDispatcher` with a `cacheFile`), the registration
+   doesn't run once the cache exists. Then also name the class in the config, as
+   `mcp: { application: App\Services\McpServer }`, or call `Mcp::use(McpServer::class)` in `App\Route`'s
+   constructor.
+
+   Two things a project's route tests must allow for:
+   - `/mcp` is registered with an array of methods (`['POST', 'GET', 'DELETE']`), so a test that walks
+     `addRoute()` must not cast `$httpMethod` to a string.
+   - GET and DELETE on `/mcp` answer 405 before any sign-in check, so a "no credentials gives 401/403" test must
+     accept 405 for them.
 
 3. **Add the consent page** at `OAuthConfig::$authorizationPath`, behind the project's login. Its flow:
    1. Get the authorization server with `$server = Mcp::authorization($this->request)`.

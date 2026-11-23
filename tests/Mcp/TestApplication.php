@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Tests\Mcp;
 
 use Noirapi\Lib\Mcp\McpApplication;
+use Noirapi\Lib\Mcp\OAuth\Grant;
 use Noirapi\Lib\Mcp\OAuth\MemoryStore;
 use Noirapi\Lib\Mcp\OAuth\OAuthConfig;
 use Noirapi\Lib\Mcp\OAuth\Store;
@@ -66,8 +67,8 @@ final class TestApplication implements McpApplication
     }
 
     #[Override]
-    public function tools(object $account): ToolProvider
+    public function tools(object $account, Grant $grant): ToolProvider
     {
-        return new TestTools();
+        return new TestTools($grant);
     }
 }

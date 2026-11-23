@@ -93,7 +93,8 @@ final readonly class Server
             return $this->unauthorized($response, $authorization !== null && $authorization !== '');
         }
 
-        return self::limited($response, 'mcp', 'subject:' . $grant->subject) ?? new Dispatcher($this->app, $account);
+        return self::limited($response, 'mcp', 'subject:' . $grant->subject)
+            ?? new Dispatcher($this->app, $account, $grant);
     }
 
     /**

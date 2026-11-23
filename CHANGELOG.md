@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.4.0 (2026-11-23)
+
+- **behaviour (MCP): `McpApplication::tools()` receives the connection.** The signature is now
+  `tools(object $account, Grant $grant)`. `$grant->scope` is what the account approved for this app (space-separated
+  `OAuthConfig::$scopes`), so a read-only scope can leave the changing tools out. `$grant` also carries `clientName`,
+  `id` and `subject`. Before, the provider saw only the account, so a project had to encode the scope into the
+  account id. Projects update the method signature (UPGRADE.md).
+- docs/mcp.md: a cached route dispatcher (`Mcp::use()` in `App\Route`'s constructor, or `mcp.application`), and
+  what route tests must allow for (an array of methods on `/mcp`; 405 on GET/DELETE before any sign-in).
+
 ## 2.3.1 (2026-11-23)
 
 CI green again under Psalm 7.16 (CI resolves the newest Psalm 7; 2.3.0's run failed on code older than the release).

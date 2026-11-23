@@ -48,7 +48,7 @@ final class ServerTest extends McpTestCase
     {
         $list = self::decode($this->modern('tools/list'))['result'];
         self::assertSame('complete', $list['resultType']);
-        self::assertSame(['echo', 'refuse', 'crash'], array_column($list['tools'], 'name'));
+        self::assertSame(['echo', 'refuse', 'crash', 'connection'], array_column($list['tools'], 'name'));
         self::assertSame(['title' => 'Echo', 'readOnlyHint' => true], $list['tools'][0]['annotations']);
         self::assertSame('object', $list['tools'][1]['inputSchema']['type']);
         self::assertArrayHasKey('ttlMs', $list);
@@ -60,6 +60,27 @@ final class ServerTest extends McpTestCase
         self::assertSame(['arguments' => ['text' => 'hi']], $call['result']['structuredContent']);
         self::assertSame('text', $call['result']['content'][0]['type']);
         self::assertArrayHasKey(Protocol::META_SERVER, $call['result']['_meta']);
+    }
+
+    public function testTheToolsSeeTheConnection(): void
+    {
+        $call = self::decode($this->modern('tools/call', ['name' => 'connection', 'arguments' => []]))['result'];
+        self::assertSame(['subject' => '1', 'scope' => 'tools', 'client' => 'Test app'], $call['structuredContent']);
+
+        // A connection approved for another scope only: the provider leaves the scoped tool out.
+        $token = bin2hex(random_bytes(32));
+        $this->app->memory->createGrant(
+            1,
+            '1',
+            'extra',
+            TestApplication::ISSUER . '/mcp',
+            hash('sha256', $token),
+            hash('sha256', 'r3'),
+            3600,
+            3600
+        );
+        $narrow = $this->modern('tools/list', [], ['Authorization' => 'Bearer ' . $token]);
+        self::assertSame(['echo', 'refuse', 'crash'], array_column(self::decode($narrow)['result']['tools'], 'name'));
     }
 
     public function testToolFailuresAreResults(): void
@@ -170,7 +191,7 @@ final class ServerTest extends McpTestCase
         self::assertSame('{"jsonrpc":"2.0","id":1,"result":{}}', $this->legacy('ping', [], $headers)->getBody());
 
         $tools = self::decode($this->legacy('tools/list', [], $headers))['result'];
-        self::assertSame(['echo', 'refuse', 'crash'], array_column($tools['tools'], 'name'));
+        self::assertSame(['echo', 'refuse', 'crash', 'connection'], array_column($tools['tools'], 'name'));
         self::assertArrayNotHasKey('resultType', $tools);
 
         // No Mcp-Name needed before 2026-07-28.
