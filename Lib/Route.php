@@ -664,12 +664,8 @@ class Route
 
         $ref = $server[ 'HTTP_REFERER' ] ?? '';
 
-        /** @psalm-suppress RedundantConditionGivenDocblockType */
-        if (! str_starts_with($ref, 'http')) {
-            $urls['ref'] = $host . $ref;
-        } elseif ($ref !== '') {
-            $urls['ref'] = $ref;
-        }
+        // An empty or relative referer is shown on this host; an absolute one as it is.
+        $urls['ref'] = str_starts_with($ref, 'http') ? $ref : $host . $ref;
 
         $location = $response->getLocation();
         if ($location !== null) {

@@ -216,6 +216,26 @@ class Config
     }
 
     /**
+     * An environment variable the operator sets (NOIRAPI_ROOT, NOIRAPI_ERROR_CAPTURE...): configuration of the host,
+     * not request input, so the paths built from it are trusted.
+     *
+     * @psalm-taint-escape file
+     * @psalm-taint-escape ssrf
+     * @psalm-taint-escape include
+     * @psalm-taint-escape url_component
+     * @psalm-taint-escape url_path
+     * @psalm-taint-escape url_scheme
+     *
+     * @psalm-impure
+     */
+    public static function environment(string $name): ?string
+    {
+        $value = getenv($name);
+
+        return is_string($value) ? $value : null;
+    }
+
+    /**
      * Works out the application root when nobody pinned it:
      *  1. NOIRAPI_ROOT environment variable (set by bin/noirapi and bin/dev-server)
      *  2. submodule layout - the framework lives in <root>/noirapi/ next to <root>/app/
@@ -225,7 +245,7 @@ class Config
      */
     public static function detectRoot(): string
     {
-        $env = getenv('NOIRAPI_ROOT');
+        $env = self::environment('NOIRAPI_ROOT');
         if (is_string($env) && $env !== '' && is_dir($env)) {
             return rtrim($env, '/');
         }

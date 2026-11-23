@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.1 (2026-11-23)
+
+CI green again under Psalm 7.16 (CI resolves the newest Psalm 7; 2.3.0's run failed on code older than the release).
+
+- **`Config::environment()`** reads an environment variable the operator sets (`NOIRAPI_ROOT`,
+  `NOIRAPI_ERROR_CAPTURE`): host configuration, not request input. Psalm 7.16 now taints `getenv()`, so every path
+  built on the app root was reported as tainted (file, include, SSRF and URL findings). The root detection and Tracy's
+  error capture directory read their variables through it.
+- `Utils::is_tty()` is annotated impure (it reads the terminal state).
+- No behaviour change: `Route`'s request log writes the referer the same way, without a redundant condition.
+
 ## 2.3.0 (2026-11-23)
 
 - **MCP server module (`Noirapi\Lib\Mcp`, [docs/mcp.md](docs/mcp.md)).** A project implements

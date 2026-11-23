@@ -277,7 +277,7 @@ final class Kernel
      */
     private static function errorCaptureDir(): ?string
     {
-        $dir = getenv('NOIRAPI_ERROR_CAPTURE');
+        $dir = Config::environment('NOIRAPI_ERROR_CAPTURE');
 
         if (! is_string($dir) || $dir === '') {
             return null;

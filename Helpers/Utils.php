@@ -187,10 +187,9 @@ final class Utils
     /**
      * @return bool
      *
-     * @psalm-suppress MissingPureAnnotation Psalm and PHPStan disagree on the purity
-     * of defined(); leaving unannotated satisfies both.
+     * Reads the terminal state of STDOUT (I/O, so not pure).
      *
-     * @psalm-pure
+     * @psalm-impure
      */
     public static function is_tty(): bool // phpcs:ignore
     {
