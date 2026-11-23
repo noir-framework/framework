@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.3.0 (2026-11-23)
+
+- **MCP server module (`Noirapi\Lib\Mcp`, [docs/mcp.md](docs/mcp.md)).** A project implements
+  `McpApplication` (its tools, its account check, its consent page) and registers the routes with one call; the
+  framework serves the rest.
+  - Protocol: Model Context Protocol over stateless Streamable HTTP, in every supported revision on one URL.
+    2026-07-28 brings `server/discover`, per-request `_meta`, the `Mcp-Method`/`Mcp-Name` headers,
+    `resultType`, cache hints and the new error codes; 2025-11-25, 2025-06-18 and 2025-03-26 keep `initialize`
+    and `ping`.
+  - Sign-in: OAuth 2.1 with PKCE, with RFC 9728/8414 metadata, `iss` (RFC 9207), dynamic registration (RFC 7591),
+    Client ID Metadata Documents (fetched SSRF-safe), rotating refresh tokens, RFC 7009 revocation and RFC 8707
+    audience binding.
+  - Request checks: Origin, and the rate limits `mcp`, `oauth_register` and `oauth_token`.
+  - Storage: `PdoStore` (`Lib/Mcp/OAuth/schema.mysql.sql`) and `MemoryStore`.
+- **`Noirapi\Lib\Http\PublicAddress`**: whether an address is on the public internet (private, loopback,
+  link-local, CGNAT, multicast and reserved ranges are not, IPv4 and IPv6, mapped and NAT64 included), and a
+  resolver, for servers that fetch URLs others give them.
+
 ## 2.2.0 (2026-11-17)
 
 Bugs found while migrating an app to 2.1.6. Two of them change defaults (marked **behaviour**).
