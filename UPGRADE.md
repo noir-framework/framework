@@ -1,3 +1,16 @@
+# Upgrading to noirapi/framework 2.5
+
+Only for apps with an MCP server (`Noirapi\Lib\Mcp`) on `PdoStore`: add the connection-data columns BEFORE
+deploying 2.5 (`PdoStore` writes them; re-runnable, MariaDB / MySQL 8.0.29+):
+
+```sql
+ALTER TABLE `oauth_codes` ADD COLUMN IF NOT EXISTS `data` text DEFAULT NULL AFTER `resource`;
+ALTER TABLE `oauth_grants` ADD COLUMN IF NOT EXISTS `data` text DEFAULT NULL AFTER `used_at`;
+```
+
+(Use your prefix if `PdoStore` has another one.) Existing rows read as no data. A project's own `Store`
+implementation adds the trailing parameter `array $data = []` to `createGrant()` and keeps it on the grant.
+
 # Upgrading to noirapi/framework 2.4
 
 Only for apps with an MCP server (`Noirapi\Lib\Mcp`): `McpApplication::tools()` gains the connection.

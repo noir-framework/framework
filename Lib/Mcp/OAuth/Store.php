@@ -33,7 +33,7 @@ interface Store
 
     /**
      * @param array{client: int, subject: string, redirect_uri: string, challenge: string, scope: string,
-     *     resource: string} $code
+     *     resource: string, data?: array<array-key, mixed>} $code
      */
     public function addCode(string $codeHash, array $code, int $ttl): void;
 
@@ -41,11 +41,16 @@ interface Store
      * The unexpired code with this hash, removed as it is read (of two requests with one code only one gets it).
      *
      * @return array{client: int, subject: string, redirect_uri: string, challenge: string, scope: string,
-     *     resource: string}|null
+     *     resource: string, data?: array<array-key, mixed>}|null
      */
     public function takeCode(string $codeHash): ?array;
 
-    /** A new connection with its first token pair. */
+    /**
+     * A new connection with its first token pair, and the consent page's data (kept for the connection's life, across
+     * refresh-token rotation; Grant::$data).
+     *
+     * @param array<array-key, mixed> $data
+     */
     public function createGrant(
         int $clientId,
         string $subject,
@@ -55,6 +60,7 @@ interface Store
         string $refreshHash,
         int $accessTtl,
         int $refreshTtl,
+        array $data = [],
     ): void;
 
     /** The connection whose unexpired access token has this hash. */

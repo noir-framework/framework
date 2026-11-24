@@ -83,7 +83,15 @@ supported revision, the OAuth 2.1 sign-in, errors and rate limits.
    one the app asked for, or one a requested scope includes through `OAuthConfig::$impliedScopes` (for example
    `['things' => ['things:read']]`); anything wider throws an `OAuthError` (`invalid_scope`).
 
-4. **Create the tables** from `Lib/Mcp/OAuth/schema.mysql.sql`.
+   To let the user make other choices for this connection (for example which companies it may change), pass them as
+   data: `$server->approve($request, $subject, null, ['companies' => [3, 7]])`. The data goes with the code into
+   the connection and stays there across refresh-token rotation. `tools($account, $grant)` reads it as
+   `$grant->data` on every request, and the "My apps" listing has it too. It belongs to one connection: two
+   connections from the same app can differ. It is never sent to the app. Keep it small: JSON-serialisable, at most
+   `Authorization::MAX_DATA` (4 KB) as JSON, else `approve()` throws an `InvalidArgumentException`. Since 2.5.
+
+4. **Create the tables** from `Lib/Mcp/OAuth/schema.mysql.sql` (re-runnable; its ALTER statements at the end bring
+   tables from older versions up to date).
 
 5. **Configure** (optional):
    - `public_url`: the issuer, when the request's own host isn't the public one (behind a proxy).

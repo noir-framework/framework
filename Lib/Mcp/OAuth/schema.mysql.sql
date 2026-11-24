@@ -7,6 +7,8 @@
 -- oauth_codes: authorization codes, single use, short-lived.
 -- oauth_grants: one row per connection (an account's approval of an app): the current access and refresh token.
 -- Deleting the row ends the connection. user_id holds the account's subject as the project knows it.
+-- data (codes and grants): what the consent page attached to the connection (Authorization::approve()'s $data, JSON,
+-- at most 4 KB); null when none. It travels with the code into the grant and never reaches the app.
 --
 -- Re-runnable. A project that created the tables with a 32-character client_id (an older schema) widens it
 -- with the two ALTER statements at the end.
@@ -33,6 +35,7 @@ CREATE TABLE IF NOT EXISTS `oauth_codes` (
     `challenge` varchar(128) NOT NULL COMMENT 'PKCE S256',
     `scope` varchar(255) NOT NULL,
     `resource` varchar(255) NOT NULL,
+    `data` text DEFAULT NULL COMMENT 'JSON, the consent page data',
     `expires_at` datetime NOT NULL COMMENT 'UTC',
     PRIMARY KEY (`code_hash`),
     KEY `expires` (`expires_at`)
@@ -50,6 +53,7 @@ CREATE TABLE IF NOT EXISTS `oauth_grants` (
     `refresh_expires` datetime NOT NULL COMMENT 'UTC',
     `created_at` datetime NOT NULL COMMENT 'UTC',
     `used_at` datetime DEFAULT NULL COMMENT 'UTC, the last MCP call',
+    `data` text DEFAULT NULL COMMENT 'JSON, the consent page data',
     PRIMARY KEY (`id`),
     UNIQUE KEY `access` (`access_hash`),
     UNIQUE KEY `refresh` (`refresh_hash`),
@@ -60,3 +64,6 @@ CREATE TABLE IF NOT EXISTS `oauth_grants` (
 -- Tables created before Client ID Metadata Document support (a char(32) client_id, no fetched_at):
 ALTER TABLE `oauth_clients` MODIFY `client_id` varchar(255) NOT NULL;
 ALTER TABLE `oauth_clients` ADD COLUMN IF NOT EXISTS `fetched_at` datetime DEFAULT NULL AFTER `approved_at`;
+-- Tables created before 2.5 (no data column):
+ALTER TABLE `oauth_codes` ADD COLUMN IF NOT EXISTS `data` text DEFAULT NULL AFTER `resource`;
+ALTER TABLE `oauth_grants` ADD COLUMN IF NOT EXISTS `data` text DEFAULT NULL AFTER `used_at`;

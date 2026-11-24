@@ -130,7 +130,8 @@ final class PdoStore implements Store
 
     /**
      * @param array{client: int, subject: string, redirect_uri: string, challenge: string, scope: string,
-     *     resource: string} $code
+     *     resource: string, data?: array<array-key, mixed>} $code
+     * @throws JsonException
      */
     #[Override]
     public function addCode(string $codeHash, array $code, int $ttl): void
@@ -145,13 +146,14 @@ final class PdoStore implements Store
             'challenge'    => $code['challenge'],
             'scope'        => $code['scope'],
             'resource'     => $code['resource'],
+            'data'         => self::encodeData($code['data'] ?? []),
             'expires_at'   => self::time($now + $ttl),
         ])->into($this->codes);
     }
 
     /**
      * @return array{client: int, subject: string, redirect_uri: string, challenge: string, scope: string,
-     *     resource: string}|null
+     *     resource: string, data: array<array-key, mixed>}|null
      */
     #[Override]
     public function takeCode(string $codeHash): ?array
@@ -174,9 +176,14 @@ final class PdoStore implements Store
             'challenge'    => (string) $row->challenge,
             'scope'        => (string) $row->scope,
             'resource'     => (string) $row->resource,
+            'data'         => self::decodeData($row->data ?? null),
         ];
     }
 
+    /**
+     * @param array<array-key, mixed> $data
+     * @throws JsonException
+     */
     #[Override]
     public function createGrant(
         int $clientId,
@@ -187,6 +194,7 @@ final class PdoStore implements Store
         string $refreshHash,
         int $accessTtl,
         int $refreshTtl,
+        array $data = [],
     ): void {
         $now = time();
         $this->model->db->insert([
@@ -199,6 +207,7 @@ final class PdoStore implements Store
             'refresh_hash'    => $refreshHash,
             'refresh_expires' => self::time($now + $refreshTtl),
             'created_at'      => self::time($now),
+            'data'            => self::encodeData($data),
         ])->into($this->grantsTable);
     }
 
@@ -315,7 +324,33 @@ final class PdoStore implements Store
             (string) ($row->created_at ?? ''),
             isset($row->used_at) ? (string) $row->used_at : null,
             (string) ($row->client_name ?? ''),
+            self::decodeData($row->data ?? null),
         );
+    }
+
+    /**
+     * The data column: null for none, so the rows of apps that attach nothing stay as before.
+     *
+     * @param array<array-key, mixed> $data
+     * @throws JsonException
+     *
+     * @psalm-pure
+     */
+    private static function encodeData(array $data): ?string
+    {
+        return $data === [] ? null : json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+    }
+
+    /**
+     * @return array<array-key, mixed> [] for null (a row from before the column) or anything but a JSON array/object
+     *
+     * @psalm-pure
+     */
+    private static function decodeData(mixed $value): array
+    {
+        $decoded = is_string($value) ? json_decode($value, true) : null;
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     /**
@@ -328,7 +363,7 @@ final class PdoStore implements Store
     private static function columns(string $table): array
     {
         $columns = [];
-        foreach (['id', 'client_id', 'user_id', 'scope', 'resource', 'created_at', 'used_at'] as $column) {
+        foreach (['id', 'client_id', 'user_id', 'scope', 'resource', 'created_at', 'used_at', 'data'] as $column) {
             $columns[$table . '.' . $column] = $column;
         }
 

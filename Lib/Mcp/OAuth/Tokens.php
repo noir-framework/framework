@@ -133,6 +133,7 @@ final readonly class Tokens
             hash('sha256', $refresh),
             $this->config->accessTtl,
             $this->config->refreshTtl,
+            $code['data'] ?? [],
         );
 
         return $this->tokens($access, $refresh, $code['scope']);

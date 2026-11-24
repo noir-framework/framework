@@ -17,7 +17,7 @@ final class MemoryStore implements Store
     /** @var array<string, Client> by client_id */
     private array $clients = [];
     /** @var array<string, array{code: array{client: int, subject: string, redirect_uri: string, challenge: string,
-     *     scope: string, resource: string}, expires: int}> by hash */
+     *     scope: string, resource: string, data?: array<array-key, mixed>}, expires: int}> by hash */
     private array $codes = [];
     /** @var array<int, array{grant: Grant, access: string, access_expires: int, refresh: string,
      *     refresh_expires: int}> */
@@ -67,7 +67,7 @@ final class MemoryStore implements Store
 
     /**
      * @param array{client: int, subject: string, redirect_uri: string, challenge: string, scope: string,
-     *     resource: string} $code
+     *     resource: string, data?: array<array-key, mixed>} $code
      */
     #[Override]
     public function addCode(string $codeHash, array $code, int $ttl): void
@@ -77,7 +77,7 @@ final class MemoryStore implements Store
 
     /**
      * @return array{client: int, subject: string, redirect_uri: string, challenge: string, scope: string,
-     *     resource: string}|null
+     *     resource: string, data?: array<array-key, mixed>}|null
      */
     #[Override]
     public function takeCode(string $codeHash): ?array
@@ -98,6 +98,7 @@ final class MemoryStore implements Store
         string $refreshHash,
         int $accessTtl,
         int $refreshTtl,
+        array $data = [],
     ): void {
         $id = $this->nextId++;
         $name = '';
@@ -105,7 +106,17 @@ final class MemoryStore implements Store
             $name = $client->id === $clientId ? $client->name : $name;
         }
         $this->grants[$id] = [
-            'grant'           => new Grant($id, $clientId, $subject, $scope, $resource, gmdate('Y-m-d H:i:s'), null, $name),
+            'grant'           => new Grant(
+                $id,
+                $clientId,
+                $subject,
+                $scope,
+                $resource,
+                gmdate('Y-m-d H:i:s'),
+                null,
+                $name,
+                $data,
+            ),
             'access'          => $accessHash,
             'access_expires'  => time() + $accessTtl,
             'refresh'         => $refreshHash,

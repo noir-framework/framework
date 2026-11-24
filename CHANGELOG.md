@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.5.0 (2026-11-24)
+
+- **MCP consent pages can attach data to a connection.** `Authorization::approve($request, $subject, ?string
+  $scope = null, array $data = [])`: what the page lets the user choose for this connection (e.g. which companies it
+  may change; JSON-serialisable, at most `Authorization::MAX_DATA` = 4 KB as JSON, else `InvalidArgumentException`).
+  It travels with the code into the connection and stays there across refresh-token rotation:
+  `McpApplication::tools($account, $grant)` reads it as `$grant->data`, and `Store::grants()` lists it. It is per
+  connection, so two connections from the same app and account can differ, and it never reaches the app. Existing
+  connections read `[]`.
+- **schema: `oauth_codes.data` and `oauth_grants.data`** (nullable JSON text). `PdoStore` writes the columns, so add
+  them before deploying 2.5 (UPGRADE.md; `schema.mysql.sql` has the ALTER statements).
+- **interface: `Store::createGrant()` gains a trailing `array $data = []`**, and the code arrays of `addCode()` /
+  `takeCode()` an optional `data` key. `PdoStore` and `MemoryStore` have both; a project's own Store adds the
+  parameter.
+
 ## 2.4.1 (2026-11-23)
 
 - **MCP consent pages can grant a narrower scope safely.** `Authorization::approve($request, $subject, ?string

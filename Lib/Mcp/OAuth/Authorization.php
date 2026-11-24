@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\Mcp\OAuth;
 
+use InvalidArgumentException;
+use JsonException;
 use Random\RandomException;
 
 /**
@@ -14,6 +16,9 @@ use Random\RandomException;
  */
 final readonly class Authorization
 {
+    /** Bytes the consent page's data may take as JSON: a few choices, not a document. */
+    public const int MAX_DATA = 4096;
+
     /**
      * @psalm-mutation-free
      */
@@ -97,13 +102,22 @@ final readonly class Authorization
     /**
      * The account $subject approved: a single-use code, as the address to send the browser back to. $scope grants
      * less than the request asked (a consent page's "read only"): it may only narrow the requested scope
-     * (OAuthConfig::narrows(), impliedScopes included), never widen it.
+     * (OAuthConfig::narrows(), impliedScopes included), never widen it. $data is what the page lets the user choose
+     * for this connection (e.g. which companies it may change): it goes with the code into the connection, where
+     * McpApplication::tools() reads it as Grant::$data; it never reaches the app.
      *
+     * @param array<array-key, mixed> $data JSON-serialisable, at most MAX_DATA bytes as JSON
      * @throws RandomException
      * @throws OAuthError when $scope is not within the requested scope
+     * @throws InvalidArgumentException when $data is not JSON-serialisable or too large
      */
-    public function approve(AuthorizationRequest $request, string $subject, ?string $scope = null): string
-    {
+    public function approve(
+        AuthorizationRequest $request,
+        string $subject,
+        ?string $scope = null,
+        array $data = [],
+    ): string {
+        self::checkData($data);
         $granted = $request->scope;
         if ($scope !== null) {
             $granted = implode(' ', array_values(array_unique(array_filter(explode(' ', trim($scope))))));
@@ -120,10 +134,29 @@ final readonly class Authorization
             'challenge'    => $request->codeChallenge,
             'scope'        => $granted,
             'resource'     => $request->resource,
+            'data'         => $data,
         ], $this->config->codeTtl);
         $this->store->clientApproved($request->client->id);
 
         return $this->back($request->redirectUri, ['code' => $code, 'state' => $request->state]);
+    }
+
+    /**
+     * @param array<array-key, mixed> $data
+     * @throws InvalidArgumentException
+     *
+     * @psalm-pure
+     */
+    private static function checkData(array $data): void
+    {
+        try {
+            $json = json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        } catch (JsonException $e) {
+            throw new InvalidArgumentException('The connection data is not JSON-serialisable', 0, $e);
+        }
+        if (strlen($json) > self::MAX_DATA) {
+            throw new InvalidArgumentException('The connection data is over ' . self::MAX_DATA . ' bytes as JSON');
+        }
     }
 
     /**

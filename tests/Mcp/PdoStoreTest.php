@@ -32,11 +32,11 @@ final class PdoStoreTest extends TestCase
             . ' created_at TEXT NOT NULL, approved_at TEXT, fetched_at TEXT)');
         $pdo->exec('CREATE TABLE oauth_codes (code_hash TEXT PRIMARY KEY, client_id INTEGER NOT NULL, user_id TEXT NOT'
             . ' NULL, redirect_uri TEXT NOT NULL, challenge TEXT NOT NULL, scope TEXT NOT NULL, resource TEXT NOT NULL,'
-            . ' expires_at TEXT NOT NULL)');
+            . ' expires_at TEXT NOT NULL, data TEXT)');
         $pdo->exec('CREATE TABLE oauth_grants (id INTEGER PRIMARY KEY AUTOINCREMENT, client_id INTEGER NOT NULL,'
             . ' user_id TEXT NOT NULL, scope TEXT NOT NULL, resource TEXT NOT NULL, access_hash TEXT NOT NULL UNIQUE,'
             . ' access_expires TEXT NOT NULL, refresh_hash TEXT NOT NULL UNIQUE, refresh_expires TEXT NOT NULL,'
-            . ' created_at TEXT NOT NULL, used_at TEXT)');
+            . ' created_at TEXT NOT NULL, used_at TEXT, data TEXT)');
     }
 
     #[Override]
@@ -69,7 +69,7 @@ final class PdoStoreTest extends TestCase
         $code = ['client' => $client->id, 'subject' => '42', 'redirect_uri' => 'https://a.example/cb',
             'challenge' => 'c', 'scope' => 's', 'resource' => 'https://r.test/mcp'];
         $store->addCode('h1', $code, 300);
-        self::assertSame($code, $store->takeCode('h1'));
+        self::assertSame($code + ['data' => []], $store->takeCode('h1'), 'no data: []');
         self::assertNull($store->takeCode('h1'), 'single use');
         $store->addCode('h2', $code, -1);
         self::assertNull($store->takeCode('h2'), 'expired');
@@ -90,7 +90,14 @@ final class PdoStoreTest extends TestCase
         $store->revoke('r2', $client->id);
         self::assertNull($store->grantByAccess('a2'));
 
-        $store->createGrant($client->id, '42', 's', 'https://r.test/mcp', 'a4', 'r4', 3600, 86_400);
+        $store->addCode('h3', ['data' => ['companies' => [3, 7]]] + $code, 300);
+        self::assertSame(['companies' => [3, 7]], $store->takeCode('h3')['data'] ?? null);
+
+        $store->createGrant($client->id, '42', 's', 'https://r.test/mcp', 'a4', 'r4', 3600, 86_400, ['companies' => [3]]);
+        self::assertSame(['companies' => [3]], $store->grantByAccess('a4')?->data);
+        self::assertTrue($store->rotate($store->grantByAccess('a4')->id ?? 0, 'r4', 'a5', 'r5', 3600, 86_400));
+        self::assertSame(['companies' => [3]], $store->grantByAccess('a5')?->data, 'kept across rotation');
+        self::assertSame(['companies' => [3]], $store->grants('42')[0]->data, 'listed');
         $id = $store->grants('42')[0]->id;
         self::assertFalse($store->removeGrant($id, '7'));
         self::assertTrue($store->removeGrant($id, '42'));
