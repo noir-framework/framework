@@ -69,7 +69,8 @@ register_shutdown_function(static function () use ($started, $cpuStart): void {
         }
     }
 
-    fwrite(STDERR, sprintf(
+    // STDERR is not defined under php -S (only in the CLI SAPI proper)
+    file_put_contents('php://stderr', sprintf(
         "[%s] %d %s %s %.1f ms cpu %.1f ms mem %.1f MB (peak %.1f MB)\n",
         date('H:i:s'),
         http_response_code() ?: 200,
