@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **A writable root apart from the code root** (`Noirapi\Lib\WritableRoot`, env `NOIRAPI_DATA`, `WritableRoot::pin()`):
+  `Config::getTemp()`, `getLogs()`, relative SQLite paths (`db`, session `dsn`) and an `app/config/<name>.neon` that
+  overrides the code root's live there. It defaults to the code root, so nothing changes unless it is set. With it,
+  the code can run from a read-only place such as a phar (`NOIRAPI_ROOT=phar://…/app.phar`).
 - **MySQL and SQLite connections are the driver subclasses.** `Model` opens them with `Connector::open()`, which
   calls `PDO::connect()`: a MySQL connection is a `Noirapi\Lib\PDO\Mysql` (a `Pdo\Mysql`), a SQLite one a
   `Noirapi\Lib\PDO\Sqlite` (a `Pdo\Sqlite`), both still logging to the Tracy panel. Apps can now use the driver API

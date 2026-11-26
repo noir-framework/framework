@@ -61,7 +61,7 @@ class Model
             str_starts_with($this->driver, 'sqlite') && (! Utils::isAbsolutePath($this->params['dsn']) &&
                 ! str_contains($this->params['dsn'], 'memory'))
         ) {
-            $this->params['dsn'] = Config::getRoot() . '/data/' . $this->params['dsn'];
+            $this->params['dsn'] = WritableRoot::get() . '/data/' . $this->params['dsn'];
         }
     }
 

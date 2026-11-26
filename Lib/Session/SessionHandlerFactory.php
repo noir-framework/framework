@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Lib\Session;
 
 use Noirapi\Config;
+use Noirapi\Lib\WritableRoot;
 use Noirapi\Helpers\Utils;
 use RuntimeException;
 
@@ -42,6 +43,6 @@ class SessionHandlerFactory
             return $dsn;
         }
 
-        return Config::getRoot() . '/data/' . $dsn;
+        return WritableRoot::get() . '/data/' . $dsn;
     }
 }

@@ -10,6 +10,7 @@ use Nette\Neon\Exception;
 use Nette\Neon\Neon;
 use Noirapi\Lib\DevMode;
 use Noirapi\Exceptions\ConfigException;
+use Noirapi\Lib\WritableRoot;
 use RuntimeException;
 use Tracy\Debugger;
 
@@ -38,7 +39,7 @@ class Config
      */
     public static function init(string $config): void
     {
-        $file = self::getRoot() . '/app/config/' . $config . '.neon';
+        $file = WritableRoot::configFile($config);
 
         if (! is_readable($file)) {
             throw new ConfigException('Config file not found:' . $file);
@@ -290,7 +291,7 @@ class Config
      */
     public static function getTemp(): string
     {
-        return self::getRoot() . '/temp';
+        return WritableRoot::get() . '/temp';
     }
 
     /**
@@ -300,8 +301,9 @@ class Config
      */
     public static function getLogs(): string
     {
-        return self::getRoot() . '/logs';
+        return WritableRoot::get() . '/logs';
     }
+
 
     /**
      * @return string
