@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\Tracy;
 
-use Noirapi\Lib\PDO\PDO;
+use Noirapi\Lib\PDO\LoggedPdo;
 use Override;
 use SqlFormatter;
 use Tracy\IBarPanel;
@@ -57,7 +57,7 @@ class PDOBarPanel implements IBarPanel
      */
     public string $query_attributes = '';
 
-    /** @var PDO[] */
+    /** @var array<string, \PDO&LoggedPdo> */
     private array $pdo;
 
     /**

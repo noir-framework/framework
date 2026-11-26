@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- **MySQL and SQLite connections are the driver subclasses.** `Model` opens them with `Connector::open()`, which
+  calls `PDO::connect()`: a MySQL connection is a `Noirapi\Lib\PDO\Mysql` (a `Pdo\Mysql`), a SQLite one a
+  `Noirapi\Lib\PDO\Sqlite` (a `Pdo\Sqlite`), both still logging to the Tracy panel. Apps can now use the driver API
+  without the methods and constants PHP 8.5 deprecates, e.g. `Pdo\Sqlite::createFunction()` instead of
+  `PDO::sqliteCreateFunction()`. Other drivers keep the generic `Noirapi\Lib\PDO\PDO`. Code that type-hints
+  `Noirapi\Lib\PDO\PDO` for a `Model` connection should use `\PDO` (or `\PDO&LoggedPdo`).
+- **SQLite transactions begin IMMEDIATE** (PHP 8.5+, `Pdo\Sqlite::ATTR_TRANSACTION_MODE`): `beginTransaction()` takes
+  the write lock at once, so a read-then-write in a transaction (a counter, a row "lock") cannot interleave with
+  another writer. On PHP 8.4 they stay DEFERRED.
+- **`bin/router.php` writes its request log to `php://stderr`.** The `STDERR` constant does not exist under
+  `php -S`, so every request ended in a 500 once the shutdown function ran.
+
 ## 2.5.0 (2026-11-24)
 
 - **MCP consent pages can attach data to a connection.** `Authorization::approve($request, $subject, ?string

@@ -4,97 +4,24 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\PDO;
 
-use Override;
 use PDO as NativePdo;
 
-/** @psalm-api */
-class PDO extends NativePdo
+/**
+ * A logged connection for drivers without a PHP 8.4 driver subclass. MySQL and SQLite connections are
+ * Mysql / Sqlite (Pdo\Mysql / Pdo\Sqlite subclasses), opened by Connector::open().
+ *
+ * @psalm-api
+ */
+class PDO extends NativePdo implements LoggedPdo
 {
-    /**
-     * Logged queries.
-     * @var array<array>
-     * @noinspection PhpGetterAndSetterCanBeReplacedWithPropertyHooksInspection
-     */
-    protected array $log = [];
+    use LogsQueries;
 
     /**
      * @inheritDoc
      */
     public function __construct(string $dsn, ?string $username = null, ?string $passwd = null, ?array $options = null)
     {
-
         parent::__construct($dsn, $username, $passwd, $options);
-        $this->setAttribute(self::ATTR_STATEMENT_CLASS, [PDOStatement::class, [$this]]);
-    }
-
-
-    /**
-     * @param string $statement
-     * @return false|int
-     */
-    #[Override]
-    public function exec(string $statement): false|int
-    {
-
-        $start = microtime(true);
-        $result = parent::exec($statement);
-        $this->addLog($statement, microtime(true) - $start);
-
-        return $result;
-    }
-
-    /**
-     * Without a fetch mode the statement uses the connection's ATTR_DEFAULT_FETCH_MODE, as \PDO::query() does.
-     * (The default used to be the constant ATTR_DEFAULT_FETCH_MODE itself, an attribute id, so a call without a
-     * mode threw a ValueError.)
-     *
-     * @param string $query
-     * @param int|null $fetchMode
-     * @param mixed ...$fetch_mode_args
-     * @return false|\PDOStatement
-     */
-    #[Override]
-    public function query(
-        string $query,
-        ?int $fetchMode = null,
-        ...$fetch_mode_args
-    ): false|\PDOStatement {
-        $start = microtime(true);
-        /** @psalm-suppress TooManyArguments $result */
-        $result = $fetchMode === null
-            ? parent::query($query)
-            : parent::query($query, $fetchMode, ...$fetch_mode_args);
-
-        $this->addLog($query, microtime(true) - $start);
-
-        return $result;
-    }
-
-    /**
-     * Add query to logged queries.
-     *
-     * @param string $statement
-     * @param float $time Elapsed seconds with microseconds
-     *
-     * @psalm-external-mutation-free
-     */
-    public function addLog(string $statement, float $time): void
-    {
-
-        $this->log[] = [
-            'statement' => $statement,
-            'time'      => $time * 1000.00, // Convert to milliseconds
-        ];
-    }
-
-    /**
-     * Return logged queries.
-     * @return array<array{statement:string, time:float}> Logged queries
-     * @noinspection PhpUnused
-     */
-    public function getLog(): array
-    {
-
-        return $this->log;
+        $this->initLogging();
     }
 }

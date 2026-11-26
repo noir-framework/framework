@@ -8,7 +8,8 @@ use Nette\Utils\Paginator;
 use Noirapi\Config;
 use Noirapi\Database\Connection;
 use Noirapi\Database\Database;
-use Noirapi\Lib\PDO\PDO;
+use Noirapi\Lib\PDO\Connector;
+use Noirapi\Lib\PDO\LoggedPdo;
 use RuntimeException;
 
 /**
@@ -32,7 +33,7 @@ class Model
         get => $this->db ??= $this->openDatabase(false);
     }
     //phpcs:enable
-    /** @var PDO[] */
+    /** @var array<string, \PDO&LoggedPdo> */
     protected static array $pdo = [];
     private array $params;
 
@@ -118,7 +119,7 @@ class Model
     }
 
     /**
-     * @return PDO[]
+     * @return array<string, \PDO&LoggedPdo>
      */
     public static function tracyGetPdo(): array
     {
@@ -249,11 +250,14 @@ class Model
     }
 
     /**
-     * @return PDO
+     * Opens the driver's own connection class (Pdo\Mysql, Pdo\Sqlite, as PDO::connect() does) with query logging.
+     * SQLite transactions begin IMMEDIATE (see Connector::open()).
+     *
+     * @return \PDO&LoggedPdo
      */
-    private function newPdo(): PDO
+    private function newPdo(): \PDO
     {
-        $pdo = new PDO(
+        $pdo = Connector::open(
             $this->driver . ':' . $this->params['dsn'],
             $this->params['user'] ?? null,
             $this->params['pass'] ?? null

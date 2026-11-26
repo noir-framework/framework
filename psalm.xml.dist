@@ -56,7 +56,7 @@
         <TaintedSql>
             <errorLevel type="suppress">
                 <!-- PDO::exec() wrapper: forwards the caller's statement unchanged -->
-                <file name="Lib/PDO/PDO.php"/>
+                <file name="Lib/PDO/LogsQueries.php"/>
                 <!-- the table name is a constructor argument chosen by the developer, values are bound parameters -->
                 <file name="Lib/RateLimit/Store/PdoRateLimitStore.php"/>
             </errorLevel>

@@ -18,9 +18,9 @@ use function is_string;
 class PDOStatement extends NativePdoStatement
 {
     /**
-     * PDO instance.
+     * The connection that logs this statement's queries.
      */
-    protected PDO $pdo;
+    protected \PDO&LoggedPdo $pdo;
 
     /**
      * For binding simulations purposes.
@@ -32,7 +32,7 @@ class PDOStatement extends NativePdoStatement
      *
      * @psalm-mutation-free
      */
-    protected function __construct(PDO $pdo)
+    protected function __construct(\PDO&LoggedPdo $pdo)
     {
         $this->pdo = $pdo;
     }
