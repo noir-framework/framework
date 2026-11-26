@@ -50,6 +50,18 @@ final class Utils
     }
 
     /**
+     * An absolute filesystem path on any OS: /var/…, C:\… or C:/…, \\server\share.
+     *
+     * @psalm-pure
+     */
+    public static function isAbsolutePath(string $path): bool
+    {
+        return str_starts_with($path, '/')
+            || str_starts_with($path, '\\\\')
+            || preg_match('#^[A-Za-z]:[\\\\/]#', $path) === 1;
+    }
+
+    /**
      * @param int $len
      * @return string
      * @throws Exception

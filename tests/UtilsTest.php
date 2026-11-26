@@ -10,6 +10,16 @@ use stdClass;
 
 final class UtilsTest extends TestCase
 {
+    public function testIsAbsolutePath(): void
+    {
+        self::assertTrue(Utils::isAbsolutePath('/var/lib/app.sqlite'));
+        self::assertTrue(Utils::isAbsolutePath('C:\\Users\\me\\data.sqlite'));
+        self::assertTrue(Utils::isAbsolutePath('c:/Users/me/data.sqlite'));
+        self::assertTrue(Utils::isAbsolutePath('\\\\server\\share\\data.sqlite'));
+        self::assertFalse(Utils::isAbsolutePath('data.sqlite'));
+        self::assertFalse(Utils::isAbsolutePath('C:data.sqlite'));
+    }
+
     public function testRandom(): void
     {
         self::assertSame(16, strlen(Utils::random()));

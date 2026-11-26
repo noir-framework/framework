@@ -6,6 +6,7 @@ namespace Noirapi\Lib;
 
 use Nette\Utils\Paginator;
 use Noirapi\Config;
+use Noirapi\Helpers\Utils;
 use Noirapi\Database\Connection;
 use Noirapi\Database\Database;
 use Noirapi\Lib\PDO\Connector;
@@ -57,7 +58,7 @@ class Model
         }
 
         if (
-            str_starts_with($this->driver, 'sqlite') && (! str_starts_with($this->params['dsn'], '/') &&
+            str_starts_with($this->driver, 'sqlite') && (! Utils::isAbsolutePath($this->params['dsn']) &&
                 ! str_contains($this->params['dsn'], 'memory'))
         ) {
             $this->params['dsn'] = Config::getRoot() . '/data/' . $this->params['dsn'];

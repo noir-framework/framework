@@ -11,6 +11,9 @@
 - **SQLite transactions begin IMMEDIATE** (PHP 8.5+, `Pdo\Sqlite::ATTR_TRANSACTION_MODE`): `beginTransaction()` takes
   the write lock at once, so a read-then-write in a transaction (a counter, a row "lock") cannot interleave with
   another writer. On PHP 8.4 they stay DEFERRED.
+- **SQLite paths on Windows.** A `db.<sqlite>.dsn` or session `dsn` like `C:\Users\…\app.sqlite` (or `C:/…`,
+  `\\server\share\…`) is absolute; it used to be put under `data/` because only a leading `/` counted.
+  `Utils::isAbsolutePath()` decides it.
 - **`bin/router.php` writes its request log to `php://stderr`.** The `STDERR` constant does not exist under
   `php -S`, so every request ended in a 500 once the shutdown function ran.
 

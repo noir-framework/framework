@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Lib\Session;
 
 use Noirapi\Config;
+use Noirapi\Helpers\Utils;
 use RuntimeException;
 
 class SessionHandlerFactory
@@ -37,7 +38,7 @@ class SessionHandlerFactory
      */
     private static function resolveSqlitePath(string $dsn): string
     {
-        if ($dsn === ':memory:' || str_starts_with($dsn, '/')) {
+        if ($dsn === ':memory:' || Utils::isAbsolutePath($dsn)) {
             return $dsn;
         }
 
