@@ -33,7 +33,7 @@ final class SyntaxTest extends TestCase
 
     private static function pdo(): PDO
     {
-        $pdo = Connector::open('sqlite::memory:');
+        $pdo = Connector::open('sqlite::memory:', null, null, null, Connector::DIALECT_MARIADB);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->exec("CREATE TABLE t (id INTEGER PRIMARY KEY, name TEXT); INSERT INTO t VALUES (1, 'a'), (2, 'b')");
 
@@ -76,7 +76,7 @@ final class SyntaxTest extends TestCase
     {
         $this->app = new TempApp(['sql/sqlite/001_names.sql' => "CREATE TABLE names (class TEXT);\n"
             . "INSERT INTO names VALUES ('App\\Readers\\Chase');"]);
-        $pdo = Connector::open('sqlite:' . $this->app->root . '/data/app.sqlite');
+        $pdo = Connector::open('sqlite:' . $this->app->root . '/data/app.sqlite', null, null, null, 'mariadb');
         new Migrator($pdo, $this->app->root . '/sql/sqlite')->migrate();
 
         self::assertSame('App\\Readers\\Chase', $pdo->query('SELECT class FROM names')->fetchColumn());
@@ -85,11 +85,12 @@ final class SyntaxTest extends TestCase
     public function testBuilderWritesMariaDb(): void
     {
         $this->app = new TempApp();
-        Config::set('db', ['sqlite' => ['dsn' => 'app.sqlite'], 'native' => ['dsn' => 'native.sqlite']]);
+        Config::set('db', ['sqlite' => ['dsn' => 'app.sqlite', 'dialect' => 'mariadb']]);
         $mariaDb = new Model('sqlite');
         self::assertInstanceOf(MySQL::class, $mariaDb->db->getConnection()->getCompiler());
 
-        Config::set('db', ['sqlite' => ['dsn' => 'native.sqlite', 'dialect' => 'native']]);
+        // without a dialect SQLite stays native: its own compiler, no rewriting
+        Config::set('db', ['sqlite' => ['dsn' => 'native.sqlite']]);
         Model::flushPdoCache();
         self::assertInstanceOf(SQLite::class, new Model('sqlite')->db->getConnection()->getCompiler());
     }

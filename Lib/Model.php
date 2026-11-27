@@ -272,7 +272,7 @@ class Model
             $this->params['user'] ?? null,
             $this->params['pass'] ?? null,
             null,
-            (string) ($this->params['dialect'] ?? Connector::DIALECT_MARIADB),
+            (string) ($this->params['dialect'] ?? Connector::DIALECT_NATIVE),
         );
         $pdo->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
         $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);

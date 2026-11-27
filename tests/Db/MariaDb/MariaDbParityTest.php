@@ -58,7 +58,7 @@ final class MariaDbParityTest extends TestCase
 
         /** @var array<string, string|null|array{error: string}> $expected */
         $expected = json_decode((string) file_get_contents(__DIR__ . '/' . $answerFile), true, 512, JSON_THROW_ON_ERROR);
-        $sqlite = Connector::open('sqlite::memory:');
+        $sqlite = Connector::open('sqlite::memory:', null, null, null, Connector::DIALECT_MARIADB);
         $sqlite->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $wrong = [];
@@ -103,7 +103,7 @@ final class MariaDbParityTest extends TestCase
 
         /** @var array<string, list<list<string|null>>|array{error: string}> $expected */
         $expected = json_decode((string) file_get_contents(__DIR__ . '/' . $answerFile), true, 512, JSON_THROW_ON_ERROR);
-        $sqlite = Connector::open('sqlite::memory:');
+        $sqlite = Connector::open('sqlite::memory:', null, null, null, Connector::DIALECT_MARIADB);
         $sqlite->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $wrong = [];

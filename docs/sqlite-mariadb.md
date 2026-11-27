@@ -1,17 +1,19 @@
 # SQLite as a MariaDB drop-in
 
-Since 2.7 every SQLite connection that noirapi opens (`Model`, `Connector::open()`) speaks MariaDB: the same SQL, the
+Since 2.7 a SQLite connection that noirapi opens (`Model`, `Connector::open()`) can speak MariaDB: the same SQL, the
 same functions and the same answers, so one app runs on MariaDB (hosted) and on SQLite (a desktop build) without a
-second dialect. Nothing to switch on.
-
-A database that should stay plain SQLite (no rewriting, no MariaDB functions, SQLite's own answers) says so:
+second dialect. A database asks for it in its config:
 
 ```neon
 db:
     sqlite:
         dsn: 'app.sqlite'
-        dialect: native     # default: mariadb
+        dialect: mariadb    # default: native
 ```
+
+Without it (or with `dialect: native`) SQLite stays plain SQLite, as before 2.7: no rewriting, no MariaDB functions,
+SQLite's own answers and the query builder's SQLite SQL. `Connector::open()` takes the dialect as its fifth argument
+(`Connector::DIALECT_MARIADB`). Each database chooses for itself, so one app can have both.
 
 What it is made of:
 
@@ -24,10 +26,18 @@ What it is made of:
 | Query builder | `Noirapi\Lib\Db\MariaDb\Connection` | noirapi/database writes MySQL SQL (its MySQL compiler) on these connections, like the app's own SQL | 2.7 |
 | JSON, GROUP_CONCAT | `JsonFunctions`, `JsonBuilders`, `JsonWords`, `GroupConcat`, `GroupWords` | MariaDB's JSON functions and `GROUP_CONCAT(… ORDER BY … SEPARATOR … LIMIT …)` | 2.7 |
 | Upsert | `UpsertWords` | `INSERT … ON DUPLICATE KEY UPDATE`, `INSERT IGNORE`, `INSERT … SET` | 2.7 |
-| Schema | Rewriter + `Migrator` | MariaDB `CREATE`/`ALTER TABLE` translated, so one `sql/NNN_*.sql` serves both | planned |
 
 Functions are PHP now; a function that a measurement shows to be slow on big tables can move to a C extension
 later, with the same tests.
+
+**The schema is up to the programmer.** The dialect covers queries, not DDL: `CREATE TABLE`, `ALTER TABLE`, indexes
+and triggers are not translated. Keep SQLite migrations of your own next to the MariaDB ones (e.g.
+`sql/sqlite/NNN_*.sql`, applied by the driver's `migrations`; they run as written, without the rewriter) and write them
+in SQLite's DDL:
+`INTEGER PRIMARY KEY` for `AUTO_INCREMENT`, a `CHECK` for an `ENUM`, a trigger for `ON UPDATE CURRENT_TIMESTAMP`,
+`COLLATE NOCASE` where MariaDB's `_ci` collation matters, and a table rebuild where MariaDB would `MODIFY` a column.
+Declare money columns `DECIMAL(p,s)` there too: that declared type is how DECIMAL formatting and exact `SUM`/`AVG`
+know the scale (see DECIMAL).
 
 ## Dates, times and periods
 

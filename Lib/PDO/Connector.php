@@ -10,8 +10,8 @@ use PDO as NativePdo;
 
 /**
  * Opens a logged connection of the driver's own class: PDO::connect() semantics (Pdo\Mysql, Pdo\Sqlite, …) with
- * the framework's query logging. Drivers without a subclass here get the generic PDO. A SQLite connection speaks
- * MariaDB (docs/sqlite-mariadb.md) unless $dialect is 'native'.
+ * the framework's query logging. Drivers without a subclass here get the generic PDO. A SQLite connection is plain
+ * SQLite unless $dialect is 'mariadb': then it speaks MariaDB (docs/sqlite-mariadb.md).
  *
  * @psalm-api
  */
@@ -32,7 +32,7 @@ final class Connector
         ?string $username = null,
         ?string $password = null,
         ?array $options = null,
-        string $dialect = self::DIALECT_MARIADB,
+        string $dialect = self::DIALECT_NATIVE,
     ): NativePdo {
         $driver = strtolower(strstr($dsn, ':', true) ?: '');
 

@@ -109,12 +109,16 @@ process and show a webview) starts PHP's built-in server on `127.0.0.1` and open
 - **SQLite as the database**: Windows paths (`C:\…`, `\\server\share\…`), transactions that begin IMMEDIATE, and
   connections that are the driver subclasses (`Pdo\Sqlite`: `createFunction()` for app functions).
   Since 2.7, per-connection `pragmas` (foreign keys, busy timeout, WAL) and schema `migrations` that apply on start
-  ([docs/db.md](docs/db.md#sqlite)).
+  ([docs/db.md](docs/db.md#sqlite)), and, with `dialect: mariadb`, SQLite that speaks MariaDB: the same queries,
+  functions and answers, so one app runs on both ([docs/sqlite-mariadb.md](docs/sqlite-mariadb.md)). Without it
+  SQLite stays plain SQLite. Queries only: the schema is up to the programmer. `CREATE`/`ALTER TABLE` are not
+  translated, so an app keeps SQLite migrations of its own next to the MariaDB ones (e.g. `sql/sqlite/`).
 
 ## Documentation
 
 - [Routing](docs/routing.md), [Controllers](docs/controller.md), [Views](docs/view.md), [Layouts](docs/layouts.md)
-- [Database](docs/db.md), [Sessions](docs/sessions.md), [Mail](docs/mail.md)
+- [Database](docs/db.md), [SQLite as a MariaDB drop-in](docs/sqlite-mariadb.md), [Sessions](docs/sessions.md),
+  [Mail](docs/mail.md)
 - [Command line](docs/cli.md), [Security](docs/security.md) (trusted proxies, CSRF, headers/CSP, rate limits), [Authentication](docs/auth.md)
 - [Configuration reference](docs/config.md), [Validation](docs/validation.md), [Swoole](docs/swoole.md),
   [Prebuilt (sealed) apps](docs/prebuilt.md)

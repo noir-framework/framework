@@ -13,8 +13,8 @@ use Override;
  * A logged SQLite connection: a Pdo\Sqlite, so createFunction(), createAggregate() and createCollation() work
  * (PDO::sqliteCreateFunction() and the like are deprecated since PHP 8.5). Open it with Connector::open().
  *
- * In the MariaDB dialect (useMariaDb(), Connector's default) it has MariaDB's functions and every query is rewritten
- * from MariaDB's syntax first (docs/sqlite-mariadb.md); the native dialect is plain SQLite.
+ * The native dialect (Connector's default) is plain SQLite. In the MariaDB dialect (useMariaDb(), `dialect: mariadb`)
+ * it has MariaDB's functions and every query is rewritten from MariaDB's syntax first (docs/sqlite-mariadb.md).
  *
  * @psalm-api
  */

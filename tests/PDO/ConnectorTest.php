@@ -51,6 +51,19 @@ final class ConnectorTest extends TestCase
         self::assertInstanceOf(Sqlite::class, $pdo);
     }
 
+    public function testSqliteIsNativeUnlessAskedForMariaDb(): void
+    {
+        $native = Connector::open('sqlite::memory:');
+        self::assertInstanceOf(Sqlite::class, $native);
+        self::assertFalse($native->isMariaDb());
+        self::assertSame('ab', $native->query("SELECT 'a' || 'b'")->fetchColumn());
+
+        $mariaDb = Connector::open('sqlite::memory:', null, null, null, Connector::DIALECT_MARIADB);
+        self::assertInstanceOf(Sqlite::class, $mariaDb);
+        self::assertTrue($mariaDb->isMariaDb());
+        self::assertSame(1, $mariaDb->query("SELECT 'a' || 1")->fetchColumn());
+    }
+
     public function testOtherDriversKeepTheGenericLoggedPdo(): void
     {
         // no pdo_pgsql/odbc needed: the class is chosen before connecting, so an unknown driver fails in PDO itself

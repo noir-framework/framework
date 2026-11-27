@@ -16,6 +16,18 @@ databases are untouched.
   waits, then finds nothing to do; a failing file changes nothing). On MySQL/MariaDB each file is one multi-statement
   query whose results are all read, so an error in any statement is reported; DDL commits implicitly there.
 
+**SQLite that speaks MariaDB** (`dialect: mariadb` on a SQLite `db` driver, or `Connector::open(…, 'mariadb')`;
+docs/sqlite-mariadb.md). Off by default: a connection without it is plain SQLite, as before.
+
+- MariaDB's date, string, logic, pattern, hash, JSON and `GROUP_CONCAT` functions as SQLite functions, and MariaDB
+  syntax rewritten before SQLite sees it (`INTERVAL`, `CURRENT_*`, string literals and `"…"`, `||`/`&&`/`<=>`,
+  `FOR UPDATE`, `COLLATE`, `INSERT IGNORE`, `ON DUPLICATE KEY UPDATE`, `INSERT … SET`). Every answer is checked
+  against MariaDB 11 (`tests/Db/MariaDb/`).
+- `DECIMAL(p,s)` columns come back as text with their scale (`'50.00'`), and `SUM`/`AVG` over them are exact.
+- The query builder writes MySQL SQL on these connections (`Noirapi\Lib\Db\MariaDb\Connection`).
+- Queries only: the schema (`CREATE`/`ALTER TABLE`) is not translated, so an app keeps SQLite migrations of its own.
+  Known differences (Unicode `=` on text, arithmetic, `rowCount()`) are listed in the doc.
+
 ## 2.6.0 (2026-11-27)
 
 **Desktop app compatibility.** From this version a noirapi app can also ship as a desktop app, the same code as

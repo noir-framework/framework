@@ -40,15 +40,19 @@ db:
 - For an in-memory database (testing): `dsn: ':memory:'`
 - For an absolute path: `dsn: '/var/db/myapp.db'`
 
-Two optional keys (since 2.7), both off unless set:
+Three optional keys (since 2.7), all off unless set:
 
 ```neon
 db:
     sqlite:
         dsn: 'myapp.sqlite'
+        dialect: mariadb
         pragmas: {foreign_keys: on, busy_timeout: 5000, journal_mode: wal}
         migrations: sql/sqlite
 ```
+
+- **`dialect: mariadb`** makes the connection speak MariaDB (its functions, syntax and answers), so the app's
+  MariaDB SQL runs unchanged: [sqlite-mariadb.md](sqlite-mariadb.md). The default, `native`, is plain SQLite.
 
 - **`pragmas`** run as `PRAGMA name = value` on every new connection (a bool is ON/OFF, an int a number, a string a
   bare word). SQLite leaves foreign keys off unless each connection asks: without `foreign_keys: on`, `ON DELETE
