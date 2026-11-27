@@ -1,9 +1,9 @@
 # Changelog
 
-## 2.7.0 (unreleased)
+## 2.7.0 (2026-11-27)
 
-**SQLite for desktop apps: pragmas and schema migrations**, both opt-in per database in config, so existing SQLite
-databases are untouched.
+**SQLite for desktop apps: pragmas, schema migrations and a MariaDB dialect**, all opt-in per database in config, so
+existing SQLite databases are untouched.
 
 - **`pragmas`** on a SQLite `db` driver or on `session` (driver sqlite), e.g. `{foreign_keys: on, busy_timeout: 5000,
   journal_mode: wal}`, run on every new connection (`Noirapi\Lib\Db\SqliteSetup`). SQLite leaves foreign keys off
@@ -27,6 +27,14 @@ docs/sqlite-mariadb.md). Off by default: a connection without it is plain SQLite
 - The query builder writes MySQL SQL on these connections (`Noirapi\Lib\Db\MariaDb\Connection`).
 - Queries only: the schema (`CREATE`/`ALTER TABLE`) is not translated, so an app keeps SQLite migrations of its own.
   Known differences (Unicode `=` on text, arithmetic, `rowCount()`) are listed in the doc.
+
+Also:
+
+- **`PdoRateLimitStore` checks its table name**: letters, digits and `_` only, else `InvalidArgumentException`
+  (it is written into the queries).
+- `Noirapi\Lib\PDO\PDOStatement::setFetchMode()` returns `true` (PHP's own signature); `fetch()`, `fetchAll()`,
+  `fetchColumn()` and `fetchObject()` are overridden for the MariaDB dialect's DECIMAL columns and behave as PHP's
+  everywhere else.
 
 ## 2.6.0 (2026-11-27)
 

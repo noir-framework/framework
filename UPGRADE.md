@@ -1,6 +1,12 @@
 # Upgrading to noirapi/framework 2.7
 
-No code changes are needed. SQLite `pragmas` and `migrations` (docs/db.md) are new config keys, off unless set.
+No code changes are needed. SQLite `pragmas`, `migrations` and `dialect` (docs/db.md) are new config keys, off
+unless set: a SQLite database is plain SQLite until it says `dialect: mariadb` (docs/sqlite-mariadb.md). Worth
+knowing:
+
+- **`PdoRateLimitStore`'s table name** must be a plain SQL name (letters, digits, `_`); a schema-qualified name such
+  as `db.rate_limits` now throws. Point the connection at that database instead.
+- A subclass of `Noirapi\Lib\PDO\PDOStatement` that overrides `setFetchMode()` declares the return type `true`.
 
 # Upgrading to noirapi/framework 2.6
 
