@@ -19,7 +19,7 @@ What it is made of:
 | --- | --- | --- | --- |
 | Functions | `Noirapi\Lib\Db\MariaDb\Functions` (`ClockFunctions`, `DateMath`, `DateParts`, `DateConversions`) | MariaDB's functions as SQLite user functions (PHP, `Pdo\Sqlite::createFunction()`) | dates: 2.7 |
 | Rewriter | `Noirapi\Lib\Db\MariaDb\Rewriter` | MariaDB syntax SQLite cannot parse, rewritten before SQLite sees it | dates: 2.7 |
-| Decimals | `Noirapi\Lib\PDO\PDOStatement` | `DECIMAL(p,s)` columns come back as strings with their scale (`'50.00'`) | planned |
+| Decimals | `DecimalRows` (from `PDOStatement`), `DecimalFunctions`, `DecimalWords` | `DECIMAL(p,s)` columns come back as text with their scale (`'50.00'`); exact `SUM`/`AVG` | 2.7 |
 | Upsert | Rewriter | `INSERT … ON DUPLICATE KEY UPDATE`, `INSERT IGNORE` | planned |
 | Schema | Rewriter + `Migrator` | MariaDB `CREATE`/`ALTER TABLE` translated, so one `sql/NNN_*.sql` serves both | planned |
 
@@ -68,6 +68,26 @@ of `+ INTERVAL` is the operand right before it (a column, literal, placeholder, 
 expression); when an operator that binds tighter stands before that operand (`a * b + INTERVAL 1 DAY`), the rewriter
 refuses the query and asks for parentheses rather than guess. Text in quotes and comments is never touched.
 
+## DECIMAL
+
+SQLite has no DECIMAL type: a column declared `DECIMAL(15,2)` stores numbers (50.00 as 50, 0.10 as 0.1), and adding
+them up is floating point (0.1 + 0.2 = 0.30000000000000004). In the MariaDB dialect:
+
+- **A DECIMAL column reads back as MariaDB's text**, rounded half away from zero to its scale as MariaDB rounds on
+  insert: `'50.00'`, `'0.10'`, `'2.68'` for a stored 2.675. Every fetch mode: arrays, `stdClass`, single columns, key
+  pairs, groups, `FETCH_FUNC` arguments, and a class's `string`, `mixed` or untyped properties (a `float` or `int`
+  property keeps the number, which is what MariaDB's text becomes there too). The column must be declared
+  `DECIMAL(p,s)` (or `NUMERIC(p,s)`) in the SQLite schema: that declared type is how it is known.
+- **`SUM()` and `AVG()` are exact**, in whole units of the scale (no bcmath needed), with MariaDB's scale: SUM keeps
+  the column's, AVG has 4 more (`AVG(amount)` of DECIMAL(15,2) is `'166673.521667'`, `AVG(qty)` of INT `'2.6667'`).
+  The rewriter makes `SUM(x)` `MARIADB_SUM(x, scale)`, taking the scale from the schema (`PRAGMA table_info`, cached
+  per connection) when x is a column of a table in FROM or JOIN. **`MIN()` and `MAX()`** of a DECIMAL column are
+  formatted the same way.
+- **Not covered: arithmetic.** `amount * qty`, `price / 3` and other expressions over decimals are SQLite numbers,
+  and `SUM(expression)` takes its scale from the values (`SUM(price * qty)` can be `'4.4'` where MariaDB says
+  `'4.4000'`). The rule: no money arithmetic or division in SQL; fetch the values and compute in
+  PHP. `SUM(DISTINCT x)` stays SQLite's (a floating-point sum).
+
 ## Known differences
 
 - **Case-insensitive text** uses SQLite's `NOCASE` collation, which folds ASCII letters only: `'é' = 'É'` is false
@@ -79,5 +99,6 @@ refuses the query and asks for parentheses rather than guess. Text in quotes and
 ## Testing
 
 `tests/Db/MariaDb/` compares every function and rewrite against answers recorded from MariaDB 11
-(`tests/Db/MariaDb/expected.json`); `NOIRAPI_TEST_MARIADB=mysql:host=…;dbname=…` (with `_USER`, `_PASS`) runs the
+(`tests/Db/MariaDb/expected.json`), and the rows of queries on one table created on both (`table-cases.php`,
+`expected-tables.json`); `NOIRAPI_TEST_MARIADB=mysql:host=…;dbname=…` (with `_USER`, `_PASS`) runs the
 same cases against a live server and records them again.

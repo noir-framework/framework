@@ -25,10 +25,13 @@ final class Functions
             ...DateParts::definitions(),
             ...DateConversions::definitions(),
         ];
-        foreach ($definitions as $name => [$callback, $counts, $deterministic]) {
+        foreach ([...$definitions, ...DecimalFunctions::definitions()] as $name => [$callback, $counts, $deterministic]) {
             foreach ($counts as $count) {
                 $pdo->createFunction($name, $callback, $count, $deterministic ? Sqlite::DETERMINISTIC : 0);
             }
+        }
+        foreach (DecimalFunctions::aggregates() as $name => [$step, $finalize, $count]) {
+            $pdo->createAggregate($name, $step, $finalize, $count);
         }
     }
 }

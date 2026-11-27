@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\Db\MariaDb;
 
+use Closure;
+
 /**
  * Rewrites the MariaDB syntax that SQLite cannot parse into calls of the MariaDB functions registered on the
  * connection (docs/sqlite-mariadb.md): `d + INTERVAL n UNIT`, `DATE_ADD(d, INTERVAL n UNIT)`, `TIMESTAMPDIFF(UNIT, …)`,
@@ -14,7 +16,8 @@ namespace Noirapi\Lib\Db\MariaDb;
  */
 final class Rewriter
 {
-    private const string TRIGGER = '/INTERVAL|TIMESTAMP(?:DIFF|ADD)|EXTRACT|CURRENT_(?:TIMESTAMP|DATE|TIME)|LOCALTIME/i';
+    private const string TRIGGER = '/INTERVAL|TIMESTAMP(?:DIFF|ADD)|EXTRACT|CURRENT_(?:TIMESTAMP|DATE|TIME)|LOCALTIME'
+        . '|\b(?:SUM|AVG|MIN|MAX)\s*\(/i';
     private const int CACHE_SIZE = 500;
 
     private const array INTERVAL_FUNCTIONS = ['DATE_ADD', 'DATE_SUB', 'ADDDATE', 'SUBDATE'];
@@ -31,27 +34,31 @@ final class Rewriter
     private static array $cache = [];
 
     /**
+     * @param (Closure(string, string): ?int)|null $scaleOf table, column → its DECIMAL scale (DecimalWords); without
+     *        it, SUM/AVG take their scale from the values
      * @psalm-impure
      */
-    public static function rewrite(string $sql): string
+    public static function rewrite(string $sql, ?Closure $scaleOf = null): string
     {
         if (preg_match(self::TRIGGER, $sql) !== 1) {
             return $sql;
         }
-        if (! isset(self::$cache[$sql])) {
+        $key = ($scaleOf === null ? '-' : '+') . $sql;
+        if (! isset(self::$cache[$key])) {
             if (count(self::$cache) >= self::CACHE_SIZE) {
                 self::$cache = [];
             }
-            self::$cache[$sql] = self::translate($sql);
+            self::$cache[$key] = self::translate($sql, $scaleOf);
         }
 
-        return self::$cache[$sql];
+        return self::$cache[$key];
     }
 
     /**
-     * @psalm-pure
+     * @param (Closure(string, string): ?int)|null $scaleOf
+     * @psalm-impure
      */
-    private static function translate(string $sql): string
+    private static function translate(string $sql, ?Closure $scaleOf): string
     {
         $list = new TokenList(Tokenizer::tokenize($sql));
         // CREATE/ALTER keep CURRENT_TIMESTAMP for the schema translation (DEFAULT CURRENT_TIMESTAMP)
@@ -59,6 +66,8 @@ final class Rewriter
         while (($interval = self::findWord($list, 'INTERVAL')) !== null) {
             $list = self::interval($list, $interval);
         }
+
+        $list = DecimalWords::rewrite($list, $scaleOf);
 
         return Tokenizer::join($list->tokens);
     }

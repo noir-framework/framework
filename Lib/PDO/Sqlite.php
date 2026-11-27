@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\PDO;
 
+use Noirapi\Lib\Db\MariaDb\Decimal;
 use Noirapi\Lib\Db\MariaDb\Functions;
 use Noirapi\Lib\Db\MariaDb\Rewriter;
 use Override;
@@ -22,6 +23,9 @@ class Sqlite extends \Pdo\Sqlite implements LoggedPdo
     use LogsQueries;
 
     private bool $mariaDb = false;
+
+    /** @var array<string, array<string, int>> table (lower case) => column (lower case) => DECIMAL scale */
+    private array $decimalColumns = [];
 
     /**
      * MariaDB's functions and syntax from now on.
@@ -61,6 +65,30 @@ class Sqlite extends \Pdo\Sqlite implements LoggedPdo
      */
     protected function dialectSql(string $sql): string
     {
-        return $this->mariaDb ? Rewriter::rewrite($sql) : $sql;
+        return $this->mariaDb ? Rewriter::rewrite($sql, $this->decimalScale(...)) : $sql;
+    }
+
+    /**
+     * The DECIMAL scale of a table's column, from the schema (PRAGMA table_info, once per table); null when it is
+     * not a DECIMAL or not there.
+     *
+     * @psalm-impure
+     */
+    public function decimalScale(string $table, string $column): ?int
+    {
+        $key = strtolower($table);
+        if (! isset($this->decimalColumns[$key])) {
+            $this->decimalColumns[$key] = [];
+            // straight to SQLite: not logged, not rewritten
+            $info = parent::query('PRAGMA table_info(' . $this->quote($table) . ')');
+            foreach ($info === false ? [] : $info->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+                $scale = Decimal::scaleOf(is_string($row['type'] ?? null) ? $row['type'] : null);
+                if ($scale !== null) {
+                    $this->decimalColumns[$key][strtolower((string) $row['name'])] = $scale;
+                }
+            }
+        }
+
+        return $this->decimalColumns[$key][strtolower($column)] ?? null;
     }
 }
