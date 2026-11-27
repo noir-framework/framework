@@ -20,6 +20,8 @@ What it is made of:
 | Functions | `Noirapi\Lib\Db\MariaDb\Functions` (`ClockFunctions`, `DateMath`, `DateParts`, `DateConversions`) | MariaDB's functions as SQLite user functions (PHP, `Pdo\Sqlite::createFunction()`) | dates: 2.7 |
 | Rewriter | `Noirapi\Lib\Db\MariaDb\Rewriter` | MariaDB syntax SQLite cannot parse, rewritten before SQLite sees it | dates: 2.7 |
 | Decimals | `DecimalRows` (from `PDOStatement`), `DecimalFunctions`, `DecimalWords` | `DECIMAL(p,s)` columns come back as text with their scale (`'50.00'`); exact `SUM`/`AVG` | 2.7 |
+| Strings | `TextFunctions`, `SearchFunctions`, `LogicFunctions`, `CodeFunctions`, `PatternFunctions`, `SyntaxWords` | MariaDB's string, logic and pattern functions; literals, operators and locking clauses | 2.7 |
+| Query builder | `Noirapi\Lib\Db\MariaDb\Connection` | noirapi/database writes MySQL SQL (its MySQL compiler) on these connections, like the app's own SQL | 2.7 |
 | Upsert | Rewriter | `INSERT … ON DUPLICATE KEY UPDATE`, `INSERT IGNORE` | planned |
 | Schema | Rewriter + `Migrator` | MariaDB `CREATE`/`ALTER TABLE` translated, so one `sql/NNN_*.sql` serves both | planned |
 
@@ -88,11 +90,50 @@ them up is floating point (0.1 + 0.2 = 0.30000000000000004). In the MariaDB dial
   `'4.4000'`). The rule: no money arithmetic or division in SQL; fetch the values and compute in
   PHP. `SUM(DISTINCT x)` stays SQLite's (a floating-point sum).
 
+## Strings, logic and patterns
+
+Text is compared as `utf8mb4_general_ci` does (case-insensitive in every script, Latin accents ignored: `é` = `e`,
+`ß` = `s`) in `LIKE`, `LOCATE`/`INSTR`, `FIND_IN_SET`, `STRCMP`, `FIELD`, `LEAST`/`GREATEST`; `REGEXP`/`RLIKE` is a
+case-insensitive PCRE match.
+
+**Functions:** `CONCAT` (NULL if any argument is NULL; SQLite 3.44's `concat()` skips them), `CONCAT_WS`, `LEFT`,
+`RIGHT`, `LPAD`, `RPAD`, `REPEAT`, `SPACE`, `REVERSE`, `LOWER`/`LCASE`, `UPPER`/`UCASE` (Unicode; SQLite's are
+ASCII-only), `LENGTH`/`OCTET_LENGTH` (bytes, as MariaDB), `CHAR_LENGTH`/`CHARACTER_LENGTH`, `FORMAT`, `SUBSTRING`/
+`SUBSTR`/`MID` (position 0 gives ''), `SUBSTRING_INDEX`, `LOCATE`, `INSTR`, `FIND_IN_SET`, `STRCMP`, `FIELD`, `ELT`,
+`IF` (a text by its leading number: `'2abc'` is true), `LEAST`/`GREATEST` (text against text, anything else as
+numbers: `LEAST('10','9')` is `'10'`, `LEAST(10,'9')` is 9), `ISNULL`, `MD5`, `SHA1`/`SHA`, `SHA2`, `HEX`, `UNHEX`,
+`TO_BASE64`, `FROM_BASE64`, `ASCII`, `ORD`.
+
+**Syntax the rewriter changes:**
+
+| You write (MariaDB) | SQLite runs |
+| --- | --- |
+| `'it\'s'`, `'a\nb'`, `'C:\\dir'` (backslash escapes; `\%` and `\_` keep theirs, for LIKE) | the same text as a SQLite literal |
+| `"text"` (a string in MariaDB) | `'text'` |
+| `a \|\| b`, `a && b` (OR and AND in MariaDB) | `a OR b`, `a AND b` |
+| `a <=> b` | `a IS b` |
+| `x RLIKE p` | `x REGEXP p` |
+| `… FOR UPDATE [NOWAIT \| SKIP LOCKED]`, `… FOR SHARE`, `… LOCK IN SHARE MODE` | dropped: the transaction already holds the whole database (BEGIN IMMEDIATE) |
+| `COLLATE utf8mb4_bin`, `COLLATE …_ci` | `COLLATE BINARY`, `COLLATE NOCASE` |
+| `_utf8mb4'x'` | `'x'` |
+| `LEFT(…)`, `RIGHT(…)`, `ISNULL(…)` (keywords in SQLite) | the same functions under other names |
+
+**The query builder** (noirapi/database) writes MySQL SQL on these connections (`Noirapi\Lib\Db\MariaDb\Connection`
+gives it the MySQL compilers; its driver stays `sqlite`), so a query from the builder and one written by hand are the
+same dialect. **Migrations in a SQLite-only folder** (`db.sqlite.migrations`, e.g. `sql/sqlite`) are SQLite SQL and run
+unrewritten (`Sqlite::execNative()`).
+
 ## Known differences
 
-- **Case-insensitive text** uses SQLite's `NOCASE` collation, which folds ASCII letters only: `'é' = 'É'` is false
-  (true under MariaDB's `utf8mb4_general_ci`). A custom collation would make the database unreadable for other tools
-  (sqlite3, DB Browser), so this stays until a C extension can fold Unicode.
+- **`=`, `<`, `ORDER BY` and UNIQUE on text** use the column's collation: SQLite's `NOCASE` folds ASCII letters only,
+  so `'é' = 'É'` is false (true under MariaDB's `utf8mb4_general_ci`) and `'a' = 'A'` is false on a column without
+  NOCASE. A custom collation would make the database unreadable for other tools (sqlite3, DB Browser), so this stays
+  until a C extension can fold Unicode; store what you compare normalised (e.g. e-mails lower-cased).
+  The functions and LIKE above do fold Unicode.
+- **Arithmetic** follows SQLite: `5/2` is 2 (2.5000 in MariaDB), decimals add up in floating point. The rule: no
+  division or money arithmetic in SQL (see DECIMAL).
+- `rowCount()` after UPDATE counts rows matched on SQLite, rows changed on MariaDB (unless MYSQL_ATTR_FOUND_ROWS):
+  only rely on it for updates that always change a column.
 - `NOW()` is read per call, so two calls in one long statement can differ by microseconds (MariaDB fixes it per
   statement).
 

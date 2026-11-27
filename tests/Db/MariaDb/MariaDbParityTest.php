@@ -8,6 +8,7 @@ use Noirapi\Lib\PDO\Connector;
 use PDO;
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Before;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
@@ -18,7 +19,6 @@ use Throwable;
  */
 final class MariaDbParityTest extends TestCase
 {
-    private const string EXPECTED = __DIR__ . '/expected.json';
     private const string EXPECTED_TABLES = __DIR__ . '/expected-tables.json';
 
     private string $timezone;
@@ -36,17 +36,29 @@ final class MariaDbParityTest extends TestCase
         date_default_timezone_set($this->timezone);
     }
 
-    public function testSqliteAnswersAsMariaDb(): void
+    /**
+     * @return array<string, array{string, string}> case file, answers file
+     */
+    public static function caseFiles(): array
+    {
+        return [
+            'dates' => ['cases.php', 'expected.json'],
+            'strings' => ['string-cases.php', 'expected-strings.json'],
+        ];
+    }
+
+    #[DataProvider('caseFiles')]
+    public function testSqliteAnswersAsMariaDb(string $caseFile, string $answerFile): void
     {
         /** @var list<string> $cases */
-        $cases = require __DIR__ . '/cases.php';
+        $cases = require __DIR__ . '/' . $caseFile;
         $dsn = getenv('NOIRAPI_TEST_MARIADB');
         if (is_string($dsn) && $dsn !== '') {
-            $this->record($dsn, $cases);
+            $this->record($dsn, $cases, __DIR__ . '/' . $answerFile);
         }
 
         /** @var array<string, string|null|array{error: string}> $expected */
-        $expected = json_decode((string) file_get_contents(self::EXPECTED), true, 512, JSON_THROW_ON_ERROR);
+        $expected = json_decode((string) file_get_contents(__DIR__ . '/' . $answerFile), true, 512, JSON_THROW_ON_ERROR);
         $sqlite = Connector::open('sqlite::memory:');
         $sqlite->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -55,12 +67,13 @@ final class MariaDbParityTest extends TestCase
             self::assertArrayHasKey($case, $expected, "$case: no recorded MariaDB answer (record with NOIRAPI_TEST_MARIADB)");
             $want = $expected[$case];
             $got = self::answer($sqlite, $case);
-            if ($got !== $want) {
+            // both refusing is the same answer, whatever the exception's class
+            if ($got !== $want && ! (is_array($got) && is_array($want))) {
                 $wrong[] = sprintf('%s  MariaDB: %s  SQLite: %s', $case, json_encode($want), json_encode($got));
             }
         }
 
-        self::assertSame([], $wrong, count($wrong) . " of " . count($cases) . " differ:\n" . implode("\n", $wrong));
+        self::assertSame([], $wrong, count($wrong) . ' of ' . count($cases) . " differ:\n" . implode("\n", $wrong));
     }
 
     public function testTableRowsAsMariaDb(): void
@@ -126,6 +139,7 @@ final class MariaDbParityTest extends TestCase
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]);
         $mariadb->exec("SET time_zone = '+00:00'");
+        $mariadb->exec('SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
 
         return $mariadb;
     }
@@ -133,7 +147,7 @@ final class MariaDbParityTest extends TestCase
     /**
      * @param list<string> $cases
      */
-    private function record(string $dsn, array $cases): void
+    private function record(string $dsn, array $cases, string $answerFile): void
     {
         $mariadb = self::mariadb($dsn);
 
@@ -141,7 +155,7 @@ final class MariaDbParityTest extends TestCase
         foreach ($cases as $case) {
             $answers[$case] = self::answer($mariadb, $case);
         }
-        file_put_contents(self::EXPECTED, json_encode($answers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+        file_put_contents($answerFile, json_encode($answers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
     }
 
     /**

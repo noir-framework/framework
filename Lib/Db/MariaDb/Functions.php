@@ -24,6 +24,11 @@ final class Functions
             ...DateMath::definitions(),
             ...DateParts::definitions(),
             ...DateConversions::definitions(),
+            ...TextFunctions::definitions(),
+            ...SearchFunctions::definitions(),
+            ...LogicFunctions::definitions(),
+            ...CodeFunctions::definitions(),
+            ...PatternFunctions::definitions(),
         ];
         foreach ([...$definitions, ...DecimalFunctions::definitions()] as $name => [$callback, $counts, $deterministic]) {
             foreach ($counts as $count) {

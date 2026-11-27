@@ -9,9 +9,11 @@ use Noirapi\Config;
 use Noirapi\Helpers\Utils;
 use Noirapi\Database\Connection;
 use Noirapi\Database\Database;
+use Noirapi\Lib\Db\MariaDb\Connection as MariaDbConnection;
 use Noirapi\Lib\Db\SqliteSetup;
 use Noirapi\Lib\PDO\Connector;
 use Noirapi\Lib\PDO\LoggedPdo;
+use Noirapi\Lib\PDO\Sqlite;
 use RuntimeException;
 
 /**
@@ -117,7 +119,12 @@ class Model
             $pdo = self::$pdo[$this->driver];
         }
 
-        return new Database(Connection::fromPDO($pdo));
+        // a SQLite connection in the MariaDB dialect gets the MySQL query compiler (docs/sqlite-mariadb.md)
+        $connection = $pdo instanceof Sqlite && $pdo->isMariaDb()
+            ? MariaDbConnection::fromPDO($pdo)
+            : Connection::fromPDO($pdo);
+
+        return new Database($connection);
     }
 
     /**

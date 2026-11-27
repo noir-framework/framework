@@ -17,7 +17,7 @@ use Closure;
 final class Rewriter
 {
     private const string TRIGGER = '/INTERVAL|TIMESTAMP(?:DIFF|ADD)|EXTRACT|CURRENT_(?:TIMESTAMP|DATE|TIME)|LOCALTIME'
-        . '|\b(?:SUM|AVG|MIN|MAX)\s*\(/i';
+        . '|\b(?:SUM|AVG|MIN|MAX)\s*\(|["\\\\]|\|\||&&|<=>|RLIKE|\bFOR\s+(?:UPDATE|SHARE)|LOCK\s+IN|COLLATE|\b_[a-z0-9]+\x27|\b(?:LEFT|RIGHT|ISNULL)\s*\(/i';
     private const int CACHE_SIZE = 500;
 
     private const array INTERVAL_FUNCTIONS = ['DATE_ADD', 'DATE_SUB', 'ADDDATE', 'SUBDATE'];
@@ -60,7 +60,8 @@ final class Rewriter
      */
     private static function translate(string $sql, ?Closure $scaleOf): string
     {
-        $list = new TokenList(Tokenizer::tokenize($sql));
+        // literals and operators first: the rules after it copy string values into the expressions they build
+        $list = SyntaxWords::rewrite(new TokenList(Tokenizer::tokenize($sql)));
         // CREATE/ALTER keep CURRENT_TIMESTAMP for the schema translation (DEFAULT CURRENT_TIMESTAMP)
         $list = DateWords::rewrite($list, in_array($list->upper($list->next(-1)), ['CREATE', 'ALTER'], true));
         while (($interval = self::findWord($list, 'INTERVAL')) !== null) {

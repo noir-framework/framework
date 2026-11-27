@@ -14,6 +14,23 @@ final class Values
     private const int MAX_TIME_MICROS = (838 * 3600 + 59 * 60 + 59) * Temporal::MICROS_PER_SECOND;
 
     /**
+     * A value as the text MariaDB's string functions see: numbers in their shortest form (0.1, not
+     * 0.10000000000000001), NULL stays null.
+     *
+     * @psalm-pure
+     */
+    public static function text(mixed $value): ?string
+    {
+        return match (true) {
+            $value === null => null,
+            is_string($value) => $value,
+            is_float($value) => Decimal::text($value) ?? (string) $value,
+            is_scalar($value) => (string) $value,
+            default => null,
+        };
+    }
+
+    /**
      * A DATE or DATETIME (a TIME is not a date).
      *
      * @psalm-pure

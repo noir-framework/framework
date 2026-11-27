@@ -49,6 +49,21 @@ class Sqlite extends \Pdo\Sqlite implements LoggedPdo
     }
 
     /**
+     * Runs SQL written for SQLite itself, not rewritten from MariaDB's dialect (logged): a migration in a
+     * SQLite-only folder, a pragma.
+     *
+     * @psalm-impure
+     */
+    public function execNative(string $statement): false|int
+    {
+        $start = microtime(true);
+        $result = parent::exec($statement);
+        $this->addLog($statement, microtime(true) - $start);
+
+        return $result;
+    }
+
+    /**
      * @param array<int, mixed> $options
      * @psalm-impure
      */

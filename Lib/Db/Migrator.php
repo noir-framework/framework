@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\Db;
 
+use Noirapi\Lib\PDO\Sqlite;
 use PDO;
 use RuntimeException;
 use Throwable;
@@ -102,7 +103,7 @@ final class Migrator
             $this->createTable();
             $done = [];
             foreach ($this->pending() as $name) {
-                $this->pdo->exec($this->read($name));
+                $this->execNative($this->read($name));
                 $this->record($name);
                 $done[] = $name;
             }
@@ -152,6 +153,22 @@ final class Migrator
         } finally {
             $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, $emulate);
         }
+    }
+
+    /**
+     * A SQLite migration as SQLite SQL: the files are written for SQLite, so a connection in the MariaDB dialect
+     * (Noirapi\Lib\PDO\Sqlite) runs them without rewriting ('App\Readers' keeps its backslash).
+     *
+     * @psalm-impure
+     */
+    private function execNative(string $sql): void
+    {
+        if ($this->pdo instanceof Sqlite) {
+            $this->pdo->execNative($sql);
+
+            return;
+        }
+        $this->pdo->exec($sql);
     }
 
     /**
