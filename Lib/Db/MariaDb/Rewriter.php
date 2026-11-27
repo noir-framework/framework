@@ -17,7 +17,7 @@ use Closure;
 final class Rewriter
 {
     private const string TRIGGER = '/INTERVAL|TIMESTAMP(?:DIFF|ADD)|EXTRACT|CURRENT_(?:TIMESTAMP|DATE|TIME)|LOCALTIME'
-        . '|\b(?:SUM|AVG|MIN|MAX)\s*\(|["\\\\]|\|\||&&|<=>|RLIKE|\bFOR\s+(?:UPDATE|SHARE)|LOCK\s+IN|COLLATE|\b_[a-z0-9]+\x27|\b(?:LEFT|RIGHT|ISNULL)\s*\(|JSON_|GROUP_CONCAT/i';
+        . '|\b(?:SUM|AVG|MIN|MAX)\s*\(|["\\\\]|\|\||&&|<=>|RLIKE|\bFOR\s+(?:UPDATE|SHARE)|LOCK\s+IN|COLLATE|\b_[a-z0-9]+\x27|\b(?:LEFT|RIGHT|ISNULL)\s*\(|JSON_|GROUP_CONCAT|^\s*(?:INSERT|REPLACE)\b|\bIGNORE\b/i';
     private const int CACHE_SIZE = 500;
 
     private const array INTERVAL_FUNCTIONS = ['DATE_ADD', 'DATE_SUB', 'ADDDATE', 'SUBDATE'];
@@ -71,6 +71,7 @@ final class Rewriter
         $list = DecimalWords::rewrite($list, $scaleOf);
         $list = JsonWords::rewrite($list);
         $list = GroupWords::rewrite($list);
+        $list = UpsertWords::rewrite($list);
 
         return Tokenizer::join($list->tokens);
     }

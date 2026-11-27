@@ -23,7 +23,7 @@ What it is made of:
 | Strings | `TextFunctions`, `SearchFunctions`, `LogicFunctions`, `CodeFunctions`, `PatternFunctions`, `SyntaxWords` | MariaDB's string, logic and pattern functions; literals, operators and locking clauses | 2.7 |
 | Query builder | `Noirapi\Lib\Db\MariaDb\Connection` | noirapi/database writes MySQL SQL (its MySQL compiler) on these connections, like the app's own SQL | 2.7 |
 | JSON, GROUP_CONCAT | `JsonFunctions`, `JsonBuilders`, `JsonWords`, `GroupConcat`, `GroupWords` | MariaDB's JSON functions and `GROUP_CONCAT(… ORDER BY … SEPARATOR … LIMIT …)` | 2.7 |
-| Upsert | Rewriter | `INSERT … ON DUPLICATE KEY UPDATE`, `INSERT IGNORE` | planned |
+| Upsert | `UpsertWords` | `INSERT … ON DUPLICATE KEY UPDATE`, `INSERT IGNORE`, `INSERT … SET` | 2.7 |
 | Schema | Rewriter + `Migrator` | MariaDB `CREATE`/`ALTER TABLE` translated, so one `sql/NNN_*.sql` serves both | planned |
 
 Functions are PHP now; a function that a measurement shows to be slow on big tables can move to a C extension
@@ -142,6 +142,25 @@ unrewritten (`Sqlite::execNative()`).
 **`GROUP_CONCAT([DISTINCT] e1[, e2…] [ORDER BY k [ASC|DESC], …] [SEPARATOR 's'] [LIMIT [offset,] n])`** is a PHP
 aggregate: rows with a NULL value are left out, DISTINCT and ORDER BY compare as `utf8mb4_general_ci`, NULL keys sort
 first, no rows give NULL. MariaDB's 1 MB `group_concat_max_len` cut is not applied.
+
+## INSERT, upserts and IGNORE
+
+| You write (MariaDB) | SQLite runs |
+| --- | --- |
+| `INSERT IGNORE [INTO] t …`, `UPDATE IGNORE …`, `DELETE IGNORE …` | `INSERT OR IGNORE INTO t …`, `UPDATE OR IGNORE …`, `DELETE …` |
+| `INSERT INTO t SET a = 1, b = 2` | `INSERT INTO t (a, b) VALUES (1, 2)` |
+| `INSERT … VALUE (…)` | `INSERT … VALUES (…)` |
+| `… ON DUPLICATE KEY UPDATE c = c + VALUES(c)` | `… ON CONFLICT DO UPDATE SET c = c + excluded.c` (any unique key, SQLite 3.35+) |
+| `INSERT … SELECT … ON DUPLICATE KEY UPDATE …` | the SELECT as `SELECT * FROM (…) WHERE true` (SQLite's parser needs the WHERE) |
+| `LOW_PRIORITY`, `DELAYED`, `HIGH_PRIORITY` | dropped |
+
+`REPLACE INTO` is the same in both. Differences that stay:
+
+- `rowCount()` after an upsert is 1 per row on SQLite; MariaDB says 1 for an insert, 2 for an update, 0 for no change.
+- In MariaDB, an assignment in ON DUPLICATE KEY UPDATE sees the ones before it (`a = a + 1, b = a`); SQLite evaluates
+  them all against the old row.
+- `IGNORE` covers constraint violations only (unique, primary key, NOT NULL, CHECK); MariaDB also turns some data
+  errors into warnings.
 
 ## Known differences
 

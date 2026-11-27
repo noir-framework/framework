@@ -1,0 +1,34 @@
+{
+    "SELECT id, email, name, visits FROM people ORDER BY id": [
+        [
+            "1",
+            "a@x",
+            "Ann",
+            "2"
+        ],
+        [
+            "2",
+            "b@x",
+            "Robert",
+            "107"
+        ],
+        [
+            "3",
+            "c@x",
+            "Cid",
+            "101"
+        ],
+        [
+            "5",
+            "e@x",
+            "Eve 2",
+            "0"
+        ],
+        [
+            "7",
+            "g2@x",
+            "Gus 2",
+            "0"
+        ]
+    ]
+}

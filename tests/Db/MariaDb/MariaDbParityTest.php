@@ -83,6 +83,7 @@ final class MariaDbParityTest extends TestCase
         return [
             'money' => ['table-cases.php', 'expected-tables.json', 'money'],
             'groups' => ['group-cases.php', 'expected-groups.json', 'fruit'],
+            'upserts' => ['upsert-cases.php', 'expected-upserts.json', 'people'],
         ];
     }
 
