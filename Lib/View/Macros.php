@@ -59,6 +59,18 @@ class Macros extends Extension
     }
 
     /**
+     * The PHP expression for app/layouts/<file> when the app has one, else the framework's Templates/<file>: the
+     * path is built when the template runs, not written into the compiled code, so a template compiled elsewhere
+     * (`noirapi prebuild` on the build machine) finds it on any install path.
+     */
+    private static function bundledTemplate(string $file): string
+    {
+        return is_readable(Config::getLayouts() . '/' . $file)
+            ? '\\Noirapi\\Config::getLayouts() . ' . var_export('/' . $file, true)
+            : '\\Noirapi\\Config::getFrameworkDir() . ' . var_export('/Templates/' . $file, true);
+    }
+
+    /**
      * @param Tag $tag
      * @return Node
      * @noinspection PhpUnused
@@ -88,11 +100,7 @@ class Macros extends Extension
     public function pager(Tag $tag): Node
     {
 
-        $file = Config::getLayouts() . '/pager.latte';
-
-        if (! is_readable($file)) {
-            $file = Config::getFrameworkDir() . '/Templates/pager.latte';
-        }
+        $file = self::bundledTemplate('pager.latte');
 
         return new AuxiliaryNode(
             fn (PrintContext $context) => $context->format(
@@ -113,7 +121,7 @@ class Macros extends Extension
                 else if($pager->getPage() == $pager->getLastPage() -1 ) { $index_left = 3; $index_right = 1; }
                 else { $index_left = 2; $index_right = 2; }
 
-                $this->createTemplate(\'%raw\', [
+                $this->createTemplate(%raw, [
                     \'pager\' => $pager,
                     \'index_left\' => $index_left,
                     \'index_right\' => $index_right,
@@ -133,15 +141,11 @@ class Macros extends Extension
     public function breadcrumb(Tag $tag): Node
     {
 
-        $file = Config::getLayouts() . '/BreadCrumbs.latte';
-
-        if (! is_readable($file)) {
-            $file = Config::getFrameworkDir() . '/Templates/BreadCrumbs.latte';
-        }
+        $file = self::bundledTemplate('BreadCrumbs.latte');
 
         return new AuxiliaryNode(
             fn (PrintContext $context) => $context->format(
-                '$this->createTemplate("%raw", [ "breadcrumbs" => $this->params["layout"]->breadcrumbs ], "include")
+                '$this->createTemplate(%raw, [ "breadcrumbs" => $this->params["layout"]->breadcrumbs ], "include")
                 ->renderToContentType("html");',
                 $file
             )
@@ -276,16 +280,12 @@ class Macros extends Extension
     public function message(Tag $tag): AuxiliaryNode
     {
 
-        $file = Config::getLayouts() . '/message.latte';
-
-        if (! is_readable($file)) {
-            $file = Config::getFrameworkDir() . '/Templates/message.latte';
-        }
+        $file = self::bundledTemplate('message.latte');
 
         return new AuxiliaryNode(
             fn (PrintContext $context) => $context->format(
                 '
-                $this->createTemplate(\'%raw\', [
+                $this->createTemplate(%raw, [
                     \'message\' => $message ?? null
                  ], \'include\')->renderToContentType(\'html\');',
                 $file

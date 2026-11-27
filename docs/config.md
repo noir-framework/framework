@@ -2,13 +2,25 @@
 
 The app's config is `app/config/<name>.neon`. The name comes from the `CONFIG` environment
 variable, else the virtual host (`SERVER_NAME` / `HTTP_HOST`), else `default`. The decoded file
-is cached in `temp/config-cache/` until the `.neon` file changes. If the app has
+is cached in `temp/config-cache/` until the `.neon` file changes (a [prebuilt app](prebuilt.md) reads
+`prebuilt/config/<name>.php` instead and writes no cache). If the app has
 `App\Lib\Config::validate(array $config)`, it runs on every load.
 
 Read values with `Config::get('key')` or a dotted path, `Config::get('auth.totp.issuer')`.
 `vendor/bin/noirapi config:check [name]` loads a config and checks the settings below.
 
 Everything is optional.
+
+## Values from the environment
+
+A string value that is exactly `%env(NAME)%` becomes the environment variable `NAME` when the config loads, so a
+config sealed in an image or a phar can take secrets and per-install values from whoever starts PHP:
+
+```neon
+app_secret_key: '%env(APP_SECRET_KEY)%'
+```
+
+A variable that is not set, or is empty, is an error (`ConfigException`).
 
 ## Environment
 

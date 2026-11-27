@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace Noirapi;
 
 use Composer\InstalledVersions;
-use JsonException;
-use Nette\Neon\Exception;
-use Nette\Neon\Neon;
+use Noirapi\Lib\ConfigCache;
+use Noirapi\Lib\ConfigEnv;
 use Noirapi\Lib\DevMode;
+use Noirapi\Lib\Prebuilt;
 use Noirapi\Exceptions\ConfigException;
 use Noirapi\Lib\WritableRoot;
-use RuntimeException;
-use Tracy\Debugger;
 
 use function is_array;
 
@@ -39,13 +37,21 @@ class Config
      */
     public static function init(string $config): void
     {
-        $file = WritableRoot::configFile($config);
+        // a prebuilt app (noirapi prebuild) reads the config it was built with, and writes no config cache
+        $file = 'prebuilt/config/' . $config . '.php';
+        $parsed = Prebuilt::load('config/' . $config . '.php');
 
-        if (! is_readable($file)) {
-            throw new ConfigException('Config file not found:' . $file);
+        if ($parsed === null) {
+            $file = WritableRoot::configFile($config);
+
+            if (! is_readable($file)) {
+                throw new ConfigException('Config file not found:' . $file);
+            }
+
+            $parsed = ConfigCache::load($file);
         }
 
-        $parsed = self::loadCached($file);
+        $parsed = ConfigEnv::resolve($parsed);
 
         if (empty($parsed)) {
             throw new ConfigException('Unable to parse config:' . $file);
@@ -66,55 +72,6 @@ class Config
         }
 
         self::$config = $config;
-    }
-
-    /**
-     * Load a NEON config file, transparently caching the decoded result as JSON.
-     * The cache is keyed by the source file's mtime, so edits to the .neon file
-     * automatically invalidate it - no expiration timer needed.
-     *
-     * @param string $file
-     * @return mixed
-     */
-    private static function loadCached(string $file): mixed
-    {
-        $cacheFile = self::getTemp() . '/config-cache/' . md5($file) . '.json';
-        $sourceMtime = filemtime($file);
-
-        if (is_readable($cacheFile)) {
-            $cached = file_get_contents($cacheFile);
-
-            try {
-                $decoded = json_decode($cached, true, 512, JSON_THROW_ON_ERROR);
-            } catch (JsonException) {
-                $decoded = null;
-            }
-
-            if (is_array($decoded) && ($decoded['mtime'] ?? null) === $sourceMtime) {
-                return $decoded['data'];
-            }
-        }
-
-        try {
-            $parsed = Neon::decodeFile($file);
-        } catch (Exception $e) {
-            Debugger::log($e, Debugger::ERROR);
-
-            return null;
-        }
-
-        $cacheDir = dirname($cacheFile);
-        if (! is_dir($cacheDir) && ! mkdir($cacheDir, 0777, true) && ! is_dir($cacheDir)) {
-            throw new RuntimeException('Failed to create cache directory: ' . $cacheDir);
-        }
-
-        file_put_contents(
-            $cacheFile,
-            json_encode(['mtime' => $sourceMtime, 'data' => $parsed], JSON_THROW_ON_ERROR),
-            LOCK_EX,
-        );
-
-        return $parsed;
     }
 
     /**

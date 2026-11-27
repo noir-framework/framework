@@ -12,6 +12,7 @@ use Noirapi\Lib\Console\Commands\KeyGenerate;
 use Noirapi\Lib\Console\Commands\LatteFormat;
 use Noirapi\Lib\Console\Commands\MakeController;
 use Noirapi\Lib\Console\Commands\MakeModel;
+use Noirapi\Lib\Console\Commands\Prebuild;
 use Noirapi\Lib\Console\Commands\RoutesList;
 use Throwable;
 
@@ -39,6 +40,7 @@ final class Application
             new LatteFormat(),
             new MakeController(),
             new MakeModel(),
+            new Prebuild(),
             new RoutesList(),
         ];
 

@@ -12,6 +12,7 @@ use FastRoute\RouteCollector;
 use FastRoute\RouteParser\Std;
 use LogicException;
 use Noirapi\Config;
+use Noirapi\Lib\Prebuilt;
 use ReflectionFunction;
 use RuntimeException;
 
@@ -34,7 +35,8 @@ use function is_object;
  *     }
  *
  * With cache: true the compiled routes are kept in temp/route-cache/ until the file that
- * defines them changes. Routes whose handlers are closures are never cached.
+ * defines them changes. Routes whose handlers are closures are never cached. A prebuilt app
+ * (noirapi prebuild, Noirapi\Lib\Prebuilt) loads them from prebuilt/routes/ and writes nothing.
  *
  * @psalm-api
  */
@@ -63,16 +65,12 @@ final class Router
      */
     public static function dispatcher(Closure $define, bool $cache = false, string $key = 'routes', array $sources = []): Dispatcher //phpcs:ignore
     {
-        $file = Config::getTemp() . '/route-cache/' . preg_replace('/[^A-Za-z0-9_-]/', '_', $key) . '.php';
-        $stamp = $cache ? self::stamp($sources !== [] ? $sources : [(string) new ReflectionFunction($define)->getFileName()]) : []; //phpcs:ignore
+        $name = preg_replace('/[^A-Za-z0-9_-]/', '_', $key) . '.php';
+        $cached = $cache ? self::cached($name, $define, $sources) : null;
+        if ($cached !== null) {
+            Url::load($cached['routes']);
 
-        if ($cache && is_file($file)) {
-            $cached = include $file;
-            if (is_array($cached) && ($cached['stamp'] ?? null) === $stamp) {
-                Url::load($cached['routes']);
-
-                return new GroupCountBased($cached['data']);
-            }
+            return new GroupCountBased($cached['data']);
         }
 
         $collector = new RouteCollector(new Std(), new GroupCountBasedGenerator());
@@ -82,10 +80,59 @@ final class Router
 
         $data = $collector->getData();
         if ($cache && $router->cacheable()) {
-            self::write($file, ['stamp' => $stamp, 'data' => $data, 'routes' => $router->routes]);
+            self::store($name, $define, $sources, ['data' => $data, 'routes' => $router->routes]);
         }
 
         return new GroupCountBased($data);
+    }
+
+    /**
+     * The routes from prebuilt/routes/ (a prebuilt app: noirapi prebuild), else from temp/route-cache/ while the
+     * files that define them are unchanged.
+     *
+     * @param list<string> $sources
+     * @return array{data: array, routes: array}|null
+     */
+    private static function cached(string $name, Closure $define, array $sources): ?array
+    {
+        $prebuilt = Prebuilt::load('routes/' . $name);
+        if (is_array($prebuilt)) {
+            return $prebuilt;
+        }
+
+        if (Prebuilt::active() || Prebuilt::capturing()) {
+            return null;
+        }
+
+        $file = Config::getTemp() . '/route-cache/' . $name;
+        $cached = is_file($file) ? include $file : null;
+
+        return is_array($cached) && ($cached['stamp'] ?? null) === self::stamp(self::sources($define, $sources)) ? $cached : null; //phpcs:ignore
+    }
+
+    /**
+     * Keeps the routes: into prebuilt/routes/ during a prebuild, in temp/route-cache/ otherwise; a prebuilt app
+     * writes nothing.
+     *
+     * @param list<string> $sources
+     * @param array{data: array, routes: array} $payload
+     */
+    private static function store(string $name, Closure $define, array $sources, array $payload): void
+    {
+        if (Prebuilt::capturing()) {
+            Prebuilt::export('routes/' . $name, $payload);
+        } elseif (! Prebuilt::active()) {
+            self::write(Config::getTemp() . '/route-cache/' . $name, ['stamp' => self::stamp(self::sources($define, $sources))] + $payload); //phpcs:ignore
+        }
+    }
+
+    /**
+     * @param list<string> $sources
+     * @return list<string> the files whose change invalidates the cache: $sources, else the file defining $define
+     */
+    private static function sources(Closure $define, array $sources): array
+    {
+        return $sources !== [] ? $sources : [(string) new ReflectionFunction($define)->getFileName()];
     }
 
     public function get(string $path, mixed $handler, ?string $name = null): self

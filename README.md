@@ -94,12 +94,28 @@ moving it to the Composer layout.
 
 The framework's own files (bundled templates, bin scripts) are found with `Config::getFrameworkDir()`.
 
+## Desktop apps
+
+Since 2.6 the same app can also run as a desktop program: a native shell (Tauri, or anything that can start a
+process and show a webview) starts PHP's built-in server on `127.0.0.1` and opens it. What the framework provides:
+
+- **Read-only code**: the code root can be a phar (`NOIRAPI_ROOT=phar://…/app.phar`, or `htdocs/index.php` inside
+  it) or any read-only folder; everything written goes to the writable root, `NOIRAPI_DATA` (`temp/`, `logs/`,
+  `data/` for relative SQLite paths, `Noirapi\Lib\WritableRoot`).
+- **Prebuilt** (`vendor/bin/noirapi prebuild <config>`, [docs/prebuilt.md](docs/prebuilt.md)): config, routes, ACLs,
+  translations and compiled templates are made at build time, so nothing is compiled or cached at runtime and a
+  new version starts as fast as a relaunch.
+- **Secrets from the environment**: `%env(NAME)%` config values, so no config file with a secret is written.
+- **SQLite as the database**: Windows paths (`C:\…`, `\\server\share\…`), transactions that begin IMMEDIATE, and
+  connections that are the driver subclasses (`Pdo\Sqlite`: `createFunction()` for app functions).
+
 ## Documentation
 
 - [Routing](docs/routing.md), [Controllers](docs/controller.md), [Views](docs/view.md), [Layouts](docs/layouts.md)
 - [Database](docs/db.md), [Sessions](docs/sessions.md), [Mail](docs/mail.md)
 - [Command line](docs/cli.md), [Security](docs/security.md) (trusted proxies, CSRF, headers/CSP, rate limits), [Authentication](docs/auth.md)
-- [Configuration reference](docs/config.md), [Validation](docs/validation.md), [Swoole](docs/swoole.md)
+- [Configuration reference](docs/config.md), [Validation](docs/validation.md), [Swoole](docs/swoole.md),
+  [Prebuilt (sealed) apps](docs/prebuilt.md)
 - [MCP server](docs/mcp.md): tools for Claude and other MCP clients, with OAuth 2.1 sign-in
 
 ## Development

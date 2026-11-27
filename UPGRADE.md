@@ -1,3 +1,19 @@
+# Upgrading to noirapi/framework 2.6
+
+No code changes are needed; 2.6 adds what desktop (sealed, prebuilt) builds need, all off unless used. Worth knowing:
+
+- **Compiled templates are named differently** (template ids are now relative to the code root): the first request
+  after deploying recompiles each template into `temp/` once. `vendor/bin/noirapi cache:clear` removes the old ones.
+- **Every Latte engine comes from `Noirapi\Lib\View\LatteFactory`.** An app that builds its own `new Latte\Engine()`
+  keeps working; to prebuild it, use `LatteFactory::basic()` instead, and put the app's Latte functions and
+  extensions in `App\Lib\LatteSetup` (docs/prebuilt.md). Mail templates now have the framework's filters too.
+- **`Model` connections are `Noirapi\Lib\PDO\Mysql` / `Sqlite`** (`Pdo\Mysql` / `Pdo\Sqlite` subclasses, made with
+  `PDO::connect()`). Code that type-hints `Noirapi\Lib\PDO\PDO` for a `Model` connection should use `\PDO`.
+- **SQLite transactions begin IMMEDIATE** on PHP 8.5: `beginTransaction()` takes the write lock at once, so a
+  read-then-write inside a transaction cannot interleave with another writer.
+- **A config string that is exactly `%env(NAME)%`** is replaced by the environment variable, and is an error when
+  the variable is unset or empty.
+
 # Upgrading to noirapi/framework 2.5
 
 Only for apps with an MCP server (`Noirapi\Lib\Mcp`) on `PdoStore`: add the connection-data columns BEFORE

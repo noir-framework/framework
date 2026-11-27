@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Noirapi\Helpers;
 
 use Html2Text\Html2Text;
-use Latte\Engine;
+use Noirapi\Lib\View\LatteFactory;
 use Noirapi\Config;
 use RuntimeException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -109,8 +109,7 @@ class Mail
             $file = is_readable($bundled) ? $bundled : throw new RuntimeException('Unable to load template: ' . $file);
         }
 
-        $latte = new Engine();
-        $latte->setCacheDirectory(Config::getTemp());
+        $latte = LatteFactory::basic();
         $this->body = $latte->renderToString($file, $params);
 
         return $this;

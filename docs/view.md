@@ -262,6 +262,9 @@ $this->view()->latte->addFilter('shout', static fn (string $text): string => str
 2. a base controller (a parent class of the controller, below `Noirapi\Lib\Controller`) registers it with `addFunction('name', ...)` / `addFilter('name', ...)`, or
 3. the controller registers it: in the constructor or a non-public helper for all its templates, in a public method only for the templates that method renders.
 
+For an app that is [prebuilt](prebuilt.md), register functions and extensions in `App\Lib\LatteSetup` instead,
+so the build compiles the templates with them.
+
 Layouts and partials are rendered by many controllers, so for them any of the above counts. Only a literal name is seen (`addFunction($name, ...)` is not). Nothing loads `App\Lib\Functions` at runtime: a function listed there must also be registered with `addFunction()`.
 
 ---

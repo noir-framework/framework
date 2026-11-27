@@ -4,23 +4,16 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib;
 
-use App\Lib\Macros as AppMacros;
-use Latte\Bridges\Tracy\TracyExtension;
 use Latte\Engine;
-use Latte\Essential\TranslatorExtension;
-use Latte\Feature;
 use Nette\Neon\Exception;
 use Noirapi\Config;
 use Noirapi\Exceptions\FileNotFoundException;
 use Noirapi\Helpers\DummyTranslator;
 use Noirapi\Helpers\EasyTranslator;
-use Noirapi\Helpers\Template;
 use Noirapi\Interfaces\Translator;
-use Noirapi\Lib\View\FilterExtension;
-use Noirapi\Lib\View\LatteLoader;
+use Noirapi\Lib\View\LatteFactory;
 use Noirapi\Lib\View\Layout;
 use Noirapi\Lib\Security\SecurityHeaders;
-use Noirapi\Lib\View\Macros;
 use RuntimeException;
 use stdClass;
 
@@ -63,37 +56,6 @@ class View
         $this->params = new stdClass();
         $this->dev = $dev;
 
-        $this->latte = new Engine();
-        $this->latte->setCacheDirectory(Config::getTemp());
-
-        //enable regeneration of the template files
-        $this->latte->setAutoRefresh();
-
-        $this->latte->addExtension(new FilterExtension());
-        $this->latte->addExtension(new Macros());
-        $this->latte->addFunction('renderTemplate', static function ($template, array $data) {
-            $render = new Template();
-            $render->setTemplate($template);
-
-            return $render->print($data);
-        });
-
-        //Handle the case where the template name is double underscore, search for it in the layouts
-        $this->latte->setLoader(new LatteLoader());
-
-        /**
-         * @noinspection PhpUndefinedClassInspection
-         * @noinspection RedundantSuppression
-         * @noinspection PhpUndefinedNamespaceInspection
-         */
-        if (class_exists(AppMacros::class)) {
-            /**
-             * @noinspection PhpParamsInspection
-             * @noinspection RedundantSuppression
-             */
-            $this->latte->addExtension(new AppMacros());
-        }
-
         $languages = Config::get('languages') ?? [];
         if (is_array($languages) && ! empty($languages)) {
             if ($this->request->language === null) {
@@ -104,12 +66,9 @@ class View
             $this->translator = new DummyTranslator();
         }
 
-        $extension = new TranslatorExtension(
-            [$this->translator, 'translate'],
-            $this->request->language
-        );
+        // built by LatteFactory, so `noirapi prebuild` can compile the templates for this very engine
+        $this->latte = LatteFactory::view($this->request->language, $this->translator, $dev);
 
-        $this->latte->addExtension($extension);
         $this->addParam('languages', $languages);
 
         $this->layout = new Layout($this->translator);
@@ -119,13 +78,6 @@ class View
         if ($layout_file !== null) {
             $this->setLayout($layout_file);
         }
-
-        if ($dev) {
-            $this->latte->addExtension(new TracyExtension());
-        }
-
-        $this->latte->setFeature(Feature::StrictParsing);
-        $this->latte->setFeature(Feature::StrictTypes);
 
         self::$uri = $request->uri;
     }

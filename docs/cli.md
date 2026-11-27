@@ -16,6 +16,7 @@ vendor/bin/noirapi list                 # every command, including the app's
 | `latte-format [--check] [--indent=N\|--tabs] [paths]` | tidy Latte templates in place (indentation, trailing whitespace, blank lines); `--check` for CI |
 | `latte-check [--strict] [--no-controller-check]` | check templates against the variables their controllers pass, and that the functions and filters they call are registered (in `app/lib`, a base controller or the rendering controller, see [view.md](view.md#app-level-functions)) |
 | `cache:clear` | delete compiled templates and the config, ACL and route caches in `temp/` |
+| `prebuild <config> [--out DIR] [--verbose]` | write the config, routes, ACL, translations and compiled templates into `prebuilt/`, for code that runs read-only ([prebuilt apps](prebuilt.md)) |
 | `config:check [name]` | load `app/config/<name>.neon` (default: `$CONFIG`, else `default`), run `App\Lib\Config::validate()`, and check `temp/`/`logs/`, `trusted_proxies`, `dev_ips`, `app_secret_key` and `rate_limiter` |
 | `routes:list` | list routes, when `App\Route` uses [`Router`](routing.md#named-routes-and-url-generation) |
 | `make:controller Name` | `app/controllers/Name.php` (extending `App\Site` when there is one) and `app/views/name/index.latte`; `Admin/Users` makes `App\Controllers\Admin\Users` |

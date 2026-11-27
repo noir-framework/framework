@@ -1,7 +1,29 @@
 # Changelog
 
-## Unreleased
+## 2.6.0 (2026-11-27)
 
+**Desktop app compatibility.** From this version a noirapi app can also ship as a desktop app, the same code as
+the hosted one: a native shell (Tauri or similar) starts PHP's built-in server on `127.0.0.1` and shows it in a
+webview. The code can run read-only, sealed in a signed phar (`NOIRAPI_ROOT=phar://…` or the phar's own directory),
+and prebuilt (`noirapi prebuild`): nothing is compiled or cached at runtime. Everything the app writes goes to a
+separate writable root (`NOIRAPI_DATA`), SQLite works with Windows paths and takes its write lock at the start of a
+transaction, and per-install secrets come from the environment (`%env(NAME)%`). See the README's "Desktop apps"
+and docs/prebuilt.md. Nothing changes for an app that does not use these.
+
+- **Prebuilt (sealed) apps** (`noirapi prebuild <config>`, `Noirapi\Lib\Prebuilt`, docs/prebuilt.md): the config,
+  routes, ACLs, translations and compiled Latte templates are written into `<root>/prebuilt/` at build time. When
+  that folder exists, the framework reads them from there and writes no cache at runtime, so the code can run from a
+  signed phar or another read-only place. Without it nothing changes. App hooks: `App\Lib\LatteSetup`
+  (`Noirapi\Interfaces\LatteSetup`: the app's Latte functions and extensions, for requests and the build) and
+  `App\Lib\Prebuild` (`Noirapi\Interfaces\Prebuild`: warms the app's other cached builders).
+- **Every Latte engine comes from `Noirapi\Lib\View\LatteFactory`** (`view()`, `basic()`), and is a
+  `Noirapi\Lib\View\LatteEngine`. `View`, `Helpers\Template` and `Helpers\Mail` use it; mail templates now have the
+  framework's filters too. **Template ids are relative to the code root** (`LatteLoader::getUniqueId()`), so the
+  compiled class names change once: the first request after the update recompiles into `temp/`.
+- **`{message}`, `{pager}` and `{breadcrumbs}` build the bundled template's path at runtime** instead of writing the
+  build machine's absolute path into the compiled template.
+- **`%env(NAME)%` config values** come from the environment (`Noirapi\Lib\ConfigEnv`); an unset or empty variable is a
+  `ConfigException`. The NEON JSON cache moved into `Noirapi\Lib\ConfigCache` (same behaviour).
 - **A writable root apart from the code root** (`Noirapi\Lib\WritableRoot`, env `NOIRAPI_DATA`, `WritableRoot::pin()`):
   `Config::getTemp()`, `getLogs()`, relative SQLite paths (`db`, session `dsn`) and an `app/config/<name>.neon` that
   overrides the code root's live there. It defaults to the code root, so nothing changes unless it is set. With it,

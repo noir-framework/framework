@@ -34,6 +34,24 @@ namespace App\Lib {
     {
     }
 
+    final class LatteSetup implements \Noirapi\Interfaces\LatteSetup
+    {
+        public function languages(): array
+        {
+        }
+
+        public function configure(\Latte\Engine $latte, string $language): void
+        {
+        }
+    }
+
+    final class Prebuild implements \Noirapi\Interfaces\Prebuild
+    {
+        public function warm(): void
+        {
+        }
+    }
+
     final class ErrorHandler
     {
         public static function handle(int $status, string $text, \Noirapi\Lib\Route $route): \Noirapi\Lib\Response

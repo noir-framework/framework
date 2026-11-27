@@ -8,6 +8,9 @@ use Latte\Loaders\FileLoader;
 use Noirapi\Config;
 use Override;
 
+/**
+ * Templates named __<name> resolve to app/layouts/<name>; ids are relative to the code root (see getUniqueId()).
+ */
 class LatteLoader extends FileLoader
 {
     /**
@@ -42,6 +45,10 @@ class LatteLoader extends FileLoader
     }
 
     /**
+     * The template's path relative to the code root, with forward slashes: the compiled class name hashes it, so a
+     * template compiled by `noirapi prebuild` (on the build machine, from plain files) is the one found at runtime
+     * on any install path, a phar included, and on Windows (where View joins paths with a backslash).
+     *
      * @param string $file
      * @return string
      * @psalm-suppress ParamNameMismatch
@@ -53,6 +60,9 @@ class LatteLoader extends FileLoader
             $file = Config::getAppRoot() . '/layouts/' . basename($file);
         }
 
-        return parent::getUniqueId($file);
+        $id = strtr(parent::getUniqueId($file), '\\', '/');
+        $root = rtrim(strtr(Config::getRoot(), '\\', '/'), '/') . '/';
+
+        return str_starts_with($id, $root) ? substr($id, strlen($root)) : $id;
     }
 }

@@ -20,7 +20,8 @@ use Throwable;
  * The builder must be deterministic: roles, resources and rules only, no
  * per-user or per-request state (set $request->role separately). An ACL that
  * can't be serialized, e.g. one with closure assertions, is rebuilt on every
- * request instead of being cached.
+ * request instead of being cached. A prebuilt app (noirapi prebuild, Noirapi\Lib\Prebuilt) loads it from
+ * prebuilt/acl/ and writes nothing.
  *
  * @psalm-api
  */
@@ -35,6 +36,23 @@ final class AclCache
      */
     public static function remember(Closure $build, string $key = 'acl', array $sources = []): Acl
     {
+        // a prebuilt app (noirapi prebuild) has its ACLs in prebuilt/acl/ and never writes temp/acl-cache/
+        $name = 'acl/' . preg_replace('/[^A-Za-z0-9_-]/', '_', $key) . '.php';
+        $prebuilt = self::unpack(Prebuilt::load($name));
+        if ($prebuilt !== null) {
+            return $prebuilt;
+        }
+
+        if (Prebuilt::active() || Prebuilt::capturing()) {
+            $acl = $build();
+            $packed = Prebuilt::capturing() ? self::pack($acl) : null;
+            if ($packed !== null) {
+                Prebuilt::export($name, $packed);
+            }
+
+            return $acl;
+        }
+
         if ($sources === []) {
             $sources = [(string)(new ReflectionFunction($build))->getFileName()];
         }
@@ -88,9 +106,40 @@ final class AclCache
             return null;
         }
 
-        $acl = unserialize($cached['acl'], ['allowed_classes' => $cached['classes'] ?? []]);
+        return self::unpack($cached);
+    }
+
+    /**
+     * The Acl in a packed array (pack()), or null.
+     */
+    private static function unpack(mixed $packed): ?Acl
+    {
+        if (! is_array($packed) || ! is_string($packed['acl'] ?? null)) {
+            return null;
+        }
+
+        $classes = $packed['classes'] ?? [];
+        $acl = unserialize($packed['acl'], ['allowed_classes' => is_array($classes) ? $classes : []]);
 
         return $acl instanceof Acl ? $acl : null;
+    }
+
+    /**
+     * The serialized Acl and the classes it is made of, or null when it cannot be serialized (closure assertions).
+     *
+     * @return array{classes: list<string>, acl: string}|null
+     */
+    private static function pack(Acl $acl): ?array
+    {
+        try {
+            $serialized = serialize($acl);
+        } catch (Throwable) {
+            return null;
+        }
+
+        preg_match_all('/O:\d+:"([^"]+)"/', $serialized, $matches);
+
+        return ['classes' => array_values(array_unique($matches[1])), 'acl' => $serialized];
     }
 
     /**
@@ -98,24 +147,17 @@ final class AclCache
      */
     private static function write(string $file, array $stamp, Acl $acl): void
     {
-        try {
-            $serialized = serialize($acl);
-        } catch (Throwable) {
+        $packed = self::pack($acl);
+        if ($packed === null) {
             return; // closure assertions and the like: not cacheable, rebuild per request
         }
-
-        preg_match_all('/O:\d+:"([^"]+)"/', $serialized, $matches);
 
         $dir = dirname($file);
         if (! is_dir($dir) && ! mkdir($dir, 0777, true) && ! is_dir($dir)) {
             throw new RuntimeException('Failed to create cache directory: ' . $dir);
         }
 
-        $payload = serialize([
-            'stamp'   => $stamp,
-            'classes' => array_values(array_unique($matches[1])),
-            'acl'     => $serialized,
-        ]);
+        $payload = serialize(['stamp' => $stamp] + $packed);
 
         // Write then rename, so concurrent requests never read a half-written file
         $tmp = $file . '.' . (int) getmypid() . '.tmp';

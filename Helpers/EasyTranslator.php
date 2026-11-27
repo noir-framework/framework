@@ -7,6 +7,7 @@ namespace Noirapi\Helpers;
 use Nette\Neon\Exception;
 use Nette\Neon\Neon;
 use Noirapi\Config;
+use Noirapi\Lib\Prebuilt;
 use Noirapi\Interfaces\Translator;
 use Override;
 
@@ -30,12 +31,28 @@ class EasyTranslator implements Translator
         private readonly string $controller,
         private readonly string $function
     ) {
-        $file = Config::getAppRoot() . '/translations/' . $this->language . '.neon';
-        if (is_file($file)) {
-            self::$cache[$this->language] = Neon::decodeFile($file);
-        } else {
-            self::$cache[$this->language] = [];
+        // a prebuilt app (noirapi prebuild) has them as PHP arrays in prebuilt/translations/, loaded once
+        $prebuilt = Prebuilt::load('translations/' . $this->language . '.php');
+        if (is_array($prebuilt)) {
+            self::$cache[$this->language] ??= $prebuilt;
+
+            return;
         }
+
+        self::$cache[$this->language] = self::decode($this->language);
+    }
+
+    /**
+     * app/translations/<language>.neon decoded, [] when there is none.
+     *
+     * @throws Exception
+     */
+    public static function decode(string $language): array
+    {
+        $file = Config::getAppRoot() . '/translations/' . $language . '.neon';
+        $decoded = is_file($file) ? Neon::decodeFile($file) : [];
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     /**

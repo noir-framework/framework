@@ -21,6 +21,9 @@ final class FakeAppRoute
     /** @var (Closure(Router): void)|null used instead of $routes when set */
     public static ?Closure $named = null;
 
+    /** whether $named routes go through the route cache */
+    public static bool $cache = false;
+
     /** @var list<array{string, string}> every (method, uri) dispatched */
     public static array $dispatched = [];
 
@@ -29,7 +32,7 @@ final class FakeAppRoute
         self::$dispatched[] = [$method, $uri];
 
         if (self::$named !== null) {
-            return Router::dispatcher(self::$named)->dispatch($method, $uri);
+            return Router::dispatcher(self::$named, self::$cache)->dispatch($method, $uri);
         }
 
         return simpleDispatcher(self::$routes ?? static function (): void {

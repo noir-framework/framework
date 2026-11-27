@@ -16,9 +16,10 @@ use function ucfirst;
  * them as unknown. Static analysis only, nothing of the application is executed.
  *
  * Three places are looked at, from widest to narrowest:
- *  1. app/lib/Functions.php, Filters.php and Macros.php (also lower-case file names): the public
+ *  1. app/lib/Functions.php, Filters.php, Macros.php, LatteSetup.php (also lower-case names): the public
  *     static methods of Functions.php are functions, those of Filters.php are filters, Macros.php
- *     may list names in getFunctions()/getFilters(); addFunction()/addFilter() calls count too.
+ *     may list names in getFunctions()/getFilters(); addFunction()/addFilter() calls count too, also
+ *     in LatteSetup.php (App\Lib\LatteSetup, the setup prebuilt apps share with the build).
  *  2. Base controllers: addFunction()/addFilter() calls with a literal name anywhere in a class
  *     between the concrete controller and the framework's Controller (usually App\Site).
  *  3. The controller itself: the constructor and non-public helpers apply to all its templates,

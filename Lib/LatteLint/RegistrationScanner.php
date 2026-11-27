@@ -38,7 +38,7 @@ use function strtolower;
  */
 class RegistrationScanner
 {
-    private const array LIB_FILES = ['Functions', 'Filters', 'Macros'];
+    private const array LIB_FILES = ['Functions', 'Filters', 'Macros', 'LatteSetup'];
 
     private Parser $parser;
     private NodeFinder $finder;
@@ -50,7 +50,7 @@ class RegistrationScanner
     }
 
     /**
-     * app/lib/Functions.php, Filters.php and Macros.php (also lower-case file names).
+     * app/lib/Functions.php, Filters.php, Macros.php and LatteSetup.php (also lower-case file names).
      *
      * @return Registrations
      */
@@ -156,6 +156,8 @@ class RegistrationScanner
         }
 
         return match ($kind) {
+            // App\Lib\LatteSetup (Noirapi\Interfaces\LatteSetup): its addFunction()/addFilter() calls
+            'LatteSetup' => $result,
             'Functions' => self::merge($result, ['functions' => $this->staticMethodNames($class), 'filters' => []]),
             'Filters' => self::merge($result, ['functions' => [], 'filters' => $this->staticMethodNames($class)]),
             default => self::merge($result, [

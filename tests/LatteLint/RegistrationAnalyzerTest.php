@@ -35,7 +35,7 @@ final class RegistrationAnalyzerTest extends TestCase
     {
         $lib = new RegistrationScanner()->scanLib(self::FIXTURES . '/lib');
 
-        self::assertSame(['from_lib', 'from_macros'], self::sorted($lib['functions']));
+        self::assertSame(['from_lib', 'from_macros', 'from_setup'], self::sorted($lib['functions']));
         self::assertSame(['lib_filter', 'macros_filter'], self::sorted($lib['filters']));
     }
 
@@ -45,7 +45,7 @@ final class RegistrationAnalyzerTest extends TestCase
 
         $index = $analyzer->forTemplate('Items', ['index']);
         self::assertSame(
-            ['from_base', 'from_ctor', 'from_helper', 'from_index', 'from_lib', 'from_macros'],
+            ['from_base', 'from_ctor', 'from_helper', 'from_index', 'from_lib', 'from_macros', 'from_setup'],
             self::sorted($index['functions']),
         );
         self::assertSame(['base_filter', 'lib_filter', 'macros_filter'], self::sorted($index['filters']));
@@ -60,7 +60,7 @@ final class RegistrationAnalyzerTest extends TestCase
     {
         $other = $this->prepared()->forTemplate('Other', ['index']);
 
-        self::assertSame(['from_base', 'from_lib', 'from_macros'], self::sorted($other['functions']));
+        self::assertSame(['from_base', 'from_lib', 'from_macros', 'from_setup'], self::sorted($other['functions']));
     }
 
     public function testUnknownMethodAllowsAll(): void
