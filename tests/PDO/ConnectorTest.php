@@ -84,6 +84,10 @@ final class ConnectorTest extends TestCase
 
     public function testSqliteBeginsImmediate(): void
     {
+        if (! defined('Pdo\Sqlite::ATTR_TRANSACTION_MODE')) {
+            self::markTestSkipped('PHP 8.5+: before it, SQLite transactions stay DEFERRED (Connector::open())');
+        }
+
         $first = Connector::open('sqlite:' . $this->file);
         $first->exec('CREATE TABLE counter (n INTEGER)');
         $second = Connector::open('sqlite:' . $this->file);
