@@ -22,6 +22,7 @@ What it is made of:
 | Decimals | `DecimalRows` (from `PDOStatement`), `DecimalFunctions`, `DecimalWords` | `DECIMAL(p,s)` columns come back as text with their scale (`'50.00'`); exact `SUM`/`AVG` | 2.7 |
 | Strings | `TextFunctions`, `SearchFunctions`, `LogicFunctions`, `CodeFunctions`, `PatternFunctions`, `SyntaxWords` | MariaDB's string, logic and pattern functions; literals, operators and locking clauses | 2.7 |
 | Query builder | `Noirapi\Lib\Db\MariaDb\Connection` | noirapi/database writes MySQL SQL (its MySQL compiler) on these connections, like the app's own SQL | 2.7 |
+| JSON, GROUP_CONCAT | `JsonFunctions`, `JsonBuilders`, `JsonWords`, `GroupConcat`, `GroupWords` | MariaDB's JSON functions and `GROUP_CONCAT(… ORDER BY … SEPARATOR … LIMIT …)` | 2.7 |
 | Upsert | Rewriter | `INSERT … ON DUPLICATE KEY UPDATE`, `INSERT IGNORE` | planned |
 | Schema | Rewriter + `Migrator` | MariaDB `CREATE`/`ALTER TABLE` translated, so one `sql/NNN_*.sql` serves both | planned |
 
@@ -122,6 +123,25 @@ numbers: `LEAST('10','9')` is `'10'`, `LEAST(10,'9')` is 9), `ISNULL`, `MD5`, `S
 gives it the MySQL compilers; its driver stays `sqlite`), so a query from the builder and one written by hand are the
 same dialect. **Migrations in a SQLite-only folder** (`db.sqlite.migrations`, e.g. `sql/sqlite`) are SQLite SQL and run
 unrewritten (`Sqlite::execNative()`).
+
+## JSON and GROUP_CONCAT
+
+**JSON functions:** `JSON_EXTRACT`, `JSON_VALUE`, `JSON_QUERY`, `JSON_UNQUOTE`, `JSON_LENGTH`, `JSON_TYPE`, `JSON_KEYS`,
+`JSON_CONTAINS`, `JSON_CONTAINS_PATH`, `JSON_VALID`, `JSON_OBJECT`, `JSON_ARRAY`, `JSON_QUOTE`, `JSON_SET`,
+`JSON_INSERT`, `JSON_REPLACE`, `JSON_REMOVE`, `JSON_ARRAY_APPEND`, `JSON_MERGE_PATCH`, with MariaDB's answers:
+
+- JSON comes back printed as MariaDB prints it (`[1, 2, 3]` for `[1, 2,3]`, `{"a": 1}`), numbers as written (`1.50`),
+  except `JSON_QUERY`, which gives the text as it stands in the document; several paths or a wildcard give an array.
+- `JSON_VALUE` of `true` is `1`; of an object, array or null, NULL. A document that is not JSON gives NULL.
+- A JSON function's result inside another JSON function is embedded, not quoted (`JSON_OBJECT('n', JSON_ARRAY(1, 2))`
+  is `{"n": [1, 2]}`): the rewriter marks it with `MARIADB_JSON()`. A JSON *column's* text is a string there, as it is
+  in MariaDB.
+- Paths: `$`, `.key`, `."key with spaces"`, `[n]`, `[*]`, `.*`. Other forms (`**`, `[last]`, ranges) are refused.
+- SQLite's `->` and `->>` are not MariaDB syntax and stay SQLite's.
+
+**`GROUP_CONCAT([DISTINCT] e1[, e2…] [ORDER BY k [ASC|DESC], …] [SEPARATOR 's'] [LIMIT [offset,] n])`** is a PHP
+aggregate: rows with a NULL value are left out, DISTINCT and ORDER BY compare as `utf8mb4_general_ci`, NULL keys sort
+first, no rows give NULL. MariaDB's 1 MB `group_concat_max_len` cut is not applied.
 
 ## Known differences
 

@@ -19,23 +19,12 @@ final class Functions
      */
     public static function register(Sqlite $pdo): void
     {
-        $definitions = [
-            ...ClockFunctions::definitions(),
-            ...DateMath::definitions(),
-            ...DateParts::definitions(),
-            ...DateConversions::definitions(),
-            ...TextFunctions::definitions(),
-            ...SearchFunctions::definitions(),
-            ...LogicFunctions::definitions(),
-            ...CodeFunctions::definitions(),
-            ...PatternFunctions::definitions(),
-        ];
-        foreach ([...$definitions, ...DecimalFunctions::definitions()] as $name => [$callback, $counts, $deterministic]) {
+        foreach (FunctionSets::functions() as $name => [$callback, $counts, $deterministic]) {
             foreach ($counts as $count) {
                 $pdo->createFunction($name, $callback, $count, $deterministic ? Sqlite::DETERMINISTIC : 0);
             }
         }
-        foreach (DecimalFunctions::aggregates() as $name => [$step, $finalize, $count]) {
+        foreach (FunctionSets::aggregates() as $name => [$step, $finalize, $count]) {
             $pdo->createAggregate($name, $step, $finalize, $count);
         }
     }

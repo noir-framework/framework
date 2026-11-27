@@ -1,0 +1,65 @@
+{
+    "SELECT kind, GROUP_CONCAT(name) FROM fruit GROUP BY kind ORDER BY kind": [
+        [
+            "a",
+            "apple,Banana,apple"
+        ],
+        [
+            "b",
+            "pear"
+        ],
+        [
+            "c",
+            "kiwi"
+        ]
+    ],
+    "SELECT GROUP_CONCAT(name ORDER BY name) FROM fruit": [
+        [
+            "apple,apple,Banana,kiwi,pear"
+        ]
+    ],
+    "SELECT GROUP_CONCAT(name ORDER BY name DESC SEPARATOR '; ') FROM fruit": [
+        [
+            "pear; kiwi; Banana; apple; apple"
+        ]
+    ],
+    "SELECT GROUP_CONCAT(DISTINCT name ORDER BY name) FROM fruit": [
+        [
+            "apple,Banana,kiwi,pear"
+        ]
+    ],
+    "SELECT kind, GROUP_CONCAT(name, ':', qty ORDER BY qty SEPARATOR '|') FROM fruit GROUP BY kind ORDER BY kind": [
+        [
+            "a",
+            "apple:1|Banana:2|apple:4"
+        ],
+        [
+            "b",
+            "pear:3"
+        ],
+        [
+            "c",
+            null
+        ]
+    ],
+    "SELECT GROUP_CONCAT(qty ORDER BY kind, qty DESC) FROM fruit": [
+        [
+            "4,2,1,5,3"
+        ]
+    ],
+    "SELECT GROUP_CONCAT(id ORDER BY id LIMIT 2) FROM fruit": [
+        [
+            "1,2"
+        ]
+    ],
+    "SELECT GROUP_CONCAT(name) FROM fruit WHERE id > 100": [
+        [
+            null
+        ]
+    ],
+    "SELECT GROUP_CONCAT(DISTINCT kind ORDER BY kind DESC SEPARATOR '') FROM fruit": [
+        [
+            "cba"
+        ]
+    ]
+}

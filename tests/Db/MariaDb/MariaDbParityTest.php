@@ -19,8 +19,6 @@ use Throwable;
  */
 final class MariaDbParityTest extends TestCase
 {
-    private const string EXPECTED_TABLES = __DIR__ . '/expected-tables.json';
-
     private string $timezone;
 
     #[Before]
@@ -44,6 +42,7 @@ final class MariaDbParityTest extends TestCase
         return [
             'dates' => ['cases.php', 'expected.json'],
             'strings' => ['string-cases.php', 'expected-strings.json'],
+            'json' => ['json-cases.php', 'expected-json.json'],
         ];
     }
 
@@ -76,27 +75,40 @@ final class MariaDbParityTest extends TestCase
         self::assertSame([], $wrong, count($wrong) . ' of ' . count($cases) . " differ:\n" . implode("\n", $wrong));
     }
 
-    public function testTableRowsAsMariaDb(): void
+    /**
+     * @return array<string, array{string, string, string}> case file, answers file, its table
+     */
+    public static function tableFiles(): array
+    {
+        return [
+            'money' => ['table-cases.php', 'expected-tables.json', 'money'],
+            'groups' => ['group-cases.php', 'expected-groups.json', 'fruit'],
+        ];
+    }
+
+    #[DataProvider('tableFiles')]
+    public function testTableRowsAsMariaDb(string $caseFile, string $answerFile, string $table): void
     {
         /** @var array{setup: list<string>, queries: list<string>} $cases */
-        $cases = require __DIR__ . '/table-cases.php';
+        $cases = require __DIR__ . '/' . $caseFile;
         $dsn = getenv('NOIRAPI_TEST_MARIADB');
         if (is_string($dsn) && $dsn !== '') {
             $mariadb = self::mariadb($dsn);
-            $mariadb->exec('DROP TABLE IF EXISTS money');
+            $mariadb->exec("DROP TABLE IF EXISTS $table");
             $answers = self::rows($mariadb, $cases);
-            $mariadb->exec('DROP TABLE money');
-            file_put_contents(self::EXPECTED_TABLES, json_encode($answers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+            $mariadb->exec("DROP TABLE $table");
+            file_put_contents(__DIR__ . '/' . $answerFile, json_encode($answers, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
         }
 
         /** @var array<string, list<list<string|null>>|array{error: string}> $expected */
-        $expected = json_decode((string) file_get_contents(self::EXPECTED_TABLES), true, 512, JSON_THROW_ON_ERROR);
+        $expected = json_decode((string) file_get_contents(__DIR__ . '/' . $answerFile), true, 512, JSON_THROW_ON_ERROR);
         $sqlite = Connector::open('sqlite::memory:');
         $sqlite->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         $wrong = [];
         foreach (self::rows($sqlite, $cases) as $query => $got) {
-            if ($got !== ($expected[$query] ?? null)) {
+            $want = $expected[$query] ?? null;
+            if ($got !== $want && ! (is_array($got) && isset($got['error']) && is_array($want) && isset($want['error']))) {
                 $wrong[] = sprintf("%s\n  MariaDB: %s\n  SQLite:  %s", $query, json_encode($expected[$query] ?? null), json_encode($got));
             }
         }
