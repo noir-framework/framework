@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Noirapi\Lib\RateLimit\Store;
 
 use Closure;
+use InvalidArgumentException;
 use Override;
 use PDO;
 
@@ -36,12 +37,31 @@ final class PdoRateLimitStore implements BlockStore
      *
      * @psalm-mutation-free
      */
+    private readonly string $table;
+
     public function __construct(
         private readonly Closure $pdo,
-        private readonly string $table = 'rate_limits',
+        string $table = 'rate_limits',
         ?Closure $clock = null,
     ) {
+        $this->table = self::identifier($table);
         $this->clock = $clock ?? time(...);
+    }
+
+    /**
+     * $table when it is a plain SQL name (letters, digits, `_`): it is written into the queries, so a config value
+     * must not bring anything else.
+     *
+     * @psalm-pure
+     * @psalm-taint-escape sql
+     */
+    private static function identifier(string $table): string
+    {
+        if (preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $table) !== 1) {
+            throw new InvalidArgumentException("Rate limit table: not a plain SQL name: '$table'");
+        }
+
+        return $table;
     }
 
     public function now(): int

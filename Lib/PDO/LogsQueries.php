@@ -31,6 +31,7 @@ trait LogsQueries
     public function exec(string $statement): false|int
     {
 
+        $statement = $this->dialectSql($statement);
         $start = microtime(true);
         $result = parent::exec($statement);
         $this->addLog($statement, microtime(true) - $start);
@@ -54,6 +55,7 @@ trait LogsQueries
         ?int $fetchMode = null,
         ...$fetch_mode_args
     ): false|\PDOStatement {
+        $query = $this->dialectSql($query);
         $start = microtime(true);
         /** @psalm-suppress TooManyArguments $result */
         $result = $fetchMode === null
@@ -63,6 +65,16 @@ trait LogsQueries
         $this->addLog($query, microtime(true) - $start);
 
         return $result;
+    }
+
+    /**
+     * The SQL the driver runs for $sql: as written, unless the connection translates a dialect (Sqlite).
+     *
+     * @psalm-impure
+     */
+    protected function dialectSql(string $sql): string
+    {
+        return $sql;
     }
 
     /**
