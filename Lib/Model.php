@@ -9,6 +9,7 @@ use Noirapi\Config;
 use Noirapi\Helpers\Utils;
 use Noirapi\Database\Connection;
 use Noirapi\Database\Database;
+use Noirapi\Lib\Db\SqliteSetup;
 use Noirapi\Lib\PDO\Connector;
 use Noirapi\Lib\PDO\LoggedPdo;
 use RuntimeException;
@@ -252,7 +253,8 @@ class Model
 
     /**
      * Opens the driver's own connection class (Pdo\Mysql, Pdo\Sqlite, as PDO::connect() does) with query logging.
-     * SQLite transactions begin IMMEDIATE (see Connector::open()).
+     * SQLite transactions begin IMMEDIATE (see Connector::open()); a SQLite connection then gets its config's pragmas
+     * and pending migrations (SqliteSetup).
      *
      * @return \PDO&LoggedPdo
      */
@@ -267,6 +269,9 @@ class Model
         $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
         $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_OBJ);
+        if (str_starts_with($this->driver, 'sqlite')) {
+            SqliteSetup::configure($pdo, $this->params);
+        }
 
         return $pdo;
     }

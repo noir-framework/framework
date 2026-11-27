@@ -108,6 +108,8 @@ process and show a webview) starts PHP's built-in server on `127.0.0.1` and open
 - **Secrets from the environment**: `%env(NAME)%` config values, so no config file with a secret is written.
 - **SQLite as the database**: Windows paths (`C:\…`, `\\server\share\…`), transactions that begin IMMEDIATE, and
   connections that are the driver subclasses (`Pdo\Sqlite`: `createFunction()` for app functions).
+  Since 2.7, per-connection `pragmas` (foreign keys, busy timeout, WAL) and schema `migrations` that apply on start
+  ([docs/db.md](docs/db.md#sqlite)).
 
 ## Documentation
 

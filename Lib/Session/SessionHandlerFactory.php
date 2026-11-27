@@ -25,7 +25,8 @@ class SessionHandlerFactory
                 $cfg['pass'] ?? null,
             ),
             'sqlite' => new SQLiteSessionHandler(
-                self::resolveSqlitePath($cfg['dsn'] ?? 'sessions.db')
+                self::resolveSqlitePath($cfg['dsn'] ?? 'sessions.db'),
+                is_array($cfg['pragmas'] ?? null) ? $cfg['pragmas'] : [],
             ),
             'memcached' => new MemcachedSessionHandler(
                 $cfg['dsn'] ?? 'localhost:11211',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Noirapi\Lib\Session;
 
+use Noirapi\Lib\Db\SqliteSetup;
 use Override;
 use PDO;
 
@@ -18,9 +19,10 @@ class SQLiteSessionHandler extends AbstractSessionHandler
     //phpcs:enable
 
     /**
+     * @param array<array-key, mixed> $pragmas the session config's `pragmas` (SqliteSetup::pragmas())
      * @psalm-mutation-free
      */
-    public function __construct(private readonly string $path)
+    public function __construct(private readonly string $path, private readonly array $pragmas = [])
     {
     }
 
@@ -31,6 +33,7 @@ class SQLiteSessionHandler extends AbstractSessionHandler
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
         ]);
+        SqliteSetup::pragmas($pdo, $this->pragmas);
         $pdo->exec(
             'CREATE TABLE IF NOT EXISTS sessions (
                 id TEXT PRIMARY KEY,

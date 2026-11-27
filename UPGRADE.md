@@ -1,3 +1,7 @@
+# Upgrading to noirapi/framework 2.7
+
+No code changes are needed. SQLite `pragmas` and `migrations` (docs/db.md) are new config keys, off unless set.
+
 # Upgrading to noirapi/framework 2.6
 
 No code changes are needed; 2.6 adds what desktop (sealed, prebuilt) builds need, all off unless used. Worth knowing:

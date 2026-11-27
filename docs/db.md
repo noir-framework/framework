@@ -40,6 +40,29 @@ db:
 - For an in-memory database (testing): `dsn: ':memory:'`
 - For an absolute path: `dsn: '/var/db/myapp.db'`
 
+Two optional keys (since 2.7), both off unless set:
+
+```neon
+db:
+    sqlite:
+        dsn: 'myapp.sqlite'
+        pragmas: {foreign_keys: on, busy_timeout: 5000, journal_mode: wal}
+        migrations: sql/sqlite
+```
+
+- **`pragmas`** run as `PRAGMA name = value` on every new connection (a bool is ON/OFF, an int a number, a string a
+  bare word). SQLite leaves foreign keys off unless each connection asks: without `foreign_keys: on`, `ON DELETE
+  CASCADE` and `SET NULL` do nothing. `busy_timeout` (ms) makes a second process wait for a lock instead of failing at
+  once; `journal_mode: wal` lets readers go on while one process writes (not on a network share). The SQLite session
+  handler takes the same `pragmas` key under `session:`.
+- **`migrations`** is a folder under the code root holding numbered files (`001_users.sql`, `002-orders.sql`). The
+  first connection of a request that finds files pending applies them, in name order, in one `BEGIN IMMEDIATE`
+  transaction, and records each in `schema_migrations` (filename, applied_at). When nothing is pending it costs one
+  query and a folder listing. The folder is read with `scandir()`, so it works inside a phar.
+
+`Noirapi\Lib\Db\Migrator` is the same runner for any PDO (MySQL/MariaDB too), e.g. for a CLI tool:
+`new Migrator($pdo, Config::getRoot() . '/sql')->migrate()` returns the files it applied.
+
 ### PostgreSQL
 
 ```neon

@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.7.0 (unreleased)
+
+**SQLite for desktop apps: pragmas and schema migrations**, both opt-in per database in config, so existing SQLite
+databases are untouched.
+
+- **`pragmas`** on a SQLite `db` driver or on `session` (driver sqlite), e.g. `{foreign_keys: on, busy_timeout: 5000,
+  journal_mode: wal}`, run on every new connection (`Noirapi\Lib\Db\SqliteSetup`). SQLite leaves foreign keys off
+  unless each connection asks, so without `foreign_keys: on` an `ON DELETE CASCADE` does nothing.
+- **`migrations`** on a SQLite `db` driver (a folder under the code root, e.g. `sql/sqlite`): the first connection of
+  a request that finds files pending applies them.
+- **`Noirapi\Lib\Db\Migrator`**: applies the numbered `.sql` files of a folder (`001_users.sql`, `002-orders.sql`)
+  that a database has not had, records them in `schema_migrations` (filename, applied_at), and reads the folder with
+  `scandir()` so it works inside a phar. On SQLite one `BEGIN IMMEDIATE` transaction covers the run (a second process
+  waits, then finds nothing to do; a failing file changes nothing). On MySQL/MariaDB each file is one multi-statement
+  query whose results are all read, so an error in any statement is reported; DDL commits implicitly there.
+
 ## 2.6.0 (2026-11-27)
 
 **Desktop app compatibility.** From this version a noirapi app can also ship as a desktop app, the same code as
