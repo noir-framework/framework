@@ -166,15 +166,15 @@ class PDOStatement extends NativePdoStatement
     /**
      * @template T of object
      * @param class-string<T>|null $class
-     * @param array<array-key, mixed> $ctorArgs
+     * @param array<array-key, mixed> $constructorArgs
      * @return T|false
      * @psalm-impure
      */
     #[Override]
-    public function fetchObject(?string $class = \stdClass::class, array $ctorArgs = []): object|false
+    public function fetchObject(?string $class = \stdClass::class, array $constructorArgs = []): object|false
     {
         $decimals = $this->decimals();
-        $row = parent::fetchObject($class, $ctorArgs);
+        $row = parent::fetchObject($class, $constructorArgs);
 
         return $decimals === [] || $row === false ? $row : DecimalRows::row($row, $decimals);
     }
