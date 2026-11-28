@@ -165,7 +165,7 @@ class AuthManager
      * NEON example:
      *   auth:
      *     totp:
-     *       issuer: 'My App'   # label shown in authenticator apps (default: 'App')
+     *       issuer: 'My App'   # label shown in authenticator apps (required for TOTP)
      *     google:
      *       client_id:     'xxx'
      *       client_secret: 'yyy'
