@@ -34,6 +34,28 @@ Session::regenerate();   // new session ID, same data; the CSRF token is re-crea
 Session::destroy();      // clears the data, expires the cookie, deletes the stored session
 ```
 
+### Locking after a restart (desktop apps)
+
+The noirapi desktop shell gives every start of the app a random id (`getenv('NOIRAPI_LAUNCH_ID')`).
+`Noirapi\Lib\Session\LaunchLock` keeps the last one a session saw, so a desktop app that stays signed in across
+restarts can still ask for the password after one, when its user wants that:
+
+```php
+use Noirapi\Lib\Session\LaunchLock;
+
+if (LaunchLock::observe() && $user->lockOnStart) {   // the first request since the app was started again
+    LaunchLock::lock();
+}
+if (LaunchLock::isLocked()) {
+    // every page but the unlock page and sign-out leads to the unlock page, which asks for the password
+}
+LaunchLock::unlock();   // the password was right
+```
+
+The sign-in stays while the session is locked. Without a launch id (a hosted app, `php -S`) `observe()` never reports
+a new launch, so nothing locks. For a desktop app to stay signed in at all, give its session cookie a `lifetime`:
+WebView2 forgets session-only cookies when the app closes.
+
 ### Sudo mode
 
 `Noirapi\Auth\SudoMode` marks the session as re-authenticated for a limited time:

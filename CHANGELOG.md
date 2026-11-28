@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.9.0 (2026-11-28)
+
+**`LaunchLock`: a desktop app asks for the password after a restart.** The noirapi desktop shell gives every start of
+the app a random id (`NOIRAPI_LAUNCH_ID`); `Noirapi\Lib\Session\LaunchLock::observe()` tells the first request a
+session makes after a restart, so an app that stays signed in can `lock()` the session then, show an unlock page and
+`unlock()` it once the password is right (docs/sessions.md). Opt-in, called by the app; without a launch id (hosted,
+`php -S`) nothing locks.
+
 ## 2.8.0 (2026-11-28)
 
 **`send_file`: the server sends `Response::sendFile()` files.** With config `send_file` (`header`, optional `root` and
