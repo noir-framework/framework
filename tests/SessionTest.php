@@ -7,6 +7,7 @@ namespace Noirapi\Tests;
 use Noirapi\Auth\SudoMode;
 use Noirapi\Config;
 use Noirapi\Lib\Session;
+use Noirapi\Lib\Session\SessionAge;
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Before;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
@@ -22,6 +23,7 @@ final class SessionTest extends TestCase
         $_SESSION = [];
         Config::set('auth', null);
         Config::set('cookie_domain', null);
+        Config::set('session', null);
     }
 
     public function testNamespacedAccess(): void
@@ -87,7 +89,47 @@ final class SessionTest extends TestCase
 
         Session::regenerate();
 
-        self::assertSame(['user' => 1], $_SESSION);
+        self::assertArrayNotHasKey('_csrf_token', $_SESSION);
+        self::assertSame(1, $_SESSION['user']);
+        self::assertIsInt($_SESSION[SessionAge::KEY]);
+    }
+
+    public function testMaxAgeEndsAnOldSessionHoweverBusy(): void
+    {
+        Config::set('session', ['max_age' => 3600]);
+        $_SESSION = ['auth' => ['user_id' => 1], SessionAge::KEY => 1000];
+
+        SessionAge::enforce(1000 + 3599);
+        self::assertSame(['user_id' => 1], Session::get('auth'));
+
+        SessionAge::enforce(1000 + 3600);
+        self::assertNull(Session::get('auth'));
+        self::assertSame(1000 + 3600, $_SESSION[SessionAge::KEY]);
+    }
+
+    public function testMaxAgeCountsFromTheLastRegenerate(): void
+    {
+        Config::set('session', ['max_age' => 3600]);
+        $_SESSION = ['auth' => ['user_id' => 1], SessionAge::KEY => 1000];
+
+        Session::regenerate();
+        SessionAge::enforce(time() + 3599);
+
+        self::assertSame(['user_id' => 1], Session::get('auth'));
+    }
+
+    public function testWithoutMaxAgeOnlyAClock(): void
+    {
+        $_SESSION = ['auth' => ['user_id' => 1], SessionAge::KEY => 1000];
+        SessionAge::enforce(1_000_000_000);
+        self::assertSame(['user_id' => 1], Session::get('auth'));
+
+        // a session from before the setting starts its clock now
+        Config::set('session', ['max_age' => 3600]);
+        $_SESSION = ['auth' => ['user_id' => 1]];
+        SessionAge::enforce(5000);
+        self::assertSame(5000, $_SESSION[SessionAge::KEY]);
+        self::assertSame(['user_id' => 1], Session::get('auth'));
     }
 
     public function testDestroyWithoutActiveSession(): void

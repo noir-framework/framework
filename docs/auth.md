@@ -39,7 +39,8 @@ auth:
         redirect_uri: 'https://app.example.com/auth/oauth/github/callback'
 
 rate_limits:               # optional: these are the built-in defaults
-    login:      {limit: 5, per: 60, block_after: 5, block_for: 900}
+    login:      {limit: 5, per: 60, block_after: 5, block_for: 900}   # per IP, and per e-mail from one IP
+    login_email: {limit: 20, per: 900}                                # per e-mail from every IP together
     magic_link: {limit: 3, per: 900}
     totp:       {limit: 5, per: 60, block_after: 3, block_for: 900}
 ```
@@ -60,13 +61,27 @@ emails still cost a bcrypt check, so response times don't reveal which accounts 
 $passwords = new PasswordProvider(fn (string $email): ?array => $users->credentials($email));
 // the closure returns ['password' => <password_hash()>, 'name' => ?string, 'avatar_url' => ?string] or null
 
-$result = $passwords->verifyThrottled($email, $password, $request->clientIp);
+$device = $request->cookies[KnownDevices::COOKIE] ?? null;
+$result = $passwords->verifyThrottled($email, $password, $request->clientIp, is_string($device) ? $device : null);
 if ($result === null) { /* wrong email or password */ }
+
+// after the sign-in has succeeded (and after the TOTP step, if there is one):
+KnownDevices::remember($this->response, is_string($device) ? $device : null, $email);
 ```
 
-`verifyThrottled()` counts the attempt against the `login` limit, per email and per client IP,
-and throws `TooManyRequestsException` (a 429 page, see [security](security.md#rate-limiting))
-when either is exhausted. `verify()` is the same check without throttling.
+`verifyThrottled()` counts the attempt against the rate limits and throws `TooManyRequestsException`
+(a 429 page, see [security](security.md#rate-limiting)) when one is used up:
+
+- `login`, strict, per client IP and per e-mail from that IP: one address cannot guess;
+- `login_email`, looser and without a block, per e-mail from every address together: guessing
+  spread over many addresses is slowed down too.
+
+A limit per e-mail alone lets anyone who knows the e-mail lock its owner out by failing on purpose.
+So a browser that has signed in as that e-mail before skips `login_email`: `KnownDevices` keeps a
+`noir_device` cookie with a token per e-mail (the expiry and an HMAC with `app_secret_key`; no
+account name in it, the last 5 e-mails per browser, a year each). The per-IP limits still apply
+to it, and the password is still checked. Without `app_secret_key` no browser is known.
+`verify()` is the same check without throttling. The limit keys hold hashes, not e-mail addresses.
 
 ## Magic links
 

@@ -6,6 +6,7 @@ namespace Noirapi\Lib;
 
 use Noirapi\Config;
 use Noirapi\Lib\Security\Csrf;
+use Noirapi\Lib\Session\SessionAge;
 
 use function is_array;
 use function is_bool;
@@ -23,6 +24,7 @@ use function is_string;
  *             samesite: Lax        # Lax | Strict | None (None forces secure)
  *             secure: auto         # auto = when the request is HTTPS; or true / false
  *             domain: ''           # default: the cookie_domain config, else the host
+ *         max_age: 2592000         # seconds from the last regenerate() (the sign-in); 0 or unset = no limit
  *
  * @psalm-api
  */
@@ -57,7 +59,13 @@ class Session
 
         session_set_cookie_params(self::cookieParams($config, (bool) (Config::get('https') ?? Config::get('is_https'))));
 
-        return session_start();
+        if (! session_start()) {
+            return false;
+        }
+
+        SessionAge::enforce();
+
+        return true;
     }
 
     /**
@@ -96,7 +104,7 @@ class Session
     /**
      * New session ID, same data. Call it on login, logout and any privilege change, so a
      * session ID fixed or leaked before cannot ride along. Per-session secrets (the CSRF
-     * token) are dropped and re-created on next use.
+     * token) are dropped and re-created on next use, and the `session.max_age` clock starts again.
      *
      * @return void
      */
@@ -109,6 +117,8 @@ class Session
         foreach (self::ROTATED_KEYS as $key) {
             unset($_SESSION[$key]);
         }
+
+        SessionAge::restart();
     }
 
     /**

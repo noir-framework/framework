@@ -7,6 +7,7 @@ namespace Noirapi\Auth\Providers;
 use Closure;
 use Noirapi\Auth\AuthMethod;
 use Noirapi\Auth\AuthResult;
+use Noirapi\Auth\KnownDevices;
 use Noirapi\Auth\Contracts\AuthProviderInterface;
 use Noirapi\Exceptions\ConfigException;
 use Noirapi\Exceptions\TooManyRequestsException;
@@ -35,12 +36,21 @@ use Override;
 readonly class PasswordProvider implements AuthProviderInterface
 {
     /**
+     * What an unknown e-mail's password is checked against: a bcrypt hash of a random string, at PHP 8.4's
+     * PASSWORD_DEFAULT cost (12), so it takes as long as checking a real password_hash() and the response time does
+     * not tell which e-mails have accounts.
+     */
+    public const string DUMMY_HASH = '$2y$12$7QE0Lx7OQXH4K0pnwnMmv.6U7oKlgLsfwL1pEQ5PBdC/FGdEfCDOO';
+
+    /**
      * @param Closure(string $email): ?array{'password':string, 'name':?string, 'avatar_url':?string} $userLookup
+     * @param string|null $dummyHash instead of DUMMY_HASH, for apps whose hashes have another algorithm or cost
      *
      * @psalm-mutation-free
      */
     public function __construct(
         private Closure $userLookup,
+        private ?string $dummyHash = null,
     ) {
     }
 
@@ -79,9 +89,9 @@ readonly class PasswordProvider implements AuthProviderInterface
         $data = ($this->userLookup)($email);
 
         if ($data === null) {
-            /* Timing-safe: still run a hash to prevent user-enumeration via timing */
+            /* Timing-safe: still check a hash of the same cost, so the time does not reveal unknown e-mails */
             /** @psalm-suppress UnusedFunctionCall Result intentionally discarded - only the CPU cost matters here. */
-            password_verify($password, '$2y$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ01234');
+            password_verify($password, $this->dummyHash ?? self::DUMMY_HASH);
 
             return null;
         }
@@ -99,17 +109,28 @@ readonly class PasswordProvider implements AuthProviderInterface
     }
 
     /**
-     * verify(), counting the attempt against the `login` rate limit per email and per client
-     * IP: by default 5 a minute, then blocked for 15 minutes after 5 refusals.
+     * verify(), counting the attempt against the rate limits first, and throwing when one is used up:
+     *
+     * - `login` (5 a minute, then 15 minutes blocked) per client IP, and per e-mail from that IP;
+     * - `login_email` (20 in 15 minutes, no block) per e-mail from every IP together, against guessing spread over
+     *   many addresses. A browser whose $deviceCookie (KnownDevices::COOKIE) knows the e-mail skips it, so a
+     *   stranger who knows an e-mail cannot keep its owner locked out. Call KnownDevices::remember() after each
+     *   successful sign-in to make the browser known.
+     *
+     * Limit keys hold hashes, not e-mail addresses.
      *
      * @throws TooManyRequestsException
      * @throws ConfigException
      */
-    public function verifyThrottled(string $email, string $password, string $clientIp): ?AuthResult
+    public function verifyThrottled(string $email, string $password, string $clientIp, ?string $deviceCookie = null): ?AuthResult
     {
-        $limiter = RateLimit::for('login');
-        $limiter->check('email:' . strtolower(trim($email)));
-        $limiter->check('ip:' . $clientIp);
+        $normalised = strtolower(trim($email));
+        $login = RateLimit::for('login');
+        $login->check('ip:' . $clientIp);
+        $login->check('email-ip:' . hash('sha256', $normalised . '|' . $clientIp));
+        if (! KnownDevices::knows($deviceCookie, $normalised)) {
+            RateLimit::for('login_email')->check('email:' . hash('sha256', $normalised));
+        }
 
         return $this->verify($email, $password);
     }

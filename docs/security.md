@@ -175,6 +175,7 @@ rate_limits:
     api:    {limit: 100, per: minute}             # per: seconds, or second | minute | hour | day
     search: {limit: 10, per: 10}
     login:  {limit: 5, per: 60, block_after: 5, block_for: 900}
+    login_email: {limit: 20, per: 900}
 ```
 
 Storage: `apcu` (the default when the extension is loaded) is per server; with several web
@@ -182,7 +183,7 @@ servers use `memcached` or `pdo`. `memory` lasts one PHP process only, which is 
 PHP-FPM; it is the fallback without APCu, for tests and Swoole. APCu needs
 `apc.use_request_time = 0`.
 
-`login`, `magic_link` and `totp` have built-in defaults (`RateLimit::DEFAULTS`); any other name
+`login`, `login_email`, `magic_link` and `totp` have built-in defaults (`RateLimit::DEFAULTS`); any other name
 must be configured.
 
 ### On a controller action

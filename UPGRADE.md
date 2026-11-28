@@ -1,3 +1,16 @@
+# Upgrading to the next noirapi/framework release
+
+No code changes are needed, but to keep a known user's browser past the new per-e-mail limit, pass the
+`KnownDevices::COOKIE` cookie to `PasswordProvider::verifyThrottled()` and call `KnownDevices::remember()` after a
+successful sign-in (docs/auth.md). Worth knowing:
+
+- **`login` now counts per IP and per e-mail from that IP**; the per-e-mail limit from everywhere is the new
+  `login_email` (default 20 in 15 minutes). A `rate_limits.login` in the config keeps applying to `login`.
+- **`Session::regenerate()` writes `_session_born`** into the session (the `session.max_age` clock); code that
+  compares the whole `$_SESSION` sees one more key.
+- Counters and blocks kept before the upgrade (keys `login:email:<address>`) are no longer read; they expire on their
+  own.
+
 # Upgrading to noirapi/framework 2.7
 
 No code changes are needed. SQLite `pragmas`, `migrations` and `dialect` (docs/db.md) are new config keys, off

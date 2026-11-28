@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+**Sign-in limits no longer let a stranger lock an account out.** `PasswordProvider::verifyThrottled()` limited every
+e-mail strictly from all addresses together, so anyone who knew an e-mail could keep its owner out with ten wrong
+passwords a minute.
+
+- `login` (strict, blocks) now counts per client IP and per e-mail **from that IP**.
+- New built-in `login_email` limit (20 in 15 minutes, no block) per e-mail from every IP together.
+- New `Noirapi\Auth\KnownDevices` (OWASP "device cookies"): `remember()` after a successful sign-in adds a signed token
+  for the e-mail to the browser's `noir_device` cookie; `verifyThrottled()` takes it as an optional fourth argument
+  and lets a known browser past `login_email`.
+- The limit keys hold SHA-256 hashes instead of e-mail addresses (they fit the PDO store's `VARCHAR(191)` too).
+
+**Unknown e-mails cost as much as known ones.** `PasswordProvider` checked an unknown e-mail's password against a cost-10
+hash while `password_hash()` makes cost 12 on PHP 8.4, so the response time told which e-mails had accounts. Its
+dummy is now `PasswordProvider::DUMMY_HASH` (cost 12), or the constructor's new `$dummyHash`.
+
+**`session.max_age`**: an absolute limit on a session's life, counted from the last `Session::regenerate()` (the
+sign-in), however busy the session is (`Noirapi\Lib\Session\SessionAge`, docs/sessions.md). Off unless set.
+
 ## 2.7.0 (2026-11-27)
 
 **SQLite for desktop apps: pragmas, schema migrations and a MariaDB dialect**, all opt-in per database in config, so

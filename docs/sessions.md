@@ -13,7 +13,14 @@ session:
         samesite: Lax       # Lax | Strict | None (None forces Secure)
         secure: auto        # auto = when the request is HTTPS (see trusted_proxies); or true / false
         domain: ''          # default: the cookie_domain setting, else the current host
+    max_age: 2592000        # seconds; see below. 0 or unset = no limit
 ```
+
+`max_age` is an absolute limit on a session's life, counted from its last `Session::regenerate()`
+(the sign-in). `session.gc_maxlifetime` counts from the last request instead, so a session that
+keeps being used, by its owner or by someone who copied its ID, would otherwise never end. When
+`Session::start()` finds a session older than `max_age`, it starts over empty under a new ID, and
+the user signs in again. The time is kept in the session under `SessionAge::KEY`.
 
 ```php
 use Noirapi\Lib\Session;

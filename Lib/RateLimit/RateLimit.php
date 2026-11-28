@@ -27,7 +27,7 @@ use function is_string;
  *         login:  {limit: 5, per: 60, block_after: 5, block_for: 900}
  *         api:    {limit: 100, per: minute}      # per: seconds, or second | minute | hour | day
  *
- * `login`, `magic_link` and `totp` have built-in defaults (DEFAULTS); other names must be
+ * `login`, `login_email`, `magic_link` and `totp` have built-in defaults (DEFAULTS); other names must be
  * configured.
  *
  *     RateLimit::for('login')->check($request->clientIp);   // throws TooManyRequestsException
@@ -40,9 +40,10 @@ use function is_string;
 final class RateLimit
 {
     public const array DEFAULTS = [
-        'login'      => ['limit' => 5, 'per' => 60, 'block_after' => 5, 'block_for' => 900],
-        'magic_link' => ['limit' => 3, 'per' => 900],
-        'totp'       => ['limit' => 5, 'per' => 60, 'block_after' => 3, 'block_for' => 900],
+        'login'       => ['limit' => 5, 'per' => 60, 'block_after' => 5, 'block_for' => 900],
+        'login_email' => ['limit' => 20, 'per' => 900],
+        'magic_link'  => ['limit' => 3, 'per' => 900],
+        'totp'        => ['limit' => 5, 'per' => 60, 'block_after' => 3, 'block_for' => 900],
     ];
 
     private const array PERIODS = ['second' => 1, 'minute' => 60, 'hour' => 3600, 'day' => 86400];
