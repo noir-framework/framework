@@ -9,7 +9,9 @@ namespace Noirapi\Lib\Db\MariaDb;
  * out), `UPDATE IGNORE` → `UPDATE OR IGNORE`, `DELETE IGNORE` → `DELETE`; `INSERT … SET a = 1, b = 2` → `INSERT … (a, b)
  * VALUES (1, 2)`; `VALUE (…)` → `VALUES (…)`; `ON DUPLICATE KEY UPDATE c = VALUES(c)` → `ON CONFLICT DO UPDATE SET c =
  * excluded.c`, an INSERT … SELECT then reading `SELECT * FROM (…) WHERE true` (SQLite's parser needs the WHERE);
- * LOW_PRIORITY, DELAYED and HIGH_PRIORITY dropped.
+ * LOW_PRIORITY, DELAYED and HIGH_PRIORITY dropped. A statement already in SQLite's own conflict syntax (`INSERT OR
+ * IGNORE`, `UPDATE OR REPLACE`, …: what code that knows it runs on SQLite writes, e.g. the PDO rate-limit store) is left
+ * as it is.
  *
  * @psalm-api
  */
@@ -25,6 +27,12 @@ final class UpsertWords
         $first = $list->next(-1);
         $verb = $list->upper($first);
         if ($first === null || ! in_array($verb, ['INSERT', 'REPLACE', 'UPDATE', 'DELETE'], true)) {
+            return $list;
+        }
+
+        // SQLite's INSERT OR IGNORE / UPDATE OR REPLACE …: already SQLite, never MariaDB (where OR after the verb is an
+        // error), so nothing to rewrite
+        if ($list->upper($list->next($first)) === 'OR') {
             return $list;
         }
         [$ignore, $after] = self::modifiers($list, $first);
@@ -142,10 +150,11 @@ final class UpsertWords
     {
         $position = $position;
         foreach ($words as $word) {
-            if ($position === null || $list->upper($position) !== $word) {
+            // upper(null) is '', never a word: running out of tokens is a mismatch too
+            if ($list->upper($position) !== $word) {
                 return false;
             }
-            $position = $list->next($position);
+            $position = $list->next((int) $position);
         }
 
         return true;

@@ -7,6 +7,7 @@ namespace Noirapi\Tests;
 use Noirapi\Config;
 use Noirapi\Exceptions\ConfigException;
 use Noirapi\Exceptions\TooManyRequestsException;
+use Noirapi\Lib\PDO\Connector;
 use Noirapi\Lib\RateLimit\Limiter;
 use Noirapi\Lib\RateLimit\RateLimit;
 use Noirapi\Lib\RateLimit\Store\PdoRateLimitStore;
@@ -87,6 +88,25 @@ final class RateLimitTest extends TestCase
 
         $this->now += 60;
         self::assertTrue($limiter->hit('k')->allowed);
+    }
+
+    /**
+     * A desktop app's SQLite connection with `dialect: mariadb`: the store's own SQLite SQL (INSERT OR IGNORE) must
+     * pass through the MariaDB rewriter unchanged.
+     */
+    public function testPdoStoreOnMariaDbDialectSqlite(): void
+    {
+        $pdo = Connector::open('sqlite::memory:', dialect: Connector::DIALECT_MARIADB);
+        RateLimit::usePdoStore(new PdoRateLimitStore(static fn (): PDO => $pdo, 'rate_limits', fn (): int => $this->now));
+        Config::set('rate_limits', ['login' => ['limit' => 1, 'per' => 10, 'block_after' => 2, 'block_for' => 300]]);
+        $limiter = RateLimit::for('login');
+
+        self::assertTrue($limiter->hit('ip')->allowed);
+        self::assertFalse($limiter->hit('ip')->allowed);
+        self::assertTrue($limiter->hit('ip')->blocked);
+
+        $this->now += 360;
+        self::assertTrue($limiter->hit('ip')->allowed);
     }
 
     public function testEscalatingBlock(): void

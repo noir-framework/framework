@@ -8,6 +8,13 @@ session makes after a restart, so an app that stays signed in can `lock()` the s
 `unlock()` it once the password is right (docs/sessions.md). Opt-in, called by the app; without a launch id (hosted,
 `php -S`) nothing locks.
 
+**SQLite with `dialect: mariadb`: SQLite's own `INSERT OR IGNORE` passes through.** The MariaDB rewriter turned
+`INSERT OR IGNORE INTO …` (written by the PDO rate-limit store) into `INSERT INTO OR IGNORE INTO …`, so every sign-in on
+such a connection failed with a syntax error. Statements with `OR` after the verb are already SQLite and are left as
+they are.
+
+`PDOStatement::fetchObject()` names its second parameter `$constructorArgs`, as PHP does (Psalm 7.23).
+
 ## 2.8.0 (2026-11-28)
 
 **`send_file`: the server sends `Response::sendFile()` files.** With config `send_file` (`header`, optional `root` and

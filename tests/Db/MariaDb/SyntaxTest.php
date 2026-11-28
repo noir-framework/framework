@@ -40,6 +40,17 @@ final class SyntaxTest extends TestCase
         return $pdo;
     }
 
+    public function testSqlitesOwnConflictClausesPassThrough(): void
+    {
+        $pdo = self::pdo();
+        $pdo->exec("INSERT OR IGNORE INTO t (id, name) VALUES (1, 'x'), (3, 'c')");
+        $pdo->exec("INSERT OR REPLACE INTO t (id, name) VALUES (2, 'B')");
+        $pdo->exec("UPDATE OR IGNORE t SET name = 'C' WHERE id = 3");
+        $pdo->prepare('INSERT OR IGNORE INTO t (id, name) VALUES (?, ?)')->execute([4, 'd']);
+
+        self::assertSame(['a', 'B', 'C', 'd'], $pdo->query('SELECT name FROM t ORDER BY id')->fetchAll(PDO::FETCH_COLUMN));
+    }
+
     public function testLockingClausesAreDropped(): void
     {
         $pdo = self::pdo();
