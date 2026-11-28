@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.8.0 (2026-11-28)
 
 **`send_file`: the server sends `Response::sendFile()` files.** With config `send_file` (`header`, optional `root` and
 `prefix`) the Kernel answers with `X-Accel-Redirect`, `X-Sendfile` or the desktop shell's `X-Noirapi-File` and no body,
