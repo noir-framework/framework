@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+**`send_file`: the server sends `Response::sendFile()` files.** With config `send_file` (`header`, optional `root` and
+`prefix`) the Kernel answers with `X-Accel-Redirect`, `X-Sendfile` or the desktop shell's `X-Noirapi-File` and no body,
+instead of `readfile()`; files outside `root` still go through PHP (`Noirapi\Lib\SendFile`, docs/config.md).
+
 **Sign-in limits no longer let a stranger lock an account out.** `PasswordProvider::verifyThrottled()` limited every
 e-mail strictly from all addresses together, so anyone who knew an e-mail could keep its owner out with ten wrong
 passwords a minute.

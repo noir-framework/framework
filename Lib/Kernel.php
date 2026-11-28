@@ -167,12 +167,20 @@ final class Kernel
             );
         }
 
+        // a sendFile() file goes to the server in front of PHP when config send_file says how
+        $bodyFile = $response->getBodyFile();
+        $offload = $response->getSendFileHeader();
+
         foreach ($response->getHeaders() as $key => $value) {
+            if ($offload !== null && strtolower((string) $key) === 'content-length') {
+                continue; // the server sends the file and its length
+            }
             header(ucfirst($key) . ': ' . $value);
         }
 
-        $bodyFile = $response->getBodyFile();
-        if ($bodyFile !== null) {
+        if ($offload !== null) {
+            header($offload);
+        } elseif ($bodyFile !== null) {
             readfile($bodyFile);
         } else {
             echo $response->getBody();

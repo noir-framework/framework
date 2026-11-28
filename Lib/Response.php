@@ -14,6 +14,7 @@ namespace Noirapi\Lib;
 use Exception;
 use JsonException;
 use LaLit\Array2XML;
+use Noirapi\Config;
 use Noirapi\Helpers\RestMessage;
 use RuntimeException;
 use SimpleXMLElement;
@@ -359,7 +360,9 @@ class Response
     /**
      * Sends a file from disk as the body, streamed by the server entry point (kernel.php:
      * readfile(); swoole.php: sendfile()) instead of being loaded into memory. Use for large
-     * files; the Content-Type stays whatever setContentType() set.
+     * files; the Content-Type stays whatever setContentType() set. With config `send_file`
+     * the web server (nginx X-Accel-Redirect, X-Sendfile) or the desktop shell sends it
+     * instead (Lib/SendFile.php).
      *
      * @return $this
      */
@@ -386,6 +389,17 @@ class Response
     public function getBodyFile(): ?string
     {
         return $this->bodyFile;
+    }
+
+    /**
+     * The header that hands the sendFile() file to the server in front of PHP (config `send_file`), or null when PHP
+     * streams it (no file, no config, or a file outside `send_file.root`).
+     *
+     * @psalm-impure
+     */
+    public function getSendFileHeader(): ?string
+    {
+        return $this->bodyFile === null ? null : SendFile::header($this->bodyFile, Config::get('send_file'));
     }
 
     /**

@@ -34,6 +34,36 @@ A variable that is not set, or is empty, is an error (`ConfigException`).
 | `cookie_domain` | the host | domain for cookies the framework sets |
 | `layout` | | default layout for views ([layouts](layouts.md)) |
 
+## Sending files
+
+`Response::sendFile($path)` streams a file without loading it into memory (`readfile()`; Swoole: `sendfile()`). With
+`send_file`, the server in front of PHP sends it instead: PHP answers with the headers and one more header naming the
+file, and no body (`Lib/SendFile.php`).
+
+| Key | |
+|---|---|
+| `send_file.header` | `X-Accel-Redirect` (nginx), `X-Sendfile` (Apache `mod_xsendfile`, lighttpd), `X-Noirapi-File` (the noirapi desktop shell) |
+| `send_file.root` | optional: only files under this folder are handed over, named by their path relative to it; others stay with PHP |
+| `send_file.prefix` | with `root`: what goes before that relative path (nginx: an `internal` location aliased to `root`) |
+
+```neon
+send_file:
+    header: X-Accel-Redirect
+    root: /home/www/app/storage
+    prefix: /_files/
+```
+
+```nginx
+location /_files/ {
+    internal;
+    alias /home/www/app/storage/;
+}
+```
+
+Without `root` the header carries the file's absolute path (`X-Sendfile`, and the desktop shell, which checks that
+the path is inside the app's writable root and also answers `Range` and `If-None-Match`). The access check stays in
+the action: only what it hands to `sendFile()` is sent.
+
 ## Languages
 
 | Key | |
